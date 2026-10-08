@@ -1,8 +1,8 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.11.4, **préparée mais pas installée** : le jeu a la 0.11.3 (il tournait). **Rien n'est publié depuis la 0.9.0** (https://github.com/Freyzah/LPRoles) : c'est elle que reçoit la mise à jour automatique. Ce document décrit la 0.11.4.
+Version 0.11.4, **publiée le 8 octobre 2026** sur GitHub (https://github.com/Freyzah/LPRoles) : tout joueur qui a la 0.9.0 ou plus la reçoit au lancement suivant du jeu. Le jeu de l'utilisateur avait encore la 0.11.3 au moment de la publication (il tournait) : il se mettra à jour de lui-même.
 
-À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.3-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
+À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.4-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
 
 **État des tests :**
 - **0.1.0** : testée en solo par l'hôte (chargement, rêve, recharge, envol, carte du Shérif).
@@ -54,7 +54,7 @@ Version 0.11.4, **préparée mais pas installée** : le jeu a la 0.11.3 (il tour
 - **0.11.1** : l'onglet LPROLES de l'hôte n'affiche plus qu'un groupe de réglages à la fois, TEST en deuxième ; les groupes des huit nouveaux rôles, absents de l'onglet en 0.10.0 et 0.11.0, y sont. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
 - **0.11.2** : Empoisonneur revu à la demande de l'utilisateur : 3 minutes, victime prévenue quand il en reste 2, antidote = l'échantillon raffiné d'une plante tirée au hasard. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
 - **0.11.3** : ligne du poison raccourcie pour tenir sur une rangée du bandeau de la tablette. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
-- **0.11.4** : la vie en plus du Vampire s'ajoute au nombre affiché sur la barre de vie du jeu. **Jamais lancée en jeu.** Pas installée (le jeu tournait).
+- **0.11.4** : la vie en plus du Vampire s'ajoute au nombre affiché sur la barre de vie du jeu. **Publiée le 8 octobre** à la demande de l'utilisateur, avec tout ce qui s'était accumulé depuis la 0.9.0 (huit rôles, nouvel onglet, antidote). Mise à jour vérifiée contre la vraie page depuis une copie exacte de la 0.11.3 et de la 0.9.0. **Rien de tout cela n'a encore tourné en jeu.**
 
 ## Ce qui est installé
 

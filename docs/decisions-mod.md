@@ -1412,3 +1412,13 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Ce qui ne change pas :** la barre (pleine à 100), la couleur du nombre (animée par le jeu), la ligne de la page du rôle.
 - **Contrôles :** syntaxe, noms du jeu (`Set HP`, `HPtext`, `Mec Ref` de `W_PlayerState`), pages. **Jamais lancé en jeu ; pas de relecture indépendante.**
 - **Version :** 0.11.4. Pas installée : le jeu tournait. Pas publiée.
+
+## D109 — Publication de la 0.11.4
+
+- **Demande :** « publie la », après que j'ai expliqué que la mise à jour automatique ne distribue que les versions publiées, et que son amie, installée en 0.11.3 par l'archive, ne recevrait la 0.11.4 qu'à cette condition.
+- **Fait :** étiquette `v0.11.4` poussée ; le flux GitHub a réussi et publié `LPRoles.zip` et `version.txt`. Les notes de la page reprennent les sections 0.11.3, 0.11.2, 0.11.1 et 0.11.0, jamais publiées séparément (marquées depuis « publiée avec la 0.11.4 » dans `CHANGELOG.md`, pour ne pas être reprises une seconde fois).
+- **Vérifié contre la vraie page**, par la commande exacte que le mod lance : une copie exacte de la 0.11.3 (les fichiers de son commit, plus des réglages et un journal) passe en 0.11.4 en 1,9 s, tous les fichiers identiques aux sources, réglages et journal gardés ; même chose depuis une copie de la 0.9.0 (1,4 s). Relancée, la mise à jour répond « rien à faire » en 0,6 s.
+- **Chez l'utilisateur :** son jeu tournait, je n'y ai rien installé. Il a la 0.11.3 et se mettra à jour tout seul au prochain lancement : ce sera la **première vraie mise à jour faite depuis le jeu** (bandeau « LPROLES MIS À JOUR : VERSION 0.11.4 », ligne « Mise à jour faite au lancement : 0.11.3 -> 0.11.4 » dans le journal).
+- **Portée :** toute installation en 0.9.0 ou plus reçoit cette version, avec huit rôles, un onglet et un antidote qui n'ont jamais tourné en jeu. L'utilisateur le savait en demandant la publication.
+- **Règle pour la suite :** inchangée tant qu'il n'a pas répondu à la question posée deux fois : je ne publie que sur sa demande.
+- **Archive complète** refaite en 0.11.4 pour les premières installations ; une archive 0.11.3 déjà donnée se met à jour seule.

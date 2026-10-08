@@ -6,21 +6,21 @@ La section d'une version est reprise telle quelle sur sa page GitHub.
 
 - Vampire : sa vie en plus s'ajoute au nombre affiché sur la barre de vie (115 pour une vie pleine et 15 en réserve).
 
-## 0.11.3 (non publiée)
+## 0.11.3 (publiée avec la 0.11.4)
 
 - Empoisonneur : la ligne « Poison : mort dans … s - antidote : … raffiné » de la victime est raccourcie pour tenir sur une rangée de la tablette.
 
-## 0.11.2 (non publiée)
+## 0.11.2 (publiée avec la 0.11.4)
 
 - **Empoisonneur :** le poison dure 3 minutes ; la victime est prévenue quand il lui en reste 2 et apprend son antidote, l'échantillon raffiné d'une plante tirée au hasard, à boire. Sa page de rôle affiche le compte à rebours et la plante.
 
-## 0.11.1 (non publiée)
+## 0.11.1 (publiée avec la 0.11.4)
 
 - **Onglet LPROLES plus court pour l'hôte :** un seul groupe de réglages à la fois, choisi avec la rangée « Réglages affichés ». Dans l'ordre : MES RÉGLAGES, TEST, GÉNÉRAL, RÔLES ACTIFS, puis les rôles par ordre alphabétique.
 - **RÔLES ACTIFS** réunit l'interrupteur OUI/NON de tous les rôles.
 - « Rôle forcé pour l'hôte » liste les rôles par ordre alphabétique.
 
-## 0.11.0 (non publiée)
+## 0.11.0 (publiée avec la 0.11.4)
 
 Huit nouveaux rôles, chacun avec son groupe de réglages dans l'onglet LPROLES :
 
