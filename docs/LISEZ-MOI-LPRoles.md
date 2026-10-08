@@ -1,8 +1,8 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.11.5, **préparée mais pas installée** : le jeu a la 0.11.4. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.11.4, c'est elle que reçoit la mise à jour automatique. Ce document décrit la 0.11.5.
+Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.11.4, c'est elle que reçoit la mise à jour automatique. Ce document décrit la 0.12.0.
 
-À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.4-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
+À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.12.0-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
 
 **État des tests :**
 - **0.1.0** : testée en solo par l'hôte (chargement, rêve, recharge, envol, carte du Shérif).
@@ -58,7 +58,8 @@ Version 0.11.5, **préparée mais pas installée** : le jeu a la 0.11.4. **Pas e
 - **Essai à deux du 8 octobre (0.11.3, d'après le journal de l'hôte)** : Écho, Amnésique (rôle d'un employé puis d'un dissident), Empoisonneur (antidote pris une fois, mort à 180 s l'autre fois), Bâillonneur, Voleur, Bouffon (victoire puis fin de partie 3 s après), Vampire et Loup-garou ont tous fait ce qu'ils devaient côté hôte, sans aucune erreur. Le nouvel onglet a servi tout du long. Le journal ne dit pas ce que les joueurs ont vu ou entendu (micro coupé, lignes de la tablette, vie du Vampire) : à confirmer par l'utilisateur.
 - **Mise à jour automatique faite depuis le jeu** (8 octobre, 0.11.3 → 0.11.4) : téléchargée, installée et chargée dans le même lancement, fichiers identiques à la version publiée.
 - **Retour de l'utilisateur après l'essai à deux (8 octobre)** : « J'ai pu un peu tout tester et tout a l'air de fonctionner ». Le Loup-garou qui dévore deux fois un joueur réanimé puis retué est voulu.
-- **0.11.5** : bandeaux qui ne se coupent plus mal (un « % » seul sur le bandeau suivant), portée du Voleur à 6 m par défaut, groupe RÔLE FORCÉ dans l'onglet. **Jamais lancée en jeu.** Pas installée (le jeu tournait).
+- **0.11.5** : bandeaux qui ne se coupent plus mal (un « % » seul sur le bandeau suivant), portée du Voleur à 6 m par défaut, groupe RÔLE FORCÉ dans l'onglet. **Jamais lancée en jeu.** Jamais installée seule : comprise dans la 0.12.0.
+- **0.12.0** : un rôle de plus, proposé par l'utilisateur, le Médecin. **Jamais lancé en jeu.** Installée le 8 octobre, pas publiée.
 
 ## Ce qui est installé
 
@@ -114,7 +115,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 | **Clandestin** | Se cache, près d'une bouche d'aération ; un nouvel appui (après 1 s) le fait sortir |
 | **Revenant** | Se manifeste, une fois mort |
 | **Écho** | Le retour en arrière part aussitôt |
-| **Empoisonneur, Bâillonneur, Voleur** | Comme le Traqueur : appuyer en regardant un joueur, le pouvoir agit aussitôt (le Voleur doit être à 6 m au plus) |
+| **Empoisonneur, Bâillonneur, Voleur, Médecin** | Comme le Traqueur : appuyer en regardant un joueur, le pouvoir agit aussitôt (le Voleur doit être à 6 m au plus) |
 | **Amnésique** | Appuyer en regardant un cadavre, ou à moins de 2,5 m de lui |
 | **Bouffon** | Rien : il n'a pas de pouvoir à lancer |
 | **Traqueur, Hypnotiseur, Métamorphe, Échangeur** | Appuyer en regardant un joueur : le pouvoir agit **aussitôt** sur lui. Sans personne en vue, rien ne se passe et rien n'est dépensé (« PERSONNE EN VUE ») |
@@ -151,6 +152,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 | **Bouffon** | Neutre | Gagne seul s'il est tué par un employé ; sa victoire termine la partie |
 | **Vampire** | Dissident | Vampirise le cadavre d'un joueur qu'il a tué : +10 PV de vie maximale, une fois par cadavre |
 | **Loup-garou** | Employé | Dévore un cadavre : sa vie et son endurance se régénèrent 10 % plus vite, une fois par cadavre |
+| **Médecin** | Employé | Voit en permanence la vie de chaque joueur au-dessus de sa tête ; rend toute sa vie au joueur visé. 2 soins par partie |
 
 **Liés** n'est pas un rôle mais un lien entre deux joueurs, qui s'ajoute à leurs rôles éventuels : au premier des deux qui meurt, l'autre meurt aussi. Le lien ne joue qu'une fois : ensuite il est rompu, même si l'un des deux revient (défibrillateur, Ange gardien). Un lié sauvé par un Ange gardien d'une mort ordinaire ne déclenche pas le lien. Chacun connaît le nom de l'autre. Le lien ne compte pas dans le nombre de rôles par partie. Réglages dans le groupe LIÉS (activé ou non, joueurs minimum, camps des deux liés).
 
@@ -230,6 +232,18 @@ Ce que fait la touche de pouvoir selon le rôle :
 - Pour la vie, le nouveau rythme prend effet au repos suivant.
 - Le Vampire et le Loup-garou peuvent se servir du même cadavre, chacun une fois. Un corps que le Nettoyeur a fait disparaître ne sert plus à personne.
 - Réglages (groupe LOUP-GAROU) : « Camp » (employé), « Régénération par cadavre » (10 %), « Portée » (250 cm), « Durée du geste » (3 s).
+
+### Médecin (employé par défaut, depuis la 0.12.0)
+
+- **En permanence :** il voit la **vie de chaque joueur**, un nombre au-dessus de sa tête, vert à partir de 70, orange à partir de 30, rouge en dessous. Lui seul le voit.
+  - Le nombre est un texte posé dans le bâtiment, tourné vers le Médecin : **un mur le cache**, il ne sert pas à repérer quelqu'un à travers une cloison.
+  - Il n'est pas affiché pour un mort. La réserve d'un Vampire est comptée (115 pour 100 + 15).
+  - Réglage « Voit la vie au-dessus des têtes » sur NON : il ne garde que son soin.
+- **Son pouvoir :** il vise un joueur à 6 m au plus et appuie : ce joueur **retrouve toute sa vie aussitôt** (« … EST SOIGNÉ » chez lui, « UN MÉDECIN T'A SOIGNÉ » chez le joueur). 2 soins par partie.
+  - Viser un joueur dont la vie est déjà pleine ne dépense rien (« IL A DÉJÀ TOUTE SA VIE »).
+  - Il ne peut pas se soigner lui-même.
+- **Comment il connaît la vie des autres :** la vie d'un joueur n'est connue que de sa propre machine. Dès qu'un Médecin est dans la partie, la machine de chaque joueur dit sa vie à l'hôte chaque fois qu'elle change, et l'hôte la transmet au Médecin. Personne d'autre ne la reçoit.
+- Réglages (groupe MÉDECIN) : « Camp » (employé), « Voit la vie au-dessus des têtes » (OUI), « Soins par partie » (2), « Portée de visée » (600 cm), « Objet de recharge » (aucun).
 
 ### Les rôles neutres et le jeu
 
@@ -435,6 +449,7 @@ Ce qu'il faut regarder en priorité, à plusieurs :
 - **Amnésique déjà recruté :** un Amnésique que le Recruteur a converti reste dissident, même s'il prend ensuite le rôle d'un employé mort.
 - **Bouffon et grenades :** une mort par explosion n'a pas de tueur connu du mod ; un employé qui tue le Bouffon à la grenade ne le fait pas gagner.
 - **Voleur :** l'objet volé arrive dans la main avec l'animation de ramassage du jeu.
+- **Médecin :** le nombre au-dessus des têtes est éclairé comme un objet du décor : dans une pièce sombre il se lit moins bien. Il se tourne vers le Médecin dix fois par seconde, ce qui peut se voir quand on court autour de quelqu'un.
 - **Mise à jour du jeu :** elle peut casser le mod. `python tools\lp\bp.py --all analysis\bp` puis `python tools\lp\verify_mod.py` revérifient tout le code contre les nouveaux fichiers du jeu.
 
 ## Autres fichiers du projet

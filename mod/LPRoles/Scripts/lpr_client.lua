@@ -40,6 +40,8 @@ local poisoned = false       -- the host said so: the "consume" key may then ser
 local gag = nil              -- Bâillonneur: this player's microphone is held off: { ends, next }
 local vamp = nil             -- Vampire: life above the game's maximum: { max, reserve, acc, at }
 local wolf = nil             -- Loup-garou: the game's own regeneration values, to give back: { asset, min, max, hp }
+local vitals = nil           -- a Médecin plays: this machine tells the host its character's life: { last, at }
+local tags = {}              -- Médecin: player index -> { life, mec, comp, shown, visible, yaw }: the life written above a head
 
 -- ---------------------------------------------------------------- notifications
 local function say(id, color, ...)
@@ -858,6 +860,143 @@ local function on_wolf(_, pct)
     U.log("Loup-garou : régénération accélérée de %d %%", total)
 end
 
+-- ---------------------------------------------------------------- Médecin
+-- Every machine: while the host asks for it, tells its character's life each time it changes
+-- (and every few seconds, for a Médecin who came late). A Vampire's reserve counts.
+local function on_vitals(on)
+    if on == "1" then vitals = vitals or { at = 0 } else vitals = nil end
+end
+
+local function my_life()
+    local mec = G.local_mec()
+    if not mec then return nil end
+    if ghost then return ghost.health end              -- flying or dreaming: the life it had on leaving
+    if U.get(mec, "Alive", true) ~= true then return 0 end
+    local health = U.get(mec, "Health", nil)
+    if type(health) ~= "number" then return nil end
+    return math.max(0, health) + (vamp and vamp.reserve or 0)
+end
+
+local function tick_vitals(now)
+    if not vitals then return end
+    local life = my_life()
+    if not life then return end
+    local since = now - vitals.at
+    if (life ~= vitals.last and since >= 0.25) or since >= 3 then
+        vitals.last, vitals.at = life, now
+        N.report(life)
+    end
+end
+
+-- The Médecin's power, on the machine of the player healed: the whole life back, through the
+-- game's own healing (the call its regeneration makes, for one point at a time).
+local function on_heal()
+    local mec = G.local_mec()
+    if not mec then return end
+    if ghost then
+        ghost.health = 100                             -- given back on landing or on waking up
+        if ghost.kind == "dream" then U.set(mec, "Health", 100) end
+    elseif U.get(mec, "Alive", true) == true then
+        U.tcall(mec, "Hit Health", -100, 0.0, 1000.0)
+    end
+    if vitals then vitals.at = 0 end                   -- told to the host at once
+end
+
+-- The Médecin's machine: the life of each player, written above its head. A text standing in
+-- the building like any object: a wall hides it. It is turned towards the Médecin at every
+-- tick, and coloured by how much life is left.
+local TAG = { class = "/Script/Engine.TextRenderComponent", height = 215.0, size = 30.0 }
+
+local function tag_drop(rec)
+    local c = rec.comp
+    rec.comp, rec.shown, rec.visible, rec.yaw = nil, nil, nil, nil
+    if not U.valid(c) then return end
+    pcall(function() c:SetVisibility(false, false) end)        -- unseen even if it cannot be removed
+    if U.valid(rec.mec) then U.try("vie affichée : retrait", function() c:K2_DestroyComponent(rec.mec) end) end
+end
+
+local function tags_clear()
+    for _, rec in pairs(tags) do tag_drop(rec) end
+    tags = {}
+end
+
+local function tag_make(mec)
+    local cls = StaticFindObject(TAG.class)
+    if not U.valid(cls) then return nil end
+    local c = mec:AddComponentByClass(cls, false, { Rotation = { X = 0.0, Y = 0.0, Z = 0.0, W = 1.0 },
+        Translation = { X = 0.0, Y = 0.0, Z = TAG.height }, Scale3D = { X = 1.0, Y = 1.0, Z = 1.0 } }, false)
+    if not U.valid(c) then return nil end
+    U.try("vie affichée : aspect", function()
+        c:SetCollisionEnabled(0)                       -- never in anybody's way
+        pcall(function() c:SetCastShadow(false) end)
+        c:SetHorizontalAlignment(1)                    -- centred on the head
+        c:SetWorldSize(TAG.size)
+    end)
+    return c
+end
+
+local function tag_color(life)
+    if life >= 70 then return { R = 60, G = 230, B = 90, A = 255 } end
+    if life >= 30 then return { R = 255, G = 170, B = 30, A = 255 } end
+    return { R = 255, G = 50, B = 40, A = 255 }
+end
+
+local function on_hp(idx, life)
+    local i, n = tonumber(idx), tonumber(life)
+    if not i or not n then return end
+    tags[i] = tags[i] or {}
+    tags[i].life = n
+end
+
+local tags_failed = false
+local function tick_tags()
+    if my_role ~= "medic" or not my_status or (my_status.vitals or 0) == 0 then
+        if next(tags) then tags_clear() end
+        return
+    end
+    local me = G.local_mec()
+    local eye = me and G.location(me)
+    if not eye then return end
+    for _, mec in ipairs(G.all_mecs()) do
+        local rec = mec:GetAddress() ~= me:GetAddress() and tags[G.player_index(mec)] or nil
+        if rec and rec.life then
+            if rec.comp and (not U.valid(rec.comp) or not U.valid(rec.mec) or rec.mec:GetAddress() ~= mec:GetAddress()) then
+                tag_drop(rec)                          -- another character for this player: made again
+            end
+            local shown = rec.life > 0 and G.is_alive(mec)
+            if shown and not rec.comp and not tags_failed then
+                rec.comp, rec.mec = U.try("vie affichée", tag_make, mec), mec
+                if not rec.comp then
+                    tags_failed = true                 -- said once, not at every tick
+                    U.log("Médecin : la vie ne peut pas être écrite au-dessus des têtes")
+                end
+            end
+            local c = rec.comp
+            if c then
+                if rec.visible ~= shown then
+                    pcall(function() c:SetVisibility(shown, false) end)
+                    rec.visible = shown
+                end
+                if shown then
+                    if rec.shown ~= rec.life then
+                        G.text_call(c, "K2_SetText", tostring(rec.life))
+                        pcall(function() c:SetTextRenderColor(tag_color(rec.life)) end)
+                        rec.shown = rec.life
+                    end
+                    local at = G.location(mec)
+                    if at then
+                        local yaw = math.deg(math.atan(eye.Y - at.Y, eye.X - at.X))
+                        if not rec.yaw or math.abs(yaw - rec.yaw) > 0.5 then
+                            pcall(function() c:K2_SetWorldRotation({ Pitch = 0.0, Yaw = yaw, Roll = 0.0 }, false, {}, false) end)
+                            rec.yaw = yaw
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 -- ---------------------------------------------------------------- Bâillonneur: the microphone held off
 -- The game only sends the voice of a character whose "Can Talk" is true (a sleeping Rêveur's
 -- is switched off the same way, see enter_ghost): held false for as long as the host says.
@@ -930,6 +1069,9 @@ local function on_end()
         U.try("vie affichée", show_health)     -- the game's own number again
     end
     wolf_reset()
+    vitals = nil
+    tags_clear()
+    tags_failed = false
     -- no role any more until the next game
     my_role, my_status, safe_idx = nil, nil, nil
     for _, fn in ipairs(role_listeners) do U.try("rôle", fn, nil) end
@@ -1118,6 +1260,7 @@ local MSG = {
     JESTER_WIN = { "role", "name" }, JESTER_LOST = { "bad" },
     VAMP_DONE = { "good", "num", sfx = OK }, VAMP_NOT_YOURS = { "warn", sfx = FAIL }, FEED_USED = { "warn", sfx = FAIL },
     WOLF_DONE = { "good", "num", sfx = OK },
+    MEDIC_DONE = { "good", "name", sfx = OK }, MEDIC_FULL = { "warn", sfx = FAIL }, MEDIC_YOU = { "good" },
 }
 
 local function on_msg(id, a)
@@ -1622,7 +1765,7 @@ end
 local POWER_ROLES = { infector = true, fairy = true, medium = true, angel = true, tracker = true, hypnotist = true,
                       mimic = true, cleaner = true, stowaway = true, swapper = true, revenant = true,
                       poisoner = true, gagger = true, thief = true, echo = true, amnesiac = true,
-                      vampire = true, werewolf = true }
+                      vampire = true, werewolf = true, medic = true }
 local last_power = 0
 
 local function use_power()
@@ -1731,6 +1874,9 @@ function Cl.install()
         if U.valid(mec) and is_local(mec) then U.try("vie du vampire", vamp_number, ps, mec) end
     end)
     N.on("WOLF", on_wolf)
+    N.on("VITALS", on_vitals)
+    N.on("HP", on_hp)
+    N.on("HEAL", on_heal)
     N.on("HELLO", function()
         G.clear_messages()                     -- a new game: nothing left to show of the one before
         U.log("L'hôte demande qui a le mod (début de partie)")
@@ -1785,6 +1931,8 @@ function Cl.install()
     U.every_tick("hypnose", tick_hypno)
     U.every_tick("bâillon", tick_gag)
     U.every_tick("vampire", tick_vamp)
+    U.every_tick("vie dite à l'hôte", tick_vitals)
+    U.every_tick("vie au-dessus des têtes", tick_tags)
     -- Tell the host we have the mod: once per character, every 2 s until the host has answered
     -- (ten times at most: the host only answers the first time it hears of a player), then
     -- again now and then in case the host has changed.
@@ -1797,6 +1945,7 @@ function Cl.install()
             if ghost then ghost = nil end
             vamp = nil
             wolf_reset()                           -- the game was left: its values go back as they were
+            vitals, tags = nil, {}
             hello_sent_for, acked_for, tries = nil, nil, 0   -- the next character says it again at once
             return
         end

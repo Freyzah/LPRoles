@@ -222,7 +222,7 @@ def wrap(line, width, indent=''):
 ITEM_KEY = {'dreamer': 'dreamer_item', 'fairy': 'fairy_item', 'medium': 'medium_item', 'tracker': 'tracker_item',
             'hypnotist': 'hypno_item', 'mimic': 'mimic_item', 'cleaner': 'cleaner_item', 'stowaway': 'stowaway_item',
             'swapper': 'swapper_item', 'infector': 'infector_item', 'poisoner': 'poisoner_item',
-            'gagger': 'gagger_item', 'thief': 'thief_item', 'echo': 'echo_item'}
+            'gagger': 'gagger_item', 'thief': 'thief_item', 'echo': 'echo_item', 'medic': 'medic_item'}
 
 def status_of(role, C, P):
     """What the player's machine has after the host's message (integers, tenths, and back)."""
@@ -287,6 +287,8 @@ def status_of(role, C, P):
         v.update(range=metres('amnesiac_range'), reach=BODY_REACH / 100)
     elif role == 'jester':
         v.update(ends=int(g('jester_ends_game')))
+    elif role == 'medic':
+        uses('medic_charges'); v.update(range=metres('medic_range'), vitals=int(g('medic_vitals')))
     elif role == 'vampire':
         meals = P.get('meals', 0)
         v.update(meals=meals, per=g('vampire_hp'), bonus=meals * g('vampire_hp'), own=int(g('vampire_own_kills')),
@@ -312,14 +314,14 @@ BODY_REACH = float(re.search(r'local BODY_REACH = (\d+)', server).group(1))
 
 ROLES = ['sheriff', 'infector', 'dreamer', 'fairy', 'medium', 'angel', 'mole', 'tracker', 'hypnotist', 'mimic',
          'cleaner', 'stowaway', 'swapper', 'martyr', 'revenant', 'poisoner', 'gagger', 'thief', 'echo',
-         'amnesiac', 'jester', 'vampire', 'werewolf']
+         'amnesiac', 'jester', 'vampire', 'werewolf', 'medic']
 
 def states_of(role):
     out = [('au départ', {})]
     if role in ('medium', 'tracker', 'mimic', 'stowaway'):
         out.append(('effet en cours', {'act': 8, 'charges': 1, 'tgt': 2}))
         out.append(('plus d\'utilisation', {'charges': 0}))
-    if role in ('hypnotist', 'cleaner', 'swapper', 'gagger', 'thief', 'echo'): out.append(('plus d\'utilisation', {'charges': 0}))
+    if role in ('hypnotist', 'cleaner', 'swapper', 'gagger', 'thief', 'echo', 'medic'): out.append(('plus d\'utilisation', {'charges': 0}))
     if role == 'vampire': out += [('un cadavre vampirisé', {'meals': 1, 'res': 10}), ('deux cadavres, réserve entamée', {'meals': 2, 'res': 5})]
     if role == 'werewolf': out += [('deux cadavres dévorés', {'meals': 2})]
     if role == 'poisoner': out += [('poison en cours', {'act': 42, 'tgt': 2, 'charges': 0}), ('plus d\'utilisation', {'charges': 0})]
@@ -395,7 +397,8 @@ def main():
                           ('poisoner', 'prévenu aussitôt', dict(C, poison_warning=600)),
                           ('poisoner', 'pas d\'antidote, avec recharge', dict(C, poison_cure=False, poisoner_item='tuna')),
                           ('jester', 'sa victoire ne termine pas la partie', dict(C, jester_ends_game=False)),
-                          ('vampire', 'tous les cadavres', dict(C, vampire_own_kills=False))]:
+                          ('vampire', 'tous les cadavres', dict(C, vampire_own_kills=False)),
+                          ('medic', 'sans la vie au-dessus des têtes', dict(C, medic_vitals=False))]:
         ls = lines(role, status_of(role, c, {}))
         show('%s, autres réglages : %s' % (role.upper(), name), ls)
         check(role, ls, problems, '%s (%s)' % (role, name))

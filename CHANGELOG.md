@@ -2,7 +2,11 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.11.5
+## 0.12.0
+
+- **Nouveau rôle, le Médecin** (employé par défaut) : il voit en permanence la vie de chaque joueur au-dessus de sa tête, et peut rendre toute sa vie au joueur qu'il vise (2 soins par partie).
+
+## 0.11.5 (non publiée)
 
 - **Bandeaux :** un message n'est plus coupé en laissant un « % » ou un mot seul sur le bandeau suivant. Les bandeaux trop longs sont raccourcis (antidote, bâillon, victoire du Bouffon, mise à jour, Revenant).
 - **Voleur :** portée de 6 m par défaut (2,5 m avant).

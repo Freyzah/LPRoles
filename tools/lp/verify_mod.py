@@ -43,6 +43,7 @@ FUNCTIONS = [
     ("Mec", "Set Sample", 1, ""), ("Mec", "Net Deal Damage", 8, "Server"), ("Mec", "Net Death", 3, "Server"),
     ("Mec", "Hit Health", 3, "Client"), ("Mec", "Let Item", 0, "Client"), ("Mec", "Net Let Item", 0, "Server"),
     ("Mec", "Net Set Item State", 1, "Server"), ("Mec", "Add Buff", 2, "Server"),
+    ("Mec", "Request Net Interaction", 3, "Server"),
     ("GM", "Select Game Roles", 1, ""), ("GM", "End Game", 2, ""), ("GM", "Set HackerSphere", 1, ""),
     ("HUD", "Death Hidders", 1, ""), ("Notif", "Show Message", 2, ""), ("UpperNotif", "Show Message", 2, ""),
     ("PlayerStateW", "Set HP", 0, ""),
@@ -95,7 +96,7 @@ PROPERTIES = [
     ("PlayerData", "Min Regen"), ("PlayerData", "Max Regen"), ("PlayerData", "Regen HP Speed"),
 ]
 # Native functions whose first parameter is a text.
-TEXT_NATIVES = {"SetText"}
+TEXT_NATIVES = {"SetText", "K2_SetText"}
 # Engine properties (not Blueprint variables): checked by name only against this list.
 ENGINE_PROPERTIES = {"Screen", "Controller", "Pawn", "PlayerState", "RelativeScale3D", "WidgetTree", "Slot", "bHidden", "Font", "ColorAndOpacity", "Preset", "Color", "bAlwaysRelevant", "MediaPlayer", "BrushColor", "AudioComponent"}
 
@@ -136,6 +137,9 @@ NATIVE_FUNCTIONS = [
     "/Script/Engine.PrimitiveComponent.GetMaterial", "/Script/Engine.MaterialInstanceDynamic.SetScalarParameterValue", "/Script/Engine.MaterialInstanceDynamic.SetVectorParameterValue",
     "/Script/Engine.MaterialInstanceDynamic.K2_GetVectorParameterValue",
     "/Script/Engine.KismetSystemLibrary.LineTraceSingle", "/Script/Engine.AudioComponent.SetVolumeMultiplier",
+    "/Script/Engine.TextRenderComponent.K2_SetText", "/Script/Engine.TextRenderComponent.SetTextRenderColor",
+    "/Script/Engine.TextRenderComponent.SetWorldSize", "/Script/Engine.TextRenderComponent.SetHorizontalAlignment",
+    "/Script/Engine.SceneComponent.K2_SetWorldRotation",
 ]
 NATIVE_OBJECTS = ["/Script/UMG.ScrollBox", "/Script/UMG.VerticalBox", "/Script/UMG.TextBlock",
                   "/Script/UMG.WrapBox", "/Script/UMG.Border", "/Script/MediaAssets.MediaPlayer",
@@ -144,7 +148,8 @@ NATIVE_OBJECTS = ["/Script/UMG.ScrollBox", "/Script/UMG.VerticalBox", "/Script/U
                   "/Script/UMG.Default__SlateBlueprintLibrary", "/Script/UMG.Default__WidgetBlueprintLibrary",
                   "/Script/Engine.Default__KismetTextLibrary", "/Script/Engine.Default__KismetSystemLibrary",
                   "/Script/Engine.PrimitiveComponent", "/Script/Engine.PointLightComponent", "/Script/Engine.StaticMeshComponent",
-                  "/Script/SteamCorePro.Default__SteamUtilities", "/Script/Engine.PlayerController"]
+                  "/Script/SteamCorePro.Default__SteamUtilities", "/Script/Engine.PlayerController",
+                  "/Script/Engine.TextRenderComponent"]
 ASSETS = ["/Game/Items/Melee/AccessCard/DA_AccessCard", "/Game/Items/Melee/SampleContainer/DA_Container",
           "/Game/Items/Melee/Fish/DA_Fish", "/Game/Items/Melee/ProcessedSample/Materials/M_HackerSphere",
           "/Game/Items/Melee/ProcessedSample/DA_Sample",

@@ -62,6 +62,7 @@ local function fresh_game_fields(P)
     P.trail = nil                  -- Écho: where this player was lately: { { at, loc, yaw }, ... }
     P.fed, P.meals = nil, 0        -- Vampire, Loup-garou: the bodies used (key -> time of that death), and how many
     P.killed_by = nil              -- key of the player whose blow killed this one (nil: nobody's)
+    P.life = nil                   -- the life this player's machine last told (only while a Médecin plays)
     P.clean_aim = nil
     P.status_sent = nil
 end
@@ -129,6 +130,7 @@ local RECHARGE = {
     gagger    = { item = "gagger_item",   max = "gagger_charges" },
     thief     = { item = "thief_item",    max = "thief_charges" },
     echo      = { item = "echo_item",     max = "echo_charges" },
+    medic     = { item = "medic_item",    max = "medic_charges" },
 }
 local RECHARGE_GAP = 1.5      -- seconds between two recharges of a player
 local JAR_WAIT = 3            -- seconds a jar is given to come back emptied
@@ -1072,6 +1074,54 @@ local function thief_done(P, T)
     U.log("Voleur : %s prend à %s : %s", G.player_name(P.mec), G.player_name(T.mec), tostring(name))
 end
 
+-- ---------------------------------------------------------------- Médecin
+-- A character's life is only known to its player's machine. While a Médecin plays, every
+-- machine tells the host its life each time it changes (N.report in lpr_net.lua): the host
+-- needs it to refuse a heal on a player whose life is full, and, when the setting allows,
+-- passes it on to the Médecins, whose machines write it above each head.
+local function each_medic(fn)
+    each_player(function(D)
+        if D.role == "medic" and D.modded then fn(D) end
+    end)
+end
+
+-- Tells every machine whether to say its life, and gives a Médecin what is already known.
+local function sync_vitals()
+    local want = false
+    each_medic(function() want = true end)
+    if want or game.vitals then broadcast("VITALS", want and 1 or 0) end
+    game.vitals = want or nil
+    if not want or not C.get("medic_vitals") then return end
+    each_medic(function(D)
+        each_player(function(Q)
+            if Q ~= D and Q.life then tell(D, "HP", idx(Q), Q.life) end
+        end)
+    end)
+end
+
+local function on_vitals(P, life)
+    if not game.active or P.life == life then return end
+    P.life = life
+    if not C.get("medic_vitals") then return end
+    each_medic(function(D)
+        if D ~= P then tell(D, "HP", idx(P), life) end
+    end)
+end
+
+-- The target's own machine gives it its whole life back, the way the game heals.
+local function medic_done(P, T)
+    if not T.modded then
+        tell(P, "MSG", "HYPNO_IMMUNE")                 -- nothing used up
+        return
+    end
+    if T.life and T.life >= 100 then return tell(P, "MSG", "MEDIC_FULL") end      -- nothing used up
+    P.charges = P.charges - 1
+    tell(T, "HEAL")
+    tell(P, "MSG", "MEDIC_DONE", idx(T))
+    tell(T, "MSG", "MEDIC_YOU")
+    U.log("Médecin : %s soigne %s (vie connue avant : %s)", G.player_name(P.mec), G.player_name(T.mec), tostring(T.life))
+end
+
 local inherit                  -- Amnésique: defined with the roles, further down
 
 local function has_charge(P)
@@ -1095,6 +1145,7 @@ local AIM = {
                       return has_charge(P)
                   end },
     poisoner  = { range = "poisoner_range", done = poisoner_done, instant = true, ready = has_charge },
+    medic     = { range = "medic_range", done = medic_done, instant = true, ready = has_charge },
     gagger    = { range = "gagger_range", done = gagger_done, instant = true, ready = has_charge },
     -- not from a sleeping Rêveur: the item would be taken on a machine that is elsewhere
     thief     = { range = "thief_range", done = thief_done, skip_dreaming = true, instant = true, ready = has_charge },
@@ -1629,6 +1680,7 @@ local SPECS = {
     { id = "vampire",   prefix = "vampire",  camp = dissident, mod = "need", init = function(P) P.meals, P.fed = 0, nil end },
     { id = "werewolf",  prefix = "werewolf", camp = camp_of("werewolf_camp"), mod = "need",
       init = function(P) P.meals, P.fed = 0, nil end },
+    { id = "medic",     prefix = "medic",    camp = camp_of("medic_camp"), mod = "need", init = charges_from("medic_charges") },
 }
 local SPEC_BY_ID = {}
 for _, s in ipairs(SPECS) do SPEC_BY_ID[s.id] = s end
@@ -1660,6 +1712,7 @@ inherit = function(P, T)
     tell(P, "ROLE", P.role)
     if P.role == "sheriff" then U.try("shérif", sheriff_setup, P) end
     if P.role == "mole" then correct_spheres() end
+    if P.role == "medic" then U.try("médecin", sync_vitals) end
 end
 
 -- Liés: a bond between two players, with the mod if possible, whose camps follow the setting.
@@ -1824,6 +1877,7 @@ local function announce_roles()
         local Q = by_key(P.link)
         if Q then tell(P, "MSG", "LINKED_TO", idx(Q)) end
     end)
+    U.try("médecin", sync_vitals)
     -- The host is told what would otherwise go unnoticed: roles switched on that nobody got
     -- for lack of players, and players whose machine has not answered as having the mod.
     local mine = G.local_mec()
@@ -1853,7 +1907,7 @@ end
 
 local function on_game_start()
     game.active, game.started_at, game.announced, game.converted = true, U.now(), false, false
-    game.assigned, game.short, game.jester = false, 0, nil
+    game.assigned, game.short, game.jester, game.vitals = false, 0, nil, nil
     standins, game.guard_now = nil, nil        -- the game empties its list of employees at every start
     each_player(function(P) reset_for_game(P) end)
     recount_frozen()
@@ -2099,6 +2153,10 @@ local function status_of(P, now)
         v.range, v.reach = metres("amnesiac_range"), BODY_REACH / 100
     elseif r == "jester" then
         v.ends = C.get("jester_ends_game") and 1 or 0
+    elseif r == "medic" then
+        uses("medic_charges")
+        v.range = metres("medic_range")
+        v.vitals = C.get("medic_vitals") and 1 or 0
     elseif r == "vampire" then
         local meals = P.meals or 0
         v.meals, v.per, v.bonus = meals, C.get("vampire_hp"), meals * C.get("vampire_hp")
@@ -2219,6 +2277,11 @@ local function tick(now)
         if P.poison then U.try("poison", tick_poison, P, now) end
         if P.infected_at and now >= P.infected_at then U.try("conversion", convert, P) end
     end)
+    -- said again now and then: a machine recognised late, a setting changed during the game
+    if now - (game.vitals_at or 0) >= 10 then
+        game.vitals_at = now
+        U.try("médecin", sync_vitals)
+    end
     U.try("carte du shérif", tick_card, now)
     U.try("ange gardien", tick_guard, now)
     if game.announced then U.try("état des rôles", send_statuses, now) end
@@ -2293,6 +2356,14 @@ function Sv.install()
             return
         end
         U.try("antidote", on_drink, P, value, time)
+    end)
+    -- A number from a player's machine (N.report): the index of an "interaction" that is not
+    -- one. Real interactions have small indexes and are left alone.
+    hook(G.PATH_MEC, "Request Net Interaction", function(ctx, _, index)
+        local ok, v = pcall(function() return index:get() end)
+        if not ok or type(v) ~= "number" or v < N.REPORT or v > N.REPORT + N.REPORT_MAX then return end
+        local P = player(ctx:get(), false)
+        if P then U.try("vie des joueurs", on_vitals, P, v - N.REPORT) end
     end)
     hook(G.PATH_GM, "Select Game Roles", function() on_game_start() end)
     hook(G.PATH_GM, "End Game", function() on_game_end() end)

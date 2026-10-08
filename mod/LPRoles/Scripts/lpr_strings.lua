@@ -30,6 +30,7 @@ S.ROLE_NAME = {
     jester    = "BOUFFON",
     vampire   = "VAMPIRE",
     werewolf  = "LOUP-GAROU",
+    medic     = "MÉDECIN",
 }
 
 -- Shown one after the other when the role is announced (how the role works is on the tablet
@@ -58,6 +59,7 @@ S.ROLE_BANNER = {
     jester    = { "TU ES LE BOUFFON", "FAIS-TOI TUER PAR UN EMPLOYÉ" },
     vampire   = { "TU ES VAMPIRE" },
     werewolf  = { "TU ES LOUP-GAROU" },
+    medic     = { "TU ES MÉDECIN" },
 }
 
 -- How each role works, shown in the LPROLES tab and on the tablet. Every line is a whole
@@ -164,6 +166,10 @@ S.ROLE_HOWTO = {
     werewolf  = { "À moins de {range} m d'un *cadavre*, appuie sur {pkey} et *reste près de lui* {chold} s.",
                   "Tu le *dévores* : ta *vie* et ton *endurance* se régénèrent {per} % plus vite, jusqu'à la fin de la partie.",
                   "Chaque cadavre ne sert *qu'une fois*." },
+    medic     = { "?vitals Tu vois la *vie* de chaque joueur *au-dessus de sa tête*, en permanence.",
+                  AIMED,
+                  "Tu lui rends *toute sa vie* aussitôt.",
+                  "Viser un joueur qui a déjà toute sa vie ne dépense rien." },
     none      = { "Aucun rôle spécial pour cette partie." },
 }
 
@@ -363,6 +369,9 @@ S.VAMP_DONE          = "SANG BU : +%d PV MAX"
 S.VAMP_NOT_YOURS     = "CE N'EST PAS TA VICTIME"
 S.FEED_USED          = "CE CADAVRE A DÉJÀ SERVI"
 S.WOLF_DONE          = "DÉVORÉ : RÉGÉNÉRATION +%d %%"
+S.MEDIC_DONE         = "%s EST SOIGNÉ"
+S.MEDIC_FULL         = "IL A DÉJÀ TOUTE SA VIE"
+S.MEDIC_YOU          = "UN MÉDECIN T'A SOIGNÉ"
 S.HOST_SHORT         = "%d RÔLE(S) NON ATTRIBUÉ(S) : RÉGLAGE JOUEURS MINIMUM"
 S.HOST_NO_MOD        = "%d JOUEUR(S) SANS LE MOD"
 S.MOD_ACK            = "LPROLES ACTIF (HÔTE %s)"

@@ -211,10 +211,18 @@ C.DEFS = {
     { key = "werewolf_range",          group = "LOUP-GAROU", default = 250,   kind = "int",   min = 100, max = 600, step = 50, label = "Portée (cm)" },
     { key = "werewolf_hold",           group = "LOUP-GAROU", default = 3,     kind = "num",   min = 1, max = 10, step = 0.5, label = "Durée du geste (s)" },
 
+    { key = "medic_enabled",           group = "MÉDECIN", default = true,  kind = "bool",  label = "Médecin" },
+    { key = "medic_min_players",       group = "MÉDECIN", default = 4,     kind = "int",   min = 2, max = 16, step = 1, label = "Joueurs minimum" },
+    { key = "medic_camp",              group = "MÉDECIN", default = "employee", kind = "choice", choices = CAMPS, label = "Camp" },
+    { key = "medic_vitals",            group = "MÉDECIN", default = true,  kind = "bool",  label = "Voit la vie au-dessus des têtes" },
+    { key = "medic_charges",           group = "MÉDECIN", default = 2,     kind = "int",   min = 1, max = 5, step = 1, label = "Soins par partie" },
+    { key = "medic_range",             group = "MÉDECIN", default = 600,   kind = "int",   min = 200, max = 3000, step = 100, label = "Portée de visée (cm)" },
+    { key = "medic_item",              group = "MÉDECIN", default = "none", kind = "choice", choices = ITEMS, label = "Objet de recharge" },
+
     { key = "force_host_role",         group = "TEST", default = "none", kind = "choice",
       -- in the alphabetical order of the names shown (C.CHOICE_LABEL): easier to find among so many
       choices = { "none", "amnesiac", "angel", "gagger", "jester", "stowaway", "swapper", "echo", "poisoner",
-                  "fairy", "hypnotist", "linked", "werewolf", "martyr", "medium", "mimic", "cleaner", "infector",
+                  "fairy", "hypnotist", "linked", "werewolf", "martyr", "medic", "medium", "mimic", "cleaner", "infector",
                   "revenant", "dreamer", "sheriff", "mole", "tracker", "vampire", "thief" },
       label = "Rôle forcé pour l'hôte" },
     { key = "ignore_min_players",      group = "TEST", default = false, kind = "bool",  label = "Ignorer les joueurs minimum" },
@@ -242,6 +250,7 @@ C.CHOICE_LABEL = {
     hypnotist = "HYPNOTISEUR", mimic = "MÉTAMORPHE", cleaner = "NETTOYEUR", stowaway = "CLANDESTIN", linked = "LIÉ", swapper = "ÉCHANGEUR", martyr = "MARTYR", revenant = "REVENANT",
     poisoner = "EMPOISONNEUR", gagger = "BÂILLONNEUR", thief = "VOLEUR", echo = "ÉCHO", amnesiac = "AMNÉSIQUE", jester = "BOUFFON",
     vampire = "VAMPIRE", werewolf = "LOUP-GAROU",
+    medic = "MÉDECIN",
     -- plants by the code written on their jar, fish by the word the fish machine shows
     g3m = "PLANTE G3M", y8z = "PLANTE Y8Z", bo4 = "PLANTE BO4", wx2 = "PLANTE WX2", ru2 = "PLANTE RU2",
     salmon = "POISSON SALMON", tuna = "POISSON TUNA", cod = "POISSON COD", shrimp = "POISSON SHRIMP",

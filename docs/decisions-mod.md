@@ -1464,3 +1464,28 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
   3. Mettre la rangée dans le groupe de chaque rôle. Il faudrait d'abord aller au groupe : autant de clics.
 - **Contrôles :** syntaxe, noms du jeu, pages, bandeaux, essais de la mise à jour. **Jamais lancé en jeu ; pas de relecture indépendante.**
 - **Version :** 0.11.5. Pas installée : le jeu tournait.
+
+## D112 — Médecin (version 0.12.0)
+
+- **Demande :** « un nouveau rôle: Le médecin, il voit les hp des gens au dessus de leur tête en permanence, et il aurait un pouvoir qui lui permettrait de heal quelqu'un full vie instantanément ».
+- **La difficulté :** la vie d'un personnage n'est tenue que par la machine de son joueur (D103). Ni l'hôte ni le Médecin ne la connaissent. Et du joueur vers l'hôte, le mod n'avait qu'un canal de trois valeurs (les codes glissés dans l'état des yeux) : de quoi dire « j'appuie », pas un nombre.
+- **Faire passer un nombre du joueur à l'hôte, options :**
+  1. **L'appel du jeu `Request Net Interaction(acteur, indice, état)` avec un acteur qui n'est pas « interactif » (retenu).** Le jeu commence par vérifier que l'acteur sait répondre à une interaction ; avec l'état du joueur (`PlayerState`, un acteur que tout le monde connaît et qui ne répond à rien), il ne fait rien du tout. L'indice porte le nombre, au-dessus d'une base (1 296 000 000) qu'aucune vraie interaction n'atteint. L'hôte le lit dans une accroche. C'est un vrai canal de nombres, réutilisable.
+  2. Découper le nombre en plusieurs codes de l'état des yeux. Cinq envois par valeur, chacun faisant clignoter l'état des yeux répliqué : fragile et bavard.
+  3. `Net Set Mic(volume)` ou `Net Step Sound(vitesse)`. Ils ont un effet (bouche, bruit de pas) qu'il faudrait défaire aussitôt.
+  4. Estimer la vie chez l'hôte d'après les coups qu'il voit passer. Faux dès qu'une armure, une chute, un soin ou la régénération s'en mêlent.
+- **Qui dit quoi :** tant qu'un Médecin est dans la partie, l'hôte demande à toutes les machines de dire leur vie (à chaque changement, quatre fois par seconde au plus, et toutes les 3 s) ; il la retransmet aux seuls Médecins. La demande est répétée toutes les 10 s, avec tout ce qu'il sait, pour une machine reconnue en retard ou un Amnésique devenu Médecin.
+- **Afficher la vie au-dessus des têtes, options :**
+  1. **Un texte posé dans le monde, attaché au personnage, tourné vers le Médecin à chaque battement (retenu).** Un mur le cache, comme n'importe quel objet : le Médecin ne voit pas les gens à travers les cloisons, ce qui reste le privilège du Traqueur.
+  2. Un affichage à l'écran, placé par projection. Toujours lisible, mais visible à travers les murs : un second Traqueur permanent.
+  3. Dans la liste des joueurs. Pas « au-dessus de leur tête ».
+- **Le soin :** sur la machine du joueur soigné, par l'appel que la régénération du jeu fait elle-même (`Hit Health` avec une valeur négative), pour 100 points : barre de vie et effets suivent comme pour un soin du jeu.
+- **Choix de règles :**
+  - Employé par défaut, camp réglable.
+  - 2 soins par partie ; viser un joueur à la vie pleine ne dépense rien (l'hôte la connaît, puisque les machines la lui disent).
+  - Pas de soin sur soi : le pouvoir vise quelqu'un. À rouvrir si l'utilisateur le veut.
+  - La réserve du Vampire compte dans le nombre affiché.
+  - Réglage pour couper l'affichage et ne garder que le soin.
+- **Risques notés :** c'est la première fois que le mod pose un texte dans le monde (`TextRenderComponent`) et qu'il fait tourner un composant (`K2_SetWorldRotation`). Si le texte ne peut pas être créé, le journal le dit une fois et le soin reste. Si la rotation échoue, le nombre reste mais ne se lit que d'un côté.
+- **Contrôles :** syntaxe, noms du jeu (dont `Request Net Interaction`), pages, bandeaux, essais de la mise à jour. **Jamais lancé en jeu ; pas de relecture indépendante.**
+- **Version :** 0.12.0. Installée (jeu fermé), archive complète refaite. Pas publiée.

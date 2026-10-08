@@ -151,3 +151,7 @@ Pistes proposées mais non retenues : Détective (apprend si le joueur visé a f
 ## Rôles ajoutés en version 0.11.0 (8 octobre 2026)
 
 Idées de l'utilisateur : **Vampire** (dissident ; vampirise les cadavres de ses victimes, +10 PV max à chaque fois) et **Loup-garou** (employé ; dévore les cadavres, +10 % de régénération de vie et d'endurance à chaque fois). Décisions : `decisions-mod.md` (D103 et D104).
+
+## Rôle ajouté en version 0.12.0 (8 octobre 2026)
+
+Idée de l'utilisateur : **Médecin** (voit les PV de tout le monde au-dessus des têtes en permanence ; un pouvoir qui rend toute sa vie à quelqu'un, instantanément). Décision : `decisions-mod.md` (D112). Le « Médecin » de mes propositions de la 0.10.0 n'avait que le soin.

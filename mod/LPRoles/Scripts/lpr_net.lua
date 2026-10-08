@@ -6,6 +6,8 @@
 --                      The engine sends this enum on 3 bits, so only 0-7 cross the network;
 --                      the game uses 0-4, which leaves 5, 6 and 7. The real eye state is sent
 --                      again right after, so a host without the mod is left in a normal state.
+--                      It says "something happened", not how much: for a number, the game's
+--                      "Request Net Interaction" RPC is used (see N.report below).
 -- Every argument is text made of ASCII letters and integers.
 local U = require("lpr_util")
 local G = require("lpr_game")
@@ -55,6 +57,22 @@ function N.to_host(op)
     U.dbg("envoi -> hôte : op %d", op)
     U.tcall(mec, "Net Eye State", op)
     U.tcall(mec, "Net Eye State", eye)
+    return true
+end
+
+-- Player: send a number (0 to N.REPORT_MAX) to the host. The game's "interaction" RPC, given
+-- an actor that cannot be interacted with (the player's own PlayerState), does nothing at all;
+-- its index carries the number, above a base no real interaction reaches. The host reads it in
+-- a hook (lpr_server.lua). For what only a player's machine knows: its character's life.
+N.REPORT = 1296000000
+N.REPORT_MAX = 999
+
+function N.report(value)
+    local mec = G.local_mec()
+    local state = mec and U.get(mec, "PlayerState", nil)
+    if not U.valid(state) then return false end
+    local n = math.max(0, math.min(N.REPORT_MAX, math.floor(value + 0.5)))
+    U.tcall(mec, "Request Net Interaction", state, N.REPORT + n, G.item_state(0))
     return true
 end
 
