@@ -9,6 +9,8 @@ C.GROUPS = { "MES RÉGLAGES", "GÉNÉRAL", "SHÉRIF", "RECRUTEUR", "RÊVEUR", "F
              "MARTYR", "REVENANT", "TEST" }
 
 local CAMPS = { "any", "employee", "dissident" }
+-- What cures the Empoisonneur's poison: nothing, any fish, any jar holding a plant, or one item.
+local CURES = { "none", "fish", "plant", "g3m", "y8z", "bo4", "wx2", "ru2", "salmon", "tuna", "cod", "shrimp" }
 
 -- What a role can consume to get a use back: nothing, a jar holding one of the five plants, or
 -- one of the four fish of the fish machine. The position in this list, minus one, is the
@@ -160,9 +162,48 @@ C.DEFS = {
     { key = "revenant_charges",        group = "REVENANT", default = 1,     kind = "int",   min = 1, max = 3, step = 1, label = "Apparitions à chaque mort" },
     { key = "revenant_duration",       group = "REVENANT", default = 20,    kind = "num",   min = 1, max = 60, step = 1, label = "Durée d'une apparition (s)" },
 
+    { key = "poisoner_enabled",        group = "EMPOISONNEUR", default = true,  kind = "bool",  label = "Empoisonneur" },
+    { key = "poisoner_min_players",    group = "EMPOISONNEUR", default = 5,     kind = "int",   min = 3, max = 16, step = 1, label = "Joueurs minimum" },
+    { key = "poisoner_charges",        group = "EMPOISONNEUR", default = 1,     kind = "int",   min = 1, max = 3, step = 1, label = "Empoisonnements par partie" },
+    { key = "poisoner_range",          group = "EMPOISONNEUR", default = 400,   kind = "int",   min = 200, max = 2000, step = 100, label = "Portée de visée (cm)" },
+    { key = "poison_delay",            group = "EMPOISONNEUR", default = 60,    kind = "int",   min = 10, max = 300, step = 5, label = "Mort après (s)" },
+    { key = "poison_warning",          group = "EMPOISONNEUR", default = 40,    kind = "int",   min = 0, max = 300, step = 5, label = "Prévenu avant sa mort (s, 0 = non)" },
+    { key = "poison_cure",             group = "EMPOISONNEUR", default = "fish", kind = "choice", choices = CURES, label = "Antidote" },
+    { key = "poisoner_item",           group = "EMPOISONNEUR", default = "none", kind = "choice", choices = ITEMS, label = "Objet de recharge" },
+
+    { key = "gagger_enabled",          group = "BÂILLONNEUR", default = true,  kind = "bool",  label = "Bâillonneur" },
+    { key = "gagger_min_players",      group = "BÂILLONNEUR", default = 5,     kind = "int",   min = 3, max = 16, step = 1, label = "Joueurs minimum" },
+    { key = "gagger_charges",          group = "BÂILLONNEUR", default = 2,     kind = "int",   min = 1, max = 5, step = 1, label = "Bâillons par partie" },
+    { key = "gag_duration",            group = "BÂILLONNEUR", default = 20,    kind = "num",   min = 5, max = 60, step = 1, label = "Durée d'un bâillon (s)" },
+    { key = "gagger_range",            group = "BÂILLONNEUR", default = 1000,  kind = "int",   min = 200, max = 3000, step = 100, label = "Portée de visée (cm)" },
+    { key = "gagger_item",             group = "BÂILLONNEUR", default = "none", kind = "choice", choices = ITEMS, label = "Objet de recharge" },
+
+    { key = "thief_enabled",           group = "VOLEUR", default = true,  kind = "bool",  label = "Voleur" },
+    { key = "thief_min_players",       group = "VOLEUR", default = 4,     kind = "int",   min = 2, max = 16, step = 1, label = "Joueurs minimum" },
+    { key = "thief_camp",              group = "VOLEUR", default = "any", kind = "choice", choices = CAMPS, label = "Camp" },
+    { key = "thief_charges",           group = "VOLEUR", default = 2,     kind = "int",   min = 1, max = 5, step = 1, label = "Vols par partie" },
+    { key = "thief_range",             group = "VOLEUR", default = 250,   kind = "int",   min = 100, max = 600, step = 50, label = "Portée (cm)" },
+    { key = "thief_item",              group = "VOLEUR", default = "none", kind = "choice", choices = ITEMS, label = "Objet de recharge" },
+
+    { key = "echo_enabled",            group = "ÉCHO", default = true,  kind = "bool",  label = "Écho" },
+    { key = "echo_min_players",        group = "ÉCHO", default = 4,     kind = "int",   min = 2, max = 16, step = 1, label = "Joueurs minimum" },
+    { key = "echo_camp",               group = "ÉCHO", default = "any", kind = "choice", choices = CAMPS, label = "Camp" },
+    { key = "echo_charges",            group = "ÉCHO", default = 2,     kind = "int",   min = 1, max = 5, step = 1, label = "Retours par partie" },
+    { key = "echo_seconds",            group = "ÉCHO", default = 5,     kind = "int",   min = 2, max = 15, step = 1, label = "Retour en arrière de (s)" },
+    { key = "echo_item",               group = "ÉCHO", default = "none", kind = "choice", choices = ITEMS, label = "Objet de recharge" },
+
+    { key = "amnesiac_enabled",        group = "AMNÉSIQUE", default = true,  kind = "bool",  label = "Amnésique" },
+    { key = "amnesiac_min_players",    group = "AMNÉSIQUE", default = 6,     kind = "int",   min = 3, max = 16, step = 1, label = "Joueurs minimum" },
+    { key = "amnesiac_range",          group = "AMNÉSIQUE", default = 1000,  kind = "int",   min = 300, max = 3000, step = 100, label = "Portée de visée (cm)" },
+
+    { key = "jester_enabled",          group = "BOUFFON", default = true,  kind = "bool",  label = "Bouffon" },
+    { key = "jester_min_players",      group = "BOUFFON", default = 6,     kind = "int",   min = 4, max = 16, step = 1, label = "Joueurs minimum" },
+    { key = "jester_ends_game",        group = "BOUFFON", default = true,  kind = "bool",  label = "Sa victoire termine la partie" },
+
     { key = "force_host_role",         group = "TEST", default = "none", kind = "choice",
       choices = { "none", "sheriff", "infector", "dreamer", "fairy", "medium", "angel", "mole", "tracker",
-                  "hypnotist", "mimic", "cleaner", "stowaway", "linked", "swapper", "martyr", "revenant" },
+                  "hypnotist", "mimic", "cleaner", "stowaway", "linked", "swapper", "martyr", "revenant",
+                  "poisoner", "gagger", "thief", "echo", "amnesiac", "jester" },
       label = "Rôle forcé pour l'hôte" },
     { key = "ignore_min_players",      group = "TEST", default = false, kind = "bool",  label = "Ignorer les joueurs minimum" },
     { key = "debug",                   group = "TEST", default = false, kind = "bool",  label = "Journal détaillé" },
@@ -176,6 +217,9 @@ C.CHOICE_LABEL = {
     none = "AUCUN", sheriff = "SHÉRIF", infector = "RECRUTEUR", dreamer = "RÊVEUR", fairy = "FÉE",
     medium = "MÉDIUM", angel = "ANGE GARDIEN", mole = "TAUPE", tracker = "TRAQUEUR",
     hypnotist = "HYPNOTISEUR", mimic = "MÉTAMORPHE", cleaner = "NETTOYEUR", stowaway = "CLANDESTIN", linked = "LIÉ", swapper = "ÉCHANGEUR", martyr = "MARTYR", revenant = "REVENANT",
+    poisoner = "EMPOISONNEUR", gagger = "BÂILLONNEUR", thief = "VOLEUR", echo = "ÉCHO", amnesiac = "AMNÉSIQUE", jester = "BOUFFON",
+    -- antidotes that are not one item
+    fish = "UN POISSON", plant = "UNE PLANTE",
     -- plants by the code written on their jar, fish by the word the fish machine shows
     g3m = "PLANTE G3M", y8z = "PLANTE Y8Z", bo4 = "PLANTE BO4", wx2 = "PLANTE WX2", ru2 = "PLANTE RU2",
     salmon = "POISSON SALMON", tuna = "POISSON TUNA", cod = "POISSON COD", shrimp = "POISSON SHRIMP",
@@ -214,6 +258,14 @@ function C.item_code(value)
         if name == value then return i - 1 end
     end
     return 0
+end
+
+-- Number of an antidote setting's value: 0 none, 1-9 one item, then any fish, any plant.
+C.CURE_FISH, C.CURE_PLANT = 10, 11
+function C.cure_code(value)
+    if value == "fish" then return C.CURE_FISH end
+    if value == "plant" then return C.CURE_PLANT end
+    return C.item_code(value)
 end
 
 local function clamp(def, n)

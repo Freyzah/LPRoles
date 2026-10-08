@@ -36,12 +36,14 @@ def block(name):
 # sentences shared by several roles: local NAME = "..." above the table
 SHARED = {m.group(1): lua_str(m.group(2)) for m in re.finditer(r'^local ([A-Z_]+) = ' + STR, src, re.M)}
 HOWTO = {}
-for m in re.finditer(r'(\w+)\s*=\s*\{(.*?)\},', block('S.ROLE_HOWTO'), re.S):
+# an entry ends with "}," at the end of a line (a sentence may hold "{pkey},")
+for m in re.finditer(r'(\w+)\s*=\s*\{(.*?)\},[ \t]*(?:--[^\n]*)?\n', block('S.ROLE_HOWTO'), re.S):
     HOWTO[m.group(1)] = [lua_str(r[1:-1]) if r.startswith('"') else SHARED[r]
                          for r in re.findall(r'"(?:[^"\\]|\\.)*"|\b[A-Z_]+\b', m.group(2))]
 def kv(name): return {k: lua_str(v) for k, v in re.findall(r'(\w+)\s*=\s*' + STR, block(name))}
 RECH, STAT = kv('S.RECHARGE'), kv('S.STATUS')
 ITEM = {int(k): lua_str(v) for k, v in re.findall(r'\[(\d+)\]\s*=\s*' + STR, block('S.ITEM_NAME'))}
+CURE = {**ITEM, **{int(k): lua_str(v) for k, v in re.findall(r'\[(\d+)\]\s*=\s*' + STR, block('S.CURE_NAME'))}}
 LINK = lua_str(re.search(r'S\.LINK_LINE = ' + STR, src).group(1))
 LINK_OVER = lua_str(re.search(r'S\.LINK_OVER = ' + STR, src).group(1))
 TENTHS = set(re.findall(r'(\w+) = true', re.search(r'RT\.TENTHS = \{(.*?)\}', rt, re.S).group(1)))
@@ -76,6 +78,7 @@ def fill(t, v, key=KEY, pkey=PKEY):
     def rep(m):
         k = m.group(1)
         if k == 'item': return ITEM.get(v.get(k), '?')
+        if k == 'cure': return CURE.get(v.get(k), '?')
         if k == 'key': out = key
         elif k == 'pkey': out = pkey
         elif v.get(k) is None: out = '?'
@@ -116,6 +119,10 @@ def status_line(role, v):
     elif role == 'revenant':
         if isset(v, 'act'): return fill(st['spirit_on'], v)
         return fill(st['spirit_left'] if isset(v, 'dead') else st['spirit_later'], v)
+    elif role == 'poisoner':
+        if isset(v, 'act'): return fill(st['poison_on'] + st['uses_too'], v)
+    elif role == 'amnesiac': return st['amnesiac']
+    elif role == 'jester': return st['jester']
     if v.get('m') is not None: return fill(st['uses'], v)
     return None
 
@@ -206,7 +213,9 @@ def wrap(line, width, indent=''):
 # ---------------------------------------------------------------- lpr_server.lua, status_of
 ITEM_KEY = {'dreamer': 'dreamer_item', 'fairy': 'fairy_item', 'medium': 'medium_item', 'tracker': 'tracker_item',
             'hypnotist': 'hypno_item', 'mimic': 'mimic_item', 'cleaner': 'cleaner_item', 'stowaway': 'stowaway_item',
-            'swapper': 'swapper_item', 'infector': 'infector_item'}
+            'swapper': 'swapper_item', 'infector': 'infector_item', 'poisoner': 'poisoner_item',
+            'gagger': 'gagger_item', 'thief': 'thief_item', 'echo': 'echo_item'}
+CURE_CODE = {'none': 0, 'fish': 10, 'plant': 11}
 
 def status_of(role, C, P):
     """What the player's machine has after the host's message (integers, tenths, and back)."""
@@ -254,6 +263,22 @@ def status_of(role, C, P):
     elif role == 'revenant':
         uses('revenant_charges'); v.update(dur=g('revenant_duration'), dead=int(bool(P.get('dead'))), act=P.get('act'))
         if not v['dead']: v['n'] = v['m']
+    elif role == 'poisoner':
+        uses('poisoner_charges')
+        delay, warning = g('poison_delay'), min(g('poison_warning'), g('poison_delay'))
+        v.update(range=metres('poisoner_range'), delay=delay, tgt=P.get('tgt'), act=P.get('act'),
+                 cure=CURE_CODE.get(g('poison_cure'), ITEMS.index(g('poison_cure')) if g('poison_cure') in ITEMS else 0))
+        v['never' if warning <= 0 else ('wnow' if warning >= delay else 'warn')] = 1 if warning <= 0 or warning >= delay else warning
+    elif role == 'gagger':
+        uses('gagger_charges'); v.update(dur=g('gag_duration'), range=metres('gagger_range'))
+    elif role == 'thief':
+        uses('thief_charges'); v.update(range=metres('thief_range'))
+    elif role == 'echo':
+        uses('echo_charges'); v.update(back=g('echo_seconds'))
+    elif role == 'amnesiac':
+        v.update(range=metres('amnesiac_range'), reach=BODY_REACH / 100)
+    elif role == 'jester':
+        v.update(ends=int(g('jester_ends_game')))
     code = ITEMS.index(g(ITEM_KEY[role])) if role in ITEM_KEY else 0
     if code:
         v['item'] = code
@@ -269,14 +294,16 @@ def status_of(role, C, P):
 BODY_REACH = float(re.search(r'local BODY_REACH = (\d+)', server).group(1))
 
 ROLES = ['sheriff', 'infector', 'dreamer', 'fairy', 'medium', 'angel', 'mole', 'tracker', 'hypnotist', 'mimic',
-         'cleaner', 'stowaway', 'swapper', 'martyr', 'revenant']
+         'cleaner', 'stowaway', 'swapper', 'martyr', 'revenant', 'poisoner', 'gagger', 'thief', 'echo',
+         'amnesiac', 'jester']
 
 def states_of(role):
     out = [('au départ', {})]
     if role in ('medium', 'tracker', 'mimic', 'stowaway'):
         out.append(('effet en cours', {'act': 8, 'charges': 1, 'tgt': 2}))
         out.append(('plus d\'utilisation', {'charges': 0}))
-    if role in ('hypnotist', 'cleaner', 'swapper'): out.append(('plus d\'utilisation', {'charges': 0}))
+    if role in ('hypnotist', 'cleaner', 'swapper', 'gagger', 'thief', 'echo'): out.append(('plus d\'utilisation', {'charges': 0}))
+    if role == 'poisoner': out += [('poison en cours', {'act': 42, 'tgt': 2, 'charges': 0}), ('plus d\'utilisation', {'charges': 0})]
     if role in ('dreamer', 'fairy'): out += [('effet en cours', {'act': 8, 'charges': 0}), ('charge vide', {'charges': 0})]
     if role == 'revenant': out += [('mort', {'dead': 1}), ('mort, se manifeste', {'dead': 1, 'act': 5, 'charges': 0}),
                                    ('mort, apparition utilisée', {'dead': 1, 'charges': 0}),
@@ -341,6 +368,14 @@ def main():
         ls = lines('fairy', status_of('fairy', c, {}))
         show('FAIRY, autres réglages : ' + name, ls)
         check('fairy', ls, problems, 'fairy (%s)' % name)
+        pages += 1
+    for role, name, c in [('poisoner', 'jamais prévenu, pas d\'antidote', dict(C, poison_warning=0, poison_cure='none')),
+                          ('poisoner', 'prévenu aussitôt, antidote : une plante', dict(C, poison_warning=300, poison_cure='plant')),
+                          ('poisoner', 'antidote : un objet précis, avec recharge', dict(C, poison_cure='cod', poisoner_item='tuna')),
+                          ('jester', 'sa victoire ne termine pas la partie', dict(C, jester_ends_game=False))]:
+        ls = lines(role, status_of(role, c, {}))
+        show('%s, autres réglages : %s' % (role.upper(), name), ls)
+        check(role, ls, problems, '%s (%s)' % (role, name))
         pages += 1
     ls = lines('mimic', status_of('mimic', dict(C, mimic_keep_list_color=False), {}))
     show('MIMIC, autres réglages : couleur de la liste non gardée', ls)

@@ -295,6 +295,29 @@ function G.give_item_quietly(mec, asset_path)
     return nil
 end
 
+-- Host: the item in a player's hand as the game holds it: its data asset, its state value
+-- and its state time (nil when the hand is empty).
+function G.hand_item_data(mec)
+    local item = U.get(mec, "Net Hand ItemNew", nil)
+    if item == nil then return nil end
+    local ok, data, value, time = pcall(function()
+        local d = item[G.F_ITEM_DATA]
+        if not U.valid(d) then return nil end
+        local st = item[G.F_ITEM_STATE]
+        return d, st[G.F_STATE_VALUE], st[G.F_STATE_TIME]
+    end)
+    if not ok or not data then return nil end
+    return data, value or 0, time or 0
+end
+
+-- Host: puts an item in a player's empty hand, in the given state (the two calls the game
+-- makes on pickup).
+function G.put_in_hand(mec, data, value, time)
+    local state = { [G.F_STATE_VALUE] = value or 0, [G.F_STATE_TIME] = time or 0 }
+    U.tcall(mec, "Net Take Item", data, state, U.vec())
+    U.tcall(mec, "Take Item", data, state, U.vec())
+end
+
 -- ---------------------------------------------------------------- items lying in the building
 -- An item on the ground or on a piece of furniture is a WorldItem_C actor; its "Data" says
 -- what it is. The actor is destroyed when somebody picks the item up.

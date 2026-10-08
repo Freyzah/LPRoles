@@ -139,3 +139,11 @@ Installer UE4SS et FModel, puis lire `GM`, `GS`, `PC`, `Mec` et le fantôme pour
 Retenus par l'utilisateur parmi mes propositions : **Médium**, **Ange gardien**, **Taupe**, **Traqueur**, **Hypnotiseur**, **Liés**, **Échangeur**, **Martyr**, **Revenant**. L'Infecteur s'appelle désormais **Recruteur**. Fonctionnement détaillé : `LISEZ-MOI-LPRoles.md` ; décisions : `decisions-mod.md` (D31 à D36).
 
 Pistes proposées mais non retenues : Légiste (camp du tueur près d'un cadavre), Réanimateur (ranimer un mort une fois).
+
+---
+
+## Rôles ajoutés en version 0.10.0 (8 octobre 2026)
+
+Retenus par l'utilisateur parmi mes dix propositions : **Empoisonneur**, **Bâillonneur**, **Voleur**, **Écho**, **Amnésique**, **Bouffon**. Fonctionnement détaillé : `LISEZ-MOI-LPRoles.md` ; décisions : `decisions-mod.md` (D96 à D102).
+
+Pistes proposées mais non retenues : Détective (apprend si le joueur visé a frappé quelqu'un dans la dernière minute), Vigile (balise invisible qui prévient quand quelqu'un passe), Vengeur (à sa mort, son tueur meurt aussi, ou est montré à tous), Médecin (rend sa vie à un joueur visé).

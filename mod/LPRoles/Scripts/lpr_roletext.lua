@@ -33,6 +33,8 @@ local function fill(template, v)
         local out
         if k == "item" then
             return S.ITEM_NAME[v[k]] or "?"
+        elseif k == "cure" then
+            return S.CURE_NAME[v[k]] or "?"
         elseif k == "key" then
             out = C.format("use_key")
         elseif k == "pkey" then
@@ -103,6 +105,12 @@ status_line = function(role, v)
     elseif role == "revenant" then
         if set(v, "act") then return fill(st.spirit_on, v) end
         return fill(set(v, "dead") and st.spirit_left or st.spirit_later, v)
+    elseif role == "poisoner" then
+        if set(v, "act") then return fill(st.poison_on .. st.uses_too, v) end
+    elseif role == "amnesiac" then
+        return st.amnesiac
+    elseif role == "jester" then
+        return st.jester
     end
     if v.m then return fill(st.uses, v) end
     return nil

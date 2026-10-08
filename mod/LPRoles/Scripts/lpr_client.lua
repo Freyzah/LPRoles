@@ -36,6 +36,8 @@ local skin_backup = nil      -- Métamorphe: this player's own appearance
 local disguised = false
 local disguise_gen = 0       -- so that an old "stop protecting" timer cannot end a newer disguise
 local list_colors = {}       -- Métamorphe: player index -> { mec, color }, the colour its row of the player list keeps
+local poisoned = false       -- the host said so: the "consume" key may then serve for the antidote
+local gag = nil              -- Bâillonneur: this player's microphone is held off: { ends, next }
 
 -- ---------------------------------------------------------------- notifications
 local function say(id, color, ...)
@@ -729,6 +731,49 @@ local function on_card(on, x, y, z, walls)
         through and "vue à travers les murs" or "sans traverser les murs")
 end
 
+-- ---------------------------------------------------------------- Bâillonneur: the microphone held off
+-- The game only sends the voice of a character whose "Can Talk" is true (a sleeping Rêveur's
+-- is switched off the same way, see enter_ghost): held false for as long as the host says.
+local function mic(mec, on)
+    U.set(mec, "Can Talk", on)
+    U.tcall(mec, "Apply Mic State")
+end
+
+local function end_gag(quiet)
+    if not gag then return end
+    gag = nil
+    local mec = G.local_mec()
+    if ghost then
+        ghost.can_talk = true                  -- given back when the flight or the dream ends
+    elseif mec then
+        mic(mec, true)
+    end
+    if not quiet then say("GAG_END", "info") end
+end
+
+local function on_gag(tenths)
+    local secs = (tonumber(tenths) or 0) / 10
+    if secs <= 0 then return end_gag(true) end
+    gag = { ends = U.now() + secs, next = 0 }
+    say("GAG_YOU", "bad", math.floor(secs + 0.5))
+end
+
+-- The game switches the microphone back on by itself now and then (a new character, a key):
+-- looked at twice a second.
+local function tick_gag(now)
+    if not gag then return end
+    if now >= gag.ends then return end_gag(false) end
+    if now < gag.next then return end
+    gag.next = now + 0.5
+    local mec = G.local_mec()
+    if mec and not ghost and U.get(mec, "Can Talk", true) ~= false then mic(mec, false) end
+end
+
+-- Empoisonneur: the host says when this player knows it is poisoned, and when that is over.
+local function on_poison(on)
+    poisoned = (on == "1")
+end
+
 -- End of the game: stop everything that may still be running.
 local function on_end()
     G.clear_messages()                         -- banners still waiting belong to the finished game
@@ -751,6 +796,8 @@ local function on_end()
     card_off()
     end_hiding()
     restore_bodies()
+    end_gag(true)
+    poisoned = false
     -- no role any more until the next game
     my_role, my_status, safe_idx = nil, nil, nil
     for _, fn in ipairs(role_listeners) do U.try("rôle", fn, nil) end
@@ -923,6 +970,15 @@ local MSG = {
     SPIRIT_READY = { "role", "pkey" }, SPIRIT_START = { "good", sfx = OK },
     HOST_SHORT = { "warn", "num" }, HOST_NO_MOD = { "warn", "num" },
     CARD_SHOWN = { "role" }, CARD_TAKEN = { "info" }, CARD_NONE = { "warn" },
+    POISON_DONE = { "good", "name", sfx = OK }, POISON_ALREADY = { "warn", sfx = FAIL },
+    POISON_YOU = { "bad", "num" }, POISON_CURE = { "info", "cure" }, POISON_CURED = { "good" },
+    POISON_LOST = { "warn" }, POISON_DEAD = { "bad" },
+    GAG_DONE = { "good", "name", sfx = OK },
+    STEAL_DONE = { "good", "name", sfx = OK }, STEAL_NOTHING = { "warn", sfx = FAIL },
+    STEAL_HANDS_FULL = { "warn", sfx = FAIL }, STEAL_FAILED = { "warn", sfx = FAIL }, STEAL_YOU = { "bad" },
+    ECHO_DONE = { "good", sfx = OK }, ECHO_NOTHING = { "warn", sfx = FAIL },
+    AMNESIA_DONE = { "good", "name", sfx = OK }, AMNESIA_NO_ROLE = { "warn", sfx = FAIL }, AMNESIA_DISSIDENT = { "bad" },
+    JESTER_WIN = { "role", "name" }, JESTER_LOST = { "bad" },
 }
 
 local function on_msg(id, a)
@@ -943,6 +999,8 @@ local function on_msg(id, a)
         arg = mec and G.player_name(mec) or "?"
     elseif spec[2] == "pkey" then
         arg = C.format("power_key")
+    elseif spec[2] == "cure" then
+        arg = S.CURE_SHORT[tonumber(a) or 0] or "?"
     end
     if arg ~= nil then say(id, spec[1], arg) else say(id, spec[1]) end
 end
@@ -1397,14 +1455,15 @@ local function send_hello()
 end
 
 -- ---------------------------------------------------------------- "consume" key
--- Does something only for a role that has an item to get a use back with: the host says so in
--- the role's status ("item"), and decides what actually happens.
+-- Does something only for a role that has an item to get a use back with (the host says so in
+-- the role's status, "item") or for a player who knows it is poisoned (the antidote); the host
+-- decides what actually happens.
 local last_use = 0
 
 local function use_item()
     local now = U.now()
     if now - last_use < 0.5 or ghost or hiding then return end
-    if not (my_role and my_status and (my_status.item or 0) ~= 0) then return end
+    if not (poisoned or (my_role and my_status and (my_status.item or 0) ~= 0)) then return end
     local mec = G.local_mec()
     if not mec or U.get(mec, "On Tablet", false) then return end
     -- as for the game's own use of an item: not while the hands are busy (hand and bag being
@@ -1420,7 +1479,8 @@ end
 -- Starts the role's power (the host decides what happens), for the roles that have one to
 -- start. The Rêveur's stays on the eyes: for that role the key only says so.
 local POWER_ROLES = { infector = true, fairy = true, medium = true, angel = true, tracker = true, hypnotist = true,
-                      mimic = true, cleaner = true, stowaway = true, swapper = true, revenant = true }
+                      mimic = true, cleaner = true, stowaway = true, swapper = true, revenant = true,
+                      poisoner = true, gagger = true, thief = true, echo = true, amnesiac = true }
 local last_power = 0
 
 local function use_power()
@@ -1517,6 +1577,8 @@ function Cl.install()
     N.on("CARD", on_card)
     N.on("SFX", function(kind) power_sfx(kind) end)
     N.on("SWAPFX", on_swap_fx)
+    N.on("GAG", on_gag)
+    N.on("POISON", on_poison)
     N.on("HELLO", function()
         G.clear_messages()                     -- a new game: nothing left to show of the one before
         U.log("L'hôte demande qui a le mod (début de partie)")
@@ -1569,6 +1631,7 @@ function Cl.install()
     U.every_tick("cachette", tick_hiding)
     U.every_tick("corps nettoyés", tick_cleaned)
     U.every_tick("hypnose", tick_hypno)
+    U.every_tick("bâillon", tick_gag)
     -- Tell the host we have the mod: once per character, every 2 s until the host has answered
     -- (ten times at most: the host only answers the first time it hears of a player), then
     -- again now and then in case the host has changed.

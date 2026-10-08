@@ -1242,3 +1242,79 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
   - L'archive construite par GitHub n'a pas la même empreinte que celle construite ici (compression différente d'un système à l'autre) ; son contenu, lui, est identique. Sans importance : `version.txt` est écrit à côté de l'archive qu'il décrit.
   - 0.9.0 installée dans le jeu (fermé), archive complète `LPRoles-0.9.0-pour-les-joueurs.zip` refaite, celle de la 0.8.15 supprimée. Reste à voir en jeu : le premier lancement.
   - **Premier lancement en jeu (utilisateur, 8 octobre, 18:04) :** `os.execute` fonctionne depuis le jeu, `update.ps1` a répondu « OK 0.9.0 », le journal note « rien de nouveau (4.8 s) », aucune erreur. La vérification est six fois plus lente que hors du jeu (le jeu charge en même temps), mais elle ne retarde rien : UE4SS démarre ses mods pendant que le jeu charge, et aux lancements précédents le mod attendait déjà 4 à 5 s que le jeu ait chargé ses classes. Du démarrage du mod à la pose des accroches : 5,2 s cette fois, contre 4 à 5 s avant. Pas encore vu : une vraie mise à jour faite depuis le jeu, L'utilisateur n'a vu aucune fenêtre de commande au démarrage.
+
+## D96 — Six nouveaux rôles : cadre commun et rôles neutres (version 0.10.0)
+
+- **Demande :** « ajoute l'empoisonneur, le bailloneur, le voleur, l'écho, l'amnésique et le bouffon », retenus parmi dix propositions (les quatre autres sont notés dans `idees-mod-lockdown-protocol.md`).
+- **Acquis juste avant :** l'utilisateur n'a vu aucune fenêtre de commande au lancement du jeu avec la mise à jour automatique.
+- **Cadre :** chaque rôle suit le moule des précédents : un groupe de réglages (actif, joueurs minimum, camp quand il est libre, utilisations, portée, objet de recharge), une page de tablette, la touche de pouvoir. Les quatre pouvoirs visés agissent aussitôt, comme ceux de D83. Aucun message nouveau du joueur vers l'hôte : la touche de pouvoir et la touche de consommation suffisent.
+- **Objet de recharge :** « aucun » par défaut pour les quatre rôles qui comptent leurs utilisations. Les neuf objets sont déjà pris par d'autres rôles ; l'hôte peut en attribuer un.
+- **Rôles neutres : comment les faire tenir dans un jeu à deux camps.**
+  1. **Le rôle neutre est donné à un employé, que le jeu continue de compter comme tel (retenu).** Aucune manipulation des listes du jeu. Conséquence assumée et écrite sur la page du rôle : la partie ne finit par « tous les employés sont morts » qu'une fois les neutres morts aussi.
+  2. Retirer les neutres de la liste des employés du jeu. Plus juste (un neutre ne retarderait pas la victoire des dissidents), mais c'est la manipulation de liste de D76, jamais confirmée en jeu : je n'empile pas un second mécanisme dessus.
+  3. Les tirer dans les deux camps. Un Bouffon dissident n'a pas de sens : ses propres alliés devraient l'épargner.
+- **Contrôles :** syntaxe et portées, noms du jeu (aucun nom nouveau : tout repose sur des appels déjà utilisés par le mod), pages des rôles (1314 pages, 7 lignes au plus sous l'état, avec les touches « SOURIS 4/5 » aussi), essais de la mise à jour. **Aucun des six rôles n'a été lancé en jeu ; pas de relecture indépendante.**
+- **Publication :** la version est installée chez l'utilisateur mais **pas étiquetée** : avec la mise à jour automatique, une étiquette l'enverrait à tous ses amis. Elle sera publiée à sa demande.
+
+## D97 — Empoisonneur (version 0.10.0)
+
+- **Pouvoir :** le joueur visé (4 m) meurt 60 s plus tard, de la main de l'hôte (l'appel `Death` déjà utilisé pour les Liés, redemandé une fois si le joueur était encore fantôme).
+- **Contre :** la victime est prévenue 40 s avant sa mort et peut consommer un antidote avec la touche de consommation.
+- **Options pour l'antidote :**
+  1. **N'importe quel poisson par défaut, réglable (retenu).** Choix du réglage : aucun, un poisson, une plante en bocal, ou l'un des neuf objets. Un poisson quelconque se trouve en 40 s ; un objet précis demande de la chance.
+  2. Un objet précis par défaut. Trop dépendant de ce que la machine à poissons veut bien donner.
+  3. Pas d'antidote. Un mort sans rien pouvoir y faire : frustrant, et je l'avais annoncé avec un contre.
+- **Avertissement :** réglé en secondes avant la mort plutôt qu'après l'empoisonnement, parce que c'est le temps laissé à la victime qui compte. 0 = jamais ; au moins égal au délai = aussitôt.
+- **Consommation :** la même mécanique que la recharge (poisson retiré par l'hôte, bocal vidé par la machine du joueur puis vu par l'hôte). L'antidote passe avant la recharge ; si l'objet en main n'est pas l'antidote et que le rôle du joueur a un objet de recharge, c'est la recharge qui est tentée.
+- **Pas de tueur :** la mort ne passe pas par l'accroche des coups, donc ni Martyr, ni Bouffon, ni rien qui désigne l'Empoisonneur.
+- **Un seul poison par victime :** viser un joueur déjà empoisonné ne dépense rien.
+
+## D98 — Bâillonneur (version 0.10.0)
+
+- **Pouvoir :** le micro du joueur visé (10 m) est coupé 20 s.
+- **Options :**
+  1. **La machine de la victime coupe son propre micro (retenu).** `Can Talk = false` puis `Apply Mic State`, exactement ce que le mod fait depuis la 0.1 pour un Rêveur endormi. Un seul endroit, l'icône de micro du jeu suit, et la voix n'est même pas envoyée. Le jeu remet parfois `Can Talk` à vrai (nouveau personnage) : la machine le revérifie deux fois par seconde.
+  2. Chaque autre machine rend la victime muette (`MuteRemoteTalker`). Sept endroits au lieu d'un, et le jeu refait ses propres choix de muet à chaque mort.
+  3. Le drapeau « Mute Pause » du jeu. Il appartient au joueur (son propre réglage de muet) : je n'y touche pas.
+- **La victime est prévenue :** elle le verrait de toute façon à son icône de micro.
+
+## D99 — Voleur (version 0.10.0)
+
+- **Pouvoir :** prend l'objet tenu en main par un joueur à 2,5 m au plus.
+- **Mécanisme :** l'hôte lit l'objet de la victime (objet, valeur d'état, temps d'état), le retire de sa main par les deux appels du jeu déjà employés pour le poisson consommé (`Let Item`, `Net Let Item`), vérifie que la main est vide, puis le met dans la main du Voleur par les deux appels du ramassage (`Net Take Item`, `Take Item`), dans le même état.
+- **Options :**
+  1. **Vrai vol, main vers main (retenu).**
+  2. Faire tomber l'objet (désarmer). Plus simple, mais ce n'est pas un vol, et l'objet au sol profite à n'importe qui.
+  3. Voler aussi le sac. Le sac ne se voit pas : le vol deviendrait un tirage au sort.
+- **Garde-fous :** main du Voleur vide, victime qui tient quelque chose, aucun des deux en train d'échanger main et sac ; rien n'est dépensé si le vol ne se fait pas. Pas sur un Rêveur endormi (l'appel se ferait sur une machine en mode fantôme).
+
+## D100 — Écho (version 0.10.0)
+
+- **Pouvoir :** retour à l'endroit occupé 5 s plus tôt.
+- **Mécanisme :** l'hôte note la position de chaque Écho quatre fois par seconde (il connaît déjà la position de tous) et garde les 6 dernières secondes ; le retour se fait par `Request TP`, comme pour l'Échangeur. Rien à faire côté joueur.
+- **Options :**
+  1. **Le trajet repart de zéro après un retour (retenu).** Sinon un second appui renverrait avant le premier saut, ce qui se lit mal.
+  2. Trajet continu. Permettrait de remonter de 10 s en deux appuis : c'est un autre pouvoir.
+- **Trajet trop court** (moins d'une seconde) : refus, rien n'est dépensé.
+
+## D101 — Amnésique (version 0.10.0)
+
+- **Pouvoir :** prend le rôle et le camp d'un mort, visé (10 m) ou tout proche (2,5 m), comme le Métamorphe sur un cadavre.
+- **Options :**
+  1. **Un mort sans rôle ne donne rien, et rien n'est perdu (retenu).** L'Amnésique apprend seulement que ce mort n'avait pas de rôle et peut en essayer un autre.
+  2. Prendre le seul camp d'un mort sans rôle. Il perdrait son statut pour devenir un joueur ordinaire : décevant.
+- **Camp :** si le mort était dissident, l'Amnésique est converti par la fonction du Recruteur (rôle du jeu, listes, sphères), avec son propre message.
+- **Rôle :** attribué comme en début de partie (utilisations pleines). Pour un Shérif, la personne sûre et la carte sont préparées de nouveau ; pour une Taupe, les sphères sont corrigées. Le lien des Liés n'est pas un rôle : il ne se transmet pas.
+- **Limite connue :** un Amnésique déjà converti par le Recruteur reste dissident quoi qu'il prenne ; rien dans le mod ne sait refaire un employé.
+
+## D102 — Bouffon (version 0.10.0)
+
+- **Règle :** il gagne seul si un employé le tue. Le tueur est connu comme pour le Martyr : le dernier joueur à l'avoir frappé, dans les 3 s. Un Amnésique qui n'a rien pris compte comme employé ; la Taupe, dissidente, non.
+- **Fin de partie, options :**
+  1. **Annonce du mod, puis fin de partie « forcée » du jeu (retenu).** `End Game(false, true)` : c'est le chemin que le jeu prend quand l'hôte arrête la partie, il n'affiche ni victoire ni défaite, ce qui est exact pour tous sauf le Bouffon. Le bandeau « LE BOUFFON GAGNE : … » est envoyé à la mort, puis de nouveau dans le lobby (les machines effacent les bandeaux en fin de partie).
+  2. Fin normale avec victoire des dissidents ou des employés. L'écran du jeu mentirait à un des deux camps.
+  3. Appeler l'écran de fin joueur par joueur. Possible, mais c'est refaire à la main ce que la fin de partie du jeu fait (retour au lobby, remise à zéro).
+  4. Ne pas finir la partie. Proposé en réglage (« Sa victoire termine la partie » sur NON).
+- **Délai de 3 s** entre l'annonce et la fin : le temps de lire le bandeau.
+- **Limite connue :** une grenade tue sans tueur connu, donc ne fait pas gagner le Bouffon.
+- **Version :** 0.10.0. Installée (jeu fermé), archive complète refaite. Pas publiée.

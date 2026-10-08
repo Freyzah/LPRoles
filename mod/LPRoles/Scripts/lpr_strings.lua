@@ -20,6 +20,12 @@ S.ROLE_NAME = {
     swapper   = "ÉCHANGEUR",
     martyr    = "MARTYR",
     revenant  = "REVENANT",
+    poisoner  = "EMPOISONNEUR",
+    gagger    = "BÂILLONNEUR",
+    thief     = "VOLEUR",
+    echo      = "ÉCHO",
+    amnesiac  = "AMNÉSIQUE",
+    jester    = "BOUFFON",
 }
 
 -- Shown one after the other when the role is announced (how the role works is on the tablet
@@ -40,6 +46,12 @@ S.ROLE_BANNER = {
     swapper   = { "TU ES ÉCHANGEUR" },
     martyr    = { "TU ES MARTYR" },
     revenant  = { "TU ES REVENANT" },
+    poisoner  = { "TU ES EMPOISONNEUR" },
+    gagger    = { "TU ES BÂILLONNEUR" },
+    thief     = { "TU ES VOLEUR" },
+    echo      = { "TU ES ÉCHO" },
+    amnesiac  = { "TU ES AMNÉSIQUE", "TROUVE UN CADAVRE" },
+    jester    = { "TU ES LE BOUFFON", "FAIS-TOI TUER PAR UN EMPLOYÉ" },
 }
 
 -- How each role works, shown in the LPROLES tab and on the tablet. Every line is a whole
@@ -110,6 +122,33 @@ S.ROLE_HOWTO = {
     revenant  = { "Une fois *mort*, appuie sur {pkey}.",
                   "Ton *fantôme* devient *visible et audible* de tous pendant {dur} s.",
                   "Si l'on te *réanime* et que tu meurs de nouveau, tu peux *recommencer*." },
+    poisoner  = { AIMED,
+                  "Il est *empoisonné* : il mourra {delay} s plus tard, sans que rien ne te désigne.",
+                  "?warn Il en est *prévenu* {warn} s avant sa mort.",
+                  "?wnow Il en est *prévenu aussitôt*.",
+                  "?never Il n'en est *jamais prévenu*.",
+                  "?cure Une fois prévenu, il peut se *sauver* en consommant {cure}.",
+                  "!cure Il n'existe *aucun antidote*." },
+    gagger    = { AIMED,
+                  "Son *micro est coupé* pendant {dur} s : plus personne ne l'entend.",
+                  "Il en est *prévenu*." },
+    thief     = { AIMED,
+                  "Tu lui prends *l'objet qu'il tient* : il passe dans ta main.",
+                  "Il faut que ta *main soit vide*.",
+                  "Il sait qu'on l'a *volé*, mais pas par qui." },
+    echo      = { "Appuie sur {pkey} : tu reviens *là où tu étais* {back} s plus tôt.",
+                  "Le retour est *instantané*." },
+    amnesiac  = { "Tu es *neutre* : ni rôle, ni pouvoir pour l'instant.",
+                  "*Regarde* un *cadavre* à moins de {range} m et appuie sur {pkey}.",
+                  "À moins de {reach} m du corps, inutile de le viser.",
+                  "Tu prends le *rôle* et le *camp* du mort : le choix est *définitif*.",
+                  "Un mort *sans rôle* ne te donne rien.",
+                  "Tant que tu n'as rien pris, tu comptes comme un *employé*." },
+    jester    = { "Tu es *neutre* : tu gagnes *seul* si un *employé* te tue.",
+                  "Tué par un *dissident*, ou mort autrement, tu as *perdu*.",
+                  "?ends Ta victoire *termine la partie*.",
+                  "!ends Ta victoire est *annoncée à tous* ; la partie continue sans toi.",
+                  "Pour le reste du jeu, tu comptes comme un *employé*." },
     none      = { "Aucun rôle spécial pour cette partie." },
 }
 
@@ -138,6 +177,13 @@ S.ITEM_SHORT = {
     [1] = "BOCAL DE G3M", [2] = "BOCAL DE Y8Z", [3] = "BOCAL DE BO4", [4] = "BOCAL DE WX2", [5] = "BOCAL DE RU2",
     [6] = "POISSON SALMON", [7] = "POISSON TUNA", [8] = "POISSON COD", [9] = "POISSON SHRIMP",
 }
+
+-- What cures the Empoisonneur's poison, by the antidote's number (lpr_config.lua, C.cure_code):
+-- one of the items above, or any fish, or any plant.
+S.CURE_NAME = { [10] = "n'importe quel *poisson*", [11] = "un bocal de n'importe quelle *plante*" }
+S.CURE_SHORT = { [10] = "UN POISSON", [11] = "UN BOCAL DE PLANTE" }
+for i, name in pairs(S.ITEM_NAME) do S.CURE_NAME[i] = name end
+for i, name in pairs(S.ITEM_SHORT) do S.CURE_SHORT[i] = name end
 
 -- Liés: not a role but a bond between two players, whatever their roles. Shown right under
 -- the status line of the role (or alone, for a player without a role).
@@ -173,6 +219,9 @@ S.STATUS = {
     spirit_on       = "Tu te manifestes : encore {act} s",
     spirit_later    = "Après ta mort : {n} apparition(s)",
     spirit_left     = "Apparitions restantes : {n} sur {m}",
+    poison_on       = "{tgt} est empoisonné : mort dans {act} s",
+    amnesiac        = "Sans rôle : cherche un cadavre",
+    jester          = "But : être tué par un employé",
     waiting         = "En attente des informations de l'hôte",
 }
 
@@ -273,6 +322,28 @@ S.MARTYR_CAMP_EMPLOYEE  = "MARTYR : TUÉ PAR UN EMPLOYÉ"
 S.MARTYR_NAME        = "MARTYR : TUÉ PAR %s"
 S.SPIRIT_READY       = "MORT : TOUCHE %s POUR TE MONTRER"
 S.SPIRIT_START       = "TU TE MANIFESTES"
+S.POISON_DONE        = "%s EST EMPOISONNÉ"
+S.POISON_ALREADY     = "IL EST DÉJÀ EMPOISONNÉ"
+S.POISON_YOU         = "EMPOISONNÉ : MORT DANS %d S"
+S.POISON_CURE        = "ANTIDOTE : %s"
+S.POISON_CURED       = "POISON SOIGNÉ"
+S.POISON_LOST        = "TON POISON A ÉTÉ SOIGNÉ"
+S.POISON_DEAD        = "LE POISON T'A TUÉ"
+S.GAG_DONE           = "%s EST BÂILLONNÉ"
+S.GAG_YOU            = "BÂILLONNÉ : MICRO COUPÉ (%d S)"
+S.GAG_END            = "TON MICRO REMARCHE"
+S.STEAL_DONE         = "OBJET VOLÉ À %s"
+S.STEAL_NOTHING      = "IL NE TIENT RIEN"
+S.STEAL_HANDS_FULL   = "TA MAIN DOIT ÊTRE VIDE"
+S.STEAL_FAILED       = "VOL IMPOSSIBLE"
+S.STEAL_YOU          = "ON T'A VOLÉ TON OBJET"
+S.ECHO_DONE          = "RETOUR EN ARRIÈRE"
+S.ECHO_NOTHING       = "PAS ENCORE DE TRAJET À REJOUER"
+S.AMNESIA_DONE       = "TU HÉRITES DE %s"
+S.AMNESIA_NO_ROLE    = "CE MORT N'AVAIT PAS DE RÔLE"
+S.AMNESIA_DISSIDENT  = "TU DEVIENS DISSIDENT"
+S.JESTER_WIN         = "LE BOUFFON GAGNE : %s"
+S.JESTER_LOST        = "TUÉ PAR UN DISSIDENT : PERDU"
 S.HOST_SHORT         = "%d RÔLE(S) NON ATTRIBUÉ(S) : RÉGLAGE JOUEURS MINIMUM"
 S.HOST_NO_MOD        = "%d JOUEUR(S) SANS LE MOD"
 S.MOD_ACK            = "LPROLES ACTIF (HÔTE %s)"

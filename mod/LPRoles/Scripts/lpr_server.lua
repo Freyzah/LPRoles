@@ -56,6 +56,9 @@ local function fresh_game_fields(P)
     P.jar_wait = nil               -- a jar was asked to be emptied: { role, code, ends }
     P.safe, P.marker_secs = nil, nil   -- Shérif: the safe person's key, and how long it was marked
     P.card = nil                   -- Shérif: the access card shown to this player: "shown", "taken", nil if none
+    P.poison = nil                 -- poisoned by an Empoisonneur: { by, at, warn_at, warned }
+    P.gag_until = nil              -- Bâillonneur: this player's microphone is held off until then
+    P.trail = nil                  -- Écho: where this player was lately: { { at, loc, yaw }, ... }
     P.clean_aim = nil
     P.status_sent = nil
 end
@@ -119,6 +122,10 @@ local RECHARGE = {
     stowaway  = { item = "stowaway_item", max = "stowaway_charges" },
     swapper   = { item = "swapper_item",  max = "swapper_charges" },
     infector  = { item = "infector_item", max = "infect_charges", field = "infections_left" },
+    poisoner  = { item = "poisoner_item", max = "poisoner_charges" },
+    gagger    = { item = "gagger_item",   max = "gagger_charges" },
+    thief     = { item = "thief_item",    max = "thief_charges" },
+    echo      = { item = "echo_item",     max = "echo_charges" },
 }
 local RECHARGE_GAP = 1.5      -- seconds between two recharges of a player
 local JAR_WAIT = 3            -- seconds a jar is given to come back emptied
@@ -208,6 +215,7 @@ local function jar_emptied(P)
     local w = P.jar_wait
     if not w or not G.holds_dirty_jar(P.mec) then return end
     P.jar_wait = nil
+    if w.cure then return w.cure(P) end                        -- emptied as an antidote, not for a use
     local code, spec = recharge_of(P)
     if P.role ~= w.role or code ~= w.code then return end      -- the host changed the item meanwhile
     local ok, max = room_for_use(P, spec)
@@ -515,9 +523,100 @@ local function on_eyes_held(P)
     if started then tell(P, "OPENEYES") end
 end
 
+-- ---------------------------------------------------------------- Empoisonneur
+-- The victim dies some time after the power, with no blow from anybody. It is told beforehand
+-- (how long before is the host's setting, never if 0) and may then save itself with the
+-- antidote: the item in hand, consumed with the "consume" key like a recharge.
+local function end_poison(T)
+    local p = T.poison
+    if not p then return nil end
+    T.poison = nil
+    if p.warned then tell(T, "POISON", 0) end
+    local by = by_key(p.by)
+    if by then by.status_sent = nil end
+    return by
+end
+
+local function cured(T)
+    local by = end_poison(T)
+    tell(T, "MSG", "POISON_CURED")
+    if by then tell(by, "MSG", "POISON_LOST") end
+    U.log("Empoisonneur : %s prend l'antidote", G.player_name(T.mec))
+end
+
+-- held: the recharge item in hand (1-9, 0 for anything else)
+local function cure_fits(code, held)
+    if held == 0 then return false end
+    if code == C.CURE_FISH then return held > G.PLANT_KINDS end
+    if code == C.CURE_PLANT then return held <= G.PLANT_KINDS end
+    return held == code
+end
+
+-- The "consume" key of a player who knows it is poisoned. True when the press was dealt with
+-- here (the role's own recharge is then not tried).
+local function try_cure(P)
+    local p = P.poison
+    local code = C.cure_code(C.get("poison_cure"))
+    if not p or not p.warned or code == 0 then return false end
+    local now = U.now()
+    if P.jar_wait or (P.recharged_at and now - P.recharged_at < RECHARGE_GAP) then return true end
+    local held = G.held_item(P.mec)
+    if not cure_fits(code, held) then
+        if recharge_of(P) then return false end        -- perhaps the role's own item: a recharge
+        tell(P, "MSG", "POISON_CURE", code)
+        return true
+    end
+    P.recharged_at = now
+    if held <= G.PLANT_KINDS then
+        P.jar_wait = { cure = function(X) if X.poison then cured(X) end end, code = held, ends = now + JAR_WAIT }
+        tell(P, "EMPTYJAR", held)
+        return true
+    end
+    U.tcall(P.mec, "Let Item")
+    U.tcall(P.mec, "Net Let Item")
+    if G.held_item(P.mec) == held then
+        U.log("ERREUR : le poisson de %s n'a pas pu être retiré de sa main, pas d'antidote", G.player_name(P.mec))
+        return true
+    end
+    tell(P, "EATEN")
+    cured(P)
+    return true
+end
+
+local function tick_poison(T, now)
+    local p = T.poison
+    if not p then return end
+    if not G.is_alive(T.mec) then return end_poison(T) end
+    if p.warn_at and not p.warned and now >= p.warn_at then
+        p.warned = true
+        tell(T, "POISON", 1)
+        tell(T, "MSG", "POISON_YOU", math.max(1, math.ceil(p.at - now)))
+        local code = C.cure_code(C.get("poison_cure"))
+        if code > 0 then tell(T, "MSG", "POISON_CURE", code) end
+    end
+    if now < p.at then return end
+    end_poison(T)
+    if T.dreaming then end_dream(T, "poison") end
+    if T.fairy then end_fairy(T) end
+    end_hide(T, "poison")
+    tell(T, "MSG", "POISON_DEAD")
+    U.log("Empoisonneur : le poison tue %s", G.player_name(T.mec))
+    -- as for the Liés: asked a second time if the first request found the player still a ghost
+    -- on their machine, never once they have died of it
+    local function kill()
+        if T.died_at and T.died_at >= now then return end
+        if game.active and U.valid(T.mec) and G.is_alive(T.mec) then
+            U.tcall(T.mec, "Death", U.get(T.mec, "Net Orientation", 0.0) + 0.0, true)
+        end
+    end
+    U.after(0.6, "mort par poison", kill)
+    U.after(1.8, "mort par poison (second essai)", kill)
+end
+
 -- The player pressed the "consume" key: the item in hand gives a use of the role's power back.
 local function on_use(P)
     if not game.active or not G.is_alive(P.mec) or P.dreaming or P.fairy or P.hiding then return end
+    if try_cure(P) then return end
     try_recharge(P, "NEED_ITEM")
 end
 
@@ -637,7 +736,7 @@ local function tick_infector(P, now)
     U.log("%s a recruté %s (conversion dans %d s)", G.player_name(P.mec), G.player_name(T.mec), C.get("infect_delay_seconds"))
 end
 
-local function convert(T)
+local function convert(T, msg)
     local gm = G.gm()
     T.infected_at = nil
     if not gm or not game.active or not G.is_alive(T.mec) then return end
@@ -650,7 +749,7 @@ local function convert(T)
         U.log("La liste des dissidents du jeu n'a pas pu être mise à jour pour %s", G.player_name(T.mec))
     end
     if T.modded then
-        tell(T, "MSG", "YOU_ARE_INFECTED")
+        tell(T, "MSG", msg or "YOU_ARE_INFECTED")
     else
         -- Without the mod the only way to tell the player is the game's own role screen,
         -- which also freezes their controls for a few seconds.
@@ -713,7 +812,7 @@ local function aim_points(P, T, spec)
     if T == P or T.fairy or T.hiding then return nil end
     local out = {}
     if G.is_alive(T.mec) then
-        if spec.skip_dreaming and T.dreaming then return nil end
+        if spec.only_bodies or (spec.skip_dreaming and T.dreaming) then return nil end
         local at = (T.dreaming and T.dreaming.loc) or G.location(T.mec)
         if not at then return nil end
         for _, h in ipairs(T.dreaming and SEATED_HEIGHTS or BODY_HEIGHTS) do
@@ -855,6 +954,55 @@ local function end_mimic(P)
     tell(P, "MSG", "MIMIC_END")
 end
 
+local function poisoner_done(P, T, now)
+    if T.poison then return tell(P, "MSG", "POISON_ALREADY") end       -- nothing used up
+    P.charges = P.charges - 1
+    local delay = C.get("poison_delay")
+    local warning = math.min(C.get("poison_warning"), delay)
+    T.poison = { by = P.key, at = now + delay, warn_at = warning > 0 and (now + delay - warning) or nil }
+    tell(P, "MSG", "POISON_DONE", idx(T))
+    U.log("Empoisonneur : %s empoisonne %s (mort dans %d s)", G.player_name(P.mec), G.player_name(T.mec), delay)
+end
+
+-- The microphone is switched off on the target's own machine (see lpr_client.lua).
+local function gagger_done(P, T, now)
+    if not T.modded then
+        tell(P, "MSG", "HYPNO_IMMUNE")                 -- nothing used up
+        return
+    end
+    P.charges = P.charges - 1
+    local secs = C.get("gag_duration")
+    T.gag_until = now + secs
+    tell(T, "GAG", U.round(secs * 10))
+    tell(P, "MSG", "GAG_DONE", idx(T))
+    U.log("Bâillonneur : %s coupe le micro de %s (%d s)", G.player_name(P.mec), G.player_name(T.mec), U.round(secs))
+end
+
+-- The item leaves the target's hand the way an item put in a slot does (as for a fish eaten),
+-- then comes into the thief's hand the way an item picked up does, in the same state.
+local function thief_done(P, T)
+    local data, value, time = G.hand_item_data(T.mec)
+    if not data then return tell(P, "MSG", "STEAL_NOTHING") end
+    if G.hand_item(P.mec) ~= nil then return tell(P, "MSG", "STEAL_HANDS_FULL") end
+    if U.get(P.mec, "Net Item Switching", false) == true or U.get(T.mec, "Net Item Switching", false) == true then
+        return tell(P, "MSG", "STEAL_FAILED")
+    end
+    local name = G.hand_item(T.mec)
+    U.tcall(T.mec, "Let Item")
+    U.tcall(T.mec, "Net Let Item")
+    if G.hand_item(T.mec) ~= nil then
+        U.log("ERREUR : l'objet de %s n'a pas pu être retiré de sa main, pas de vol", G.player_name(T.mec))
+        return tell(P, "MSG", "STEAL_FAILED")
+    end
+    P.charges = P.charges - 1
+    G.put_in_hand(P.mec, data, value, time)
+    tell(P, "MSG", "STEAL_DONE", idx(T))
+    tell(T, "MSG", "STEAL_YOU")
+    U.log("Voleur : %s prend à %s : %s", G.player_name(P.mec), G.player_name(T.mec), tostring(name))
+end
+
+local inherit                  -- Amnésique: defined with the roles, further down
+
 local function has_charge(P)
     if P.charges > 0 then return true end
     return false, no_use_msg(P)
@@ -875,6 +1023,13 @@ local AIM = {
                       if P.mimic then return false, "MIMIC_BUSY" end
                       return has_charge(P)
                   end },
+    poisoner  = { range = "poisoner_range", done = poisoner_done, instant = true, ready = has_charge },
+    gagger    = { range = "gagger_range", done = gagger_done, instant = true, ready = has_charge },
+    -- not from a sleeping Rêveur: the item would be taken on a machine that is elsewhere
+    thief     = { range = "thief_range", done = thief_done, skip_dreaming = true, instant = true, ready = has_charge },
+    -- a body only, and only once: the role is then another one
+    amnesiac  = { range = "amnesiac_range", done = function(P, T) inherit(P, T) end, bodies = true, only_bodies = true,
+                  instant = true, none = "NO_BODY", ready = function() return true end },
 }
 
 -- Carries on what a press of the power key began. Most aimed powers act at once on the player
@@ -900,7 +1055,7 @@ local function tick_aim(P, now)
             P.aim = nil
         end
         if now - P.act.at > (spec.instant and INSTANT_WINDOW or ACT_WINDOW) then
-            tell(P, "MSG", P.announced and "TARGET_LOST" or "NO_TARGET")
+            tell(P, "MSG", P.announced and "TARGET_LOST" or spec.none or "NO_TARGET")
             stop_act(P)
         end
         return
@@ -918,6 +1073,51 @@ local function tick_aim(P, now)
     if not spec.instant and now - P.aim.since < C.get("aim_hold_seconds") then return end
     stop_act(P)
     spec.done(P, T, now)
+end
+
+-- ---------------------------------------------------------------- Écho
+-- The host keeps where each Écho has been lately; the power sends the player back to where it
+-- stood the configured time ago.
+local TRAIL_STEP = 0.25
+local TRAIL_MIN = 1.0          -- nothing to go back to before this long
+
+local function tick_trail(P, now)
+    if not G.is_alive(P.mec) or P.dreaming or P.fairy or P.hiding then
+        P.trail = nil
+        return
+    end
+    local t = P.trail
+    if not t then
+        t = {}
+        P.trail = t
+    end
+    local last = t[#t]
+    if last and now - last.at < TRAIL_STEP then return end
+    local loc = G.location(P.mec)
+    if not loc then return end
+    t[#t + 1] = { at = now, loc = loc, yaw = U.get(P.mec, "Net Orientation", 0.0) + 0.0 }
+    local keep = C.get("echo_seconds") + 1
+    while t[1] and now - t[1].at > keep do table.remove(t, 1) end
+end
+
+local function echo_back(P, now)
+    if P.charges <= 0 then return tell(P, "MSG", no_use_msg(P)) end
+    -- the oldest place no older than the configured time (a shorter trail: its start)
+    local back, spot = C.get("echo_seconds"), nil
+    for _, s in ipairs(P.trail or {}) do
+        if now - s.at <= back then
+            spot = s
+            break
+        end
+    end
+    if not spot or now - spot.at < TRAIL_MIN then return tell(P, "MSG", "ECHO_NOTHING") end
+    local from = G.location(P.mec)
+    P.charges = P.charges - 1
+    P.trail = nil                              -- the next return starts from here
+    U.tcall(P.mec, "Request TP", spot.loc, spot.yaw)
+    tell(P, "MSG", "ECHO_DONE")
+    U.log("Écho : %s revient %.1f s en arrière (%d cm)", G.player_name(P.mec), now - spot.at,
+        from and U.round(U.dist(from, spot.loc)) or -1)
 end
 
 -- ---------------------------------------------------------------- the power key
@@ -958,6 +1158,10 @@ local function on_power(P)
     elseif role == "medium" then
         if P.vision_until and now < P.vision_until then return refuse(P) end      -- a vision is running
         start_medium(P, now)
+    elseif role == "echo" then
+        echo_back(P, now)
+    elseif role == "jester" then
+        return                                     -- no power to start
     elseif AIM[role] or role == "cleaner" or role == "infector" then
         if P.act then P.act.at = now else P.act = { at = now } end
     end
@@ -1123,6 +1327,32 @@ local function link_death(P)
     U.after(1.8, "mort du lié (second essai)", kill)
 end
 
+-- Bouffon: killed by an employee, it wins alone. The game knows two camps only: the win is
+-- announced by the mod, and the game is ended the way the host's own "stop" does, which shows
+-- neither a victory nor a defeat.
+local function jester_death(P)
+    if P.role ~= "jester" or game.jester then return end
+    local hit = P.last_hit
+    local K = hit and (U.now() - hit.at <= MARTYR_WINDOW) and by_key(hit.by) or nil
+    if not K or K == P then return end
+    if K.camp ~= "employee" then
+        tell(P, "MSG", "JESTER_LOST")
+        return
+    end
+    game.jester = idx(P)
+    broadcast("MSG", "JESTER_WIN", game.jester)
+    U.log("Bouffon : %s tué par %s, un employé : il gagne", G.player_name(P.mec), G.player_name(K.mec))
+    if not C.get("jester_ends_game") then return end
+    local started = game.started_at
+    U.after(3, "victoire du bouffon", function()
+        local gm = G.gm()
+        if gm and game.active and game.started_at == started and U.get(gm, "In Game", false) then
+            U.log("Bouffon : fin de partie")
+            U.tcall(gm, "End Game", false, true)
+        end
+    end)
+end
+
 local function on_death(P)
     P.died_at = U.now()
     P.jar_wait = nil
@@ -1140,6 +1370,12 @@ local function on_death(P)
         P.vision_until = nil
         tell(P, "MEDIUM", 0, 0)
     end
+    end_poison(P)
+    P.trail = nil
+    if P.gag_until then
+        P.gag_until = nil
+        tell(P, "GAG", 0)
+    end
     if not game.active then
         P.infected_at = nil
         return
@@ -1148,6 +1384,7 @@ local function on_death(P)
         P.undoing = nil
         return
     end
+    U.try("bouffon", jester_death, P)
     if angel_save(P) then return end          -- comes back: a pending recruitment still applies
     P.infected_at = nil
     U.try("martyr", martyr_reveal, P, U.now())
@@ -1307,6 +1544,14 @@ local SPECS = {
     { id = "swapper",   prefix = "swapper",  camp = camp_of("swapper_camp"), mod = "need", init = charges_from("swapper_charges") },
     { id = "martyr",    prefix = "martyr",   camp = camp_of("martyr_camp"), mod = "prefer" },
     { id = "revenant",  prefix = "revenant", camp = camp_of("revenant_camp"), mod = "need", init = charges_from("revenant_charges") },
+    { id = "poisoner",  prefix = "poisoner", camp = dissident, mod = "need", init = charges_from("poisoner_charges") },
+    { id = "gagger",    prefix = "gagger",   camp = dissident, mod = "need", init = charges_from("gagger_charges") },
+    { id = "thief",     prefix = "thief",    camp = camp_of("thief_camp"), mod = "need", init = charges_from("thief_charges") },
+    { id = "echo",      prefix = "echo",     camp = camp_of("echo_camp"), mod = "need", init = charges_from("echo_charges") },
+    -- Neutral roles. The game knows two camps only: for its own rules (the list of employees
+    -- whose deaths end the game) their holder is an employee.
+    { id = "amnesiac",  prefix = "amnesiac", camp = employee, mod = "need" },
+    { id = "jester",    prefix = "jester",   camp = employee, mod = "need" },
 }
 local SPEC_BY_ID = {}
 for _, s in ipairs(SPECS) do SPEC_BY_ID[s.id] = s end
@@ -1320,6 +1565,24 @@ local function give_role(P, spec)
         -- employee; it stays in the game's dissident list, which decides who wins.
         U.tcall(P.mec, "Set Player Role", G.ROLE_EMPLOYEE)
     end
+end
+
+-- Amnésique: the role and the camp of a dead player, for good. A dead player without a role
+-- gives nothing (and nothing is lost: another body may be tried).
+inherit = function(P, T)
+    local spec = T.role and T.role ~= "amnesiac" and SPEC_BY_ID[T.role] or nil
+    if not spec then
+        tell(P, "MSG", "AMNESIA_NO_ROLE")
+        return
+    end
+    U.log("Amnésique : %s prend le rôle de %s (%s, %s)", G.player_name(P.mec), G.player_name(T.mec), T.role, tostring(T.camp))
+    if T.camp == "dissident" and P.camp ~= "dissident" then convert(P, "AMNESIA_DISSIDENT") end
+    give_role(P, spec)
+    P.status_sent = nil
+    tell(P, "MSG", "AMNESIA_DONE", idx(T))
+    tell(P, "ROLE", P.role)
+    if P.role == "sheriff" then U.try("shérif", sheriff_setup, P) end
+    if P.role == "mole" then correct_spheres() end
 end
 
 -- Liés: a bond between two players, with the mod if possible, whose camps follow the setting.
@@ -1513,7 +1776,7 @@ end
 
 local function on_game_start()
     game.active, game.started_at, game.announced, game.converted = true, U.now(), false, false
-    game.assigned, game.short = false, 0
+    game.assigned, game.short, game.jester = false, 0, nil
     standins, game.guard_now = nil, nil        -- the game empties its list of employees at every start
     each_player(function(P) reset_for_game(P) end)
     recount_frozen()
@@ -1568,6 +1831,9 @@ local function on_game_end()
     -- no sphere left over anybody's head in the lobby (markers, recruits made dissidents)
     each_player(function(P) U.tcall(P.mec, "Clear Hacker Sphere") end)
     if C.get("reveal_roles_at_end") then U.try("révélation", reveal_roles) end
+    -- said again in the lobby: the players' machines drop the banners of the game with "END"
+    if game.jester then broadcast("MSG", "JESTER_WIN", game.jester) end
+    game.jester = nil
     each_player(function(P)
         local tail = P.tail
         reset_for_game(P)
@@ -1732,6 +1998,29 @@ local function status_of(P, now)
         v.dead = G.is_alive(P.mec) and 0 or 1
         if v.dead == 0 then v.n = v.m end          -- alive: what the next death will give
         v.act = left(now, P.spirit_until)
+    elseif r == "poisoner" then
+        uses("poisoner_charges")
+        local delay = C.get("poison_delay")
+        local warning = math.min(C.get("poison_warning"), delay)
+        v.range, v.delay = metres("poisoner_range"), delay
+        if warning <= 0 then v.never = 1 elseif warning >= delay then v.wnow = 1 else v.warn = warning end
+        v.cure = C.cure_code(C.get("poison_cure"))
+        each_player(function(T)
+            if T.poison and T.poison.by == P.key then v.tgt, v.act = idx(T) + 1, left(now, T.poison.at) end
+        end)
+    elseif r == "gagger" then
+        uses("gagger_charges")
+        v.dur, v.range = C.get("gag_duration"), metres("gagger_range")
+    elseif r == "thief" then
+        uses("thief_charges")
+        v.range = metres("thief_range")
+    elseif r == "echo" then
+        uses("echo_charges")
+        v.back = C.get("echo_seconds")
+    elseif r == "amnesiac" then
+        v.range, v.reach = metres("amnesiac_range"), BODY_REACH / 100
+    elseif r == "jester" then
+        v.ends = C.get("jester_ends_game") and 1 or 0
     end
     -- the item that gives a use back, and what is left of the host's limit
     local item = recharge_of(P)
@@ -1803,6 +2092,7 @@ local function tick_timers(P, now)
     if P.vision_until and now >= P.vision_until then P.vision_until = nil end
     if P.spirit_until and now >= P.spirit_until then P.spirit_until = nil end
     if P.hypno_until and now >= P.hypno_until then P.hypno_until = nil end
+    if P.gag_until and now >= P.gag_until then P.gag_until = nil end
     if P.jar_wait then
         U.try("bocal vidé", jar_emptied, P)
         jar_timeout(P, now)
@@ -1831,6 +2121,8 @@ local function tick(now)
         if P.role == "infector" then U.try("recruteur", tick_infector, P, now) end
         if P.role == "cleaner" then U.try("nettoyeur", tick_cleaner, P, now) end
         if AIM[P.role] then U.try("visée", tick_aim, P, now) end
+        if P.role == "echo" then U.try("écho", tick_trail, P, now) end
+        if P.poison then U.try("poison", tick_poison, P, now) end
         if P.infected_at and now >= P.infected_at then U.try("conversion", convert, P) end
     end)
     U.try("carte du shérif", tick_card, now)

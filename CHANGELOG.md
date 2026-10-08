@@ -2,6 +2,19 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
+## 0.10.0
+
+Six nouveaux rôles, chacun avec son groupe de réglages dans l'onglet LPROLES :
+
+- **Empoisonneur** (dissident) : le joueur visé meurt 60 s plus tard, sans coup de personne. Il est prévenu 40 s avant et peut se sauver en consommant un poisson (délais et antidote réglables).
+- **Bâillonneur** (dissident) : coupe le micro du joueur visé pendant 20 s.
+- **Voleur** (les deux camps) : prend l'objet que tient un joueur à 2,5 m au plus.
+- **Écho** (les deux camps) : revient là où il était 5 s plus tôt.
+- **Amnésique** (neutre) : prend le rôle et le camp d'un mort, une fois pour toutes.
+- **Bouffon** (neutre) : gagne seul s'il est tué par un employé ; sa victoire termine la partie.
+
+Le réglage « Rôle forcé pour l'hôte » propose ces six rôles pour les essayer.
+
 ## 0.9.0
 
 - Le mod **se met à jour tout seul** à chaque lancement du jeu : il télécharge la dernière version publiée ici, la vérifie et l'installe avant de se charger. Réglages, journal et sons personnels sont gardés.

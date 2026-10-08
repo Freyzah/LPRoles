@@ -2,7 +2,7 @@
 
 Des rôles supplémentaires pour **LOCKDOWN Protocol** : un mod en Lua pour [UE4SS](https://github.com/UE4SS-RE/RE-UE4SS).
 
-Chaque joueur peut recevoir, en plus de son camp, un rôle avec un pouvoir : Shérif, Recruteur, Rêveur, Fée, Médium, Ange gardien, Taupe, Traqueur, Hypnotiseur, Métamorphe, Nettoyeur, Clandestin, Échangeur, Martyr, Revenant, ainsi que le lien des Liés. L'hôte choisit les rôles en jeu et règle chacun d'eux dans le menu Échap, onglet **LPROLES**.
+Chaque joueur peut recevoir, en plus de son camp, un rôle avec un pouvoir : Shérif, Recruteur, Rêveur, Fée, Médium, Ange gardien, Taupe, Traqueur, Hypnotiseur, Métamorphe, Nettoyeur, Clandestin, Échangeur, Martyr, Revenant, Empoisonneur, Bâillonneur, Voleur, Écho, Amnésique, Bouffon, ainsi que le lien des Liés. L'hôte choisit les rôles en jeu et règle chacun d'eux dans le menu Échap, onglet **LPROLES**.
 
 **Tous les joueurs de la partie doivent avoir le mod, à la même version.**
 

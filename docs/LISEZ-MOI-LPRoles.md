@@ -1,8 +1,8 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.9.0, publiée sur GitHub (https://github.com/Freyzah/LPRoles) et installée le 8 octobre 2026.
+Version 0.10.0, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.9.0, c'est elle que vos amis reçoivent. Ce document décrit la 0.10.0.
 
-À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.9.0-pour-les-joueurs.zip`.
+À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.10.0-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
 
 **État des tests :**
 - **0.1.0** : testée en solo par l'hôte (chargement, rêve, recharge, envol, carte du Shérif).
@@ -49,6 +49,7 @@ Version 0.9.0, publiée sur GitHub (https://github.com/Freyzah/LPRoles) et insta
 - **0.8.14** : son de l'envol de la Fée baissé de 3 dB, à la demande de l'utilisateur. Installée le 7 octobre.
 - **0.8.15** : les deux boutons latéraux de la souris (SOURIS 4, SOURIS 5) s'ajoutent aux touches proposées pour « activer le pouvoir » et « consommer l'objet en main ». Essayée par l'utilisateur : les boutons fonctionnent.
 - **0.9.0** : le projet devient un dépôt GitHub ; le mod se met à jour tout seul au lancement du jeu (et par `mettre-a-jour.bat`). Aucun changement de jeu. Publiée et installée le 8 octobre. Mise à jour vérifiée hors du jeu, contre la vraie page GitHub. Premier lancement en jeu par l'utilisateur le 8 octobre : la vérification passe, le mod se charge normalement. Une vraie mise à jour depuis le jeu reste à voir.
+- **0.10.0** : six rôles de plus, Empoisonneur, Bâillonneur, Voleur, Écho, Amnésique et Bouffon (les deux derniers sont neutres). **Aucun n'a encore été lancé en jeu.** Installée le 8 octobre, pas publiée.
 
 ## Ce qui est installé
 
@@ -103,6 +104,10 @@ Ce que fait la touche de pouvoir selon le rôle :
 | **Fée**, **Médium** | Le pouvoir part aussitôt |
 | **Clandestin** | Se cache, près d'une bouche d'aération ; un nouvel appui (après 1 s) le fait sortir |
 | **Revenant** | Se manifeste, une fois mort |
+| **Écho** | Le retour en arrière part aussitôt |
+| **Empoisonneur, Bâillonneur, Voleur** | Comme le Traqueur : appuyer en regardant un joueur, le pouvoir agit aussitôt (le Voleur doit être à 2,5 m au plus) |
+| **Amnésique** | Appuyer en regardant un cadavre, ou à moins de 2,5 m de lui |
+| **Bouffon** | Rien : il n'a pas de pouvoir à lancer |
 | **Traqueur, Hypnotiseur, Métamorphe, Échangeur** | Appuyer en regardant un joueur : le pouvoir agit **aussitôt** sur lui. Sans personne en vue, rien ne se passe et rien n'est dépensé (« PERSONNE EN VUE ») |
 | **Ange gardien** | Appuyer en regardant un joueur : son nom s'affiche (« CIBLE : … »), puis il faut le garder en vue 1,5 s (réglage « Protégé à garder en vue », groupe ANGE GARDIEN ; 0 = choix immédiat). Sans personne en vue, le mod cherche pendant 2,5 s |
 | **Recruteur** | Appuyer près d'un employé, puis rester près de lui 4 s |
@@ -128,6 +133,12 @@ Ce que fait la touche de pouvoir selon le rôle :
 | **Échangeur** | Les deux | Échange sa place avec le joueur visé. 1 fois par partie |
 | **Martyr** | Employé | S'il est tué par un joueur, tout le monde apprend le camp de son tueur (ou son nom, selon le réglage) |
 | **Revenant** | Les deux | Une fois mort, son fantôme devient visible et audible de tous pendant 20 s. 1 fois à chaque mort : réanimé puis mort de nouveau, il peut recommencer |
+| **Empoisonneur** | Dissident | Empoisonne le joueur visé : il meurt 60 s plus tard, sans coup de personne. Prévenu 40 s avant, il peut se sauver en consommant un poisson. 1 fois par partie |
+| **Bâillonneur** | Dissident | Coupe le micro du joueur visé pendant 20 s : plus personne ne l'entend. 2 fois par partie |
+| **Voleur** | Les deux | À 2,5 m au plus, prend l'objet que tient le joueur visé. 2 fois par partie |
+| **Écho** | Les deux | Revient aussitôt là où il était 5 s plus tôt. 2 fois par partie |
+| **Amnésique** | Neutre | Sans pouvoir au départ. Prend, une fois pour toutes, le rôle et le camp d'un mort |
+| **Bouffon** | Neutre | Gagne seul s'il est tué par un employé ; sa victoire termine la partie |
 
 **Liés** n'est pas un rôle mais un lien entre deux joueurs, qui s'ajoute à leurs rôles éventuels : au premier des deux qui meurt, l'autre meurt aussi. Le lien ne joue qu'une fois : ensuite il est rompu, même si l'un des deux revient (défibrillateur, Ange gardien). Un lié sauvé par un Ange gardien d'une mort ordinaire ne déclenche pas le lien. Chacun connaît le nom de l'autre. Le lien ne compte pas dans le nombre de rôles par partie. Réglages dans le groupe LIÉS (activé ou non, joueurs minimum, camps des deux liés).
 
@@ -136,6 +147,57 @@ Ce que fait la touche de pouvoir selon le rôle :
 - Pendant qu'ils sont fantômes, le Rêveur et la Fée ne voient ni leurs mains ni l'objet tenu. Ils les retrouvent au retour dans leur corps.
 - Le Rêveur rouvre les yeux tout seul au début et à la fin du rêve. Il n'entend que les vivants, ne voit pas les morts et ne peut rien toucher. S'il est attaqué, il se réveille aussitôt dans son corps.
 - Le Shérif ne peut pas être recruté (réglable).
+
+## Les six rôles de la 0.10.0
+
+**Aucun n'a encore été lancé en jeu.** Tous se règlent dans l'onglet LPROLES, chacun dans son groupe.
+
+### Empoisonneur (dissident)
+
+- Il vise un joueur à 4 m au plus et appuie : la victime mourra **60 s** plus tard (« Mort après »). Rien ne se voit ni ne s'entend.
+- La victime est prévenue **40 s avant sa mort** (« Prévenu avant sa mort » ; 0 = jamais, une valeur au moins égale au délai = aussitôt) : « EMPOISONNÉ : MORT DANS 40 S », puis le nom de l'antidote.
+- **Antidote** (réglage « Antidote ») : par défaut **n'importe quel poisson**. Une fois prévenue, la victime le tient en main et appuie sur la touche de consommation. Autres choix : n'importe quelle plante en bocal, un objet précis, ou aucun antidote.
+- L'Empoisonneur lit sur sa page « … est empoisonné : mort dans … s », et apprend si son poison a été soigné.
+- La mort par poison n'a pas de tueur : le Martyr n'annonce rien, le Bouffon ne gagne pas. Un protégé de l'Ange gardien se relève comme d'habitude ; un Lié entraîne l'autre.
+- Le poison disparaît si la victime meurt autrement entre-temps. Il agit même si l'Empoisonneur est mort.
+
+### Bâillonneur (dissident)
+
+- Il vise un joueur à 10 m au plus et appuie : le **micro de la victime est coupé 20 s**. Personne ne l'entend, vivants ou morts.
+- La victime lit « BÂILLONNÉ : MICRO COUPÉ (20 S) » ; l'icône de micro du jeu passe à l'état coupé. À la fin : « TON MICRO REMARCHE ».
+- C'est la machine de la victime qui coupe son propre micro, par le même réglage que le jeu utilise pour un Rêveur endormi.
+- La mort de la victime met fin au bâillon.
+
+### Voleur (les deux camps)
+
+- Il vise un joueur à **2,5 m** au plus et appuie : l'objet que la victime **tient en main** passe dans la main du Voleur, dans le même état (munitions, plante du bocal…).
+- Il faut que la main du Voleur soit vide (« TA MAIN DOIT ÊTRE VIDE ») et que la victime tienne quelque chose (« IL NE TIENT RIEN »). Dans ces deux cas rien n'est dépensé.
+- La victime lit « ON T'A VOLÉ TON OBJET », sans le nom du Voleur.
+- Le sac n'est pas touché. On ne vole pas un Rêveur endormi.
+
+### Écho (les deux camps)
+
+- Il appuie : il est renvoyé aussitôt là où il se tenait **5 s** plus tôt (« Retour en arrière de »), tourné comme il l'était.
+- Le trajet repart de zéro après chaque retour, après un envol, un rêve ou une cachette : pendant la première seconde, « PAS ENCORE DE TRAJET À REJOUER ».
+
+### Amnésique (neutre)
+
+- Il n'a ni rôle ni pouvoir au départ. Il vise un **cadavre** à 10 m au plus (ou se tient à moins de 2,5 m de lui) et appuie : il prend **le rôle et le camp du mort**, avec toutes ses utilisations. Le choix est définitif.
+- Si le mort était dissident, l'Amnésique devient dissident (« TU DEVIENS DISSIDENT ») ; le jeu le compte alors parmi les dissidents.
+- Un mort sans rôle ne donne rien, et l'Amnésique peut essayer un autre corps. Le lien des Liés ne se transmet pas.
+- **Tant qu'il n'a rien pris, il compte comme un employé** pour la fin de partie.
+
+### Bouffon (neutre)
+
+- Il n'a pas de pouvoir. Il **gagne seul si un employé le tue**. Tué par un dissident, par le poison, une explosion ou une chute, il a perdu.
+- Sa victoire est annoncée à tous (« LE BOUFFON GAGNE : … »), puis la partie s'arrête 3 s plus tard, comme quand l'hôte l'arrête lui-même : le jeu n'affiche ni victoire ni défaite. L'annonce est répétée au retour dans le lobby.
+- Réglage « Sa victoire termine la partie » sur NON : la victoire est seulement annoncée, la partie continue sans lui.
+- Pour le reste du jeu, il compte comme un employé : les dissidents doivent aussi l'éliminer pour gagner.
+- Le tueur est celui qui l'a frappé dans les 3 s avant sa mort, comme pour le Martyr.
+
+### Les rôles neutres et le jeu
+
+Le jeu ne connaît que deux camps. L'Amnésique et le Bouffon sont donc tirés parmi les employés, et le jeu continue de les compter comme tels : la partie ne se termine par « tous les employés sont morts » qu'une fois eux aussi morts (ou l'Amnésique passé dissident).
 
 ## Recharger un pouvoir
 
@@ -320,6 +382,9 @@ Ce qu'il faut regarder en priorité, à plusieurs :
   - Seul cas où la partie se termine quand même : plus aucun dissident n'est en vie non plus au moment où il meurt. L'ange lit alors « TROP TARD : PARTIE TERMINÉE ».
 - **Martyr :** une mort par grenade, poison ou chute ne révèle rien. Le tueur n'est révélé que si son coup date de moins de 3 s.
 - **Rêveur :** une explosion est calculée à l'endroit où se trouve son fantôme, pas son corps.
+- **Amnésique déjà recruté :** un Amnésique que le Recruteur a converti reste dissident, même s'il prend ensuite le rôle d'un employé mort.
+- **Bouffon et grenades :** une mort par explosion n'a pas de tueur connu du mod ; un employé qui tue le Bouffon à la grenade ne le fait pas gagner.
+- **Voleur :** l'objet volé arrive dans la main avec l'animation de ramassage du jeu.
 - **Mise à jour du jeu :** elle peut casser le mod. `python tools\lp\bp.py --all analysis\bp` puis `python tools\lp\verify_mod.py` revérifient tout le code contre les nouveaux fichiers du jeu.
 
 ## Autres fichiers du projet
