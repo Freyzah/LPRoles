@@ -149,9 +149,11 @@ local function plant_of(word)
     return nil
 end
 
--- The plant named on the page, if any (a role names one at most).
-local function page_plant(lines)
-    for _, l in ipairs(lines) do
+-- The plant named in the lines of the page, from line `first` on, if any (a role names one at
+-- most; the band above the lines is plain text, and may name another: a poison's antidote).
+local function page_plant(lines, first)
+    for i = first or 1, #lines do
+        local l = lines[i]
         for _, w in ipairs(RT.segments(l)) do
             local p = plant_of(w.text)
             if p then return p end
@@ -296,7 +298,7 @@ local function show_role()
         shown.status = st
     end
     -- the plant's colour, only while the page is on screen (the map uses those colours)
-    local plant = page_plant(lines)
+    local plant = page_plant(lines, first)
     local ink = nil
     if page.on_role then ink = tint_for(plant) end
     if plant ~= view.plant or ink ~= view.plant_ink then

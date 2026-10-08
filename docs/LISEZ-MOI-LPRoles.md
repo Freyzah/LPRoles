@@ -1,8 +1,8 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.11.2, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.9.0, c'est elle que vos amis reçoivent. Ce document décrit la 0.11.2.
+Version 0.11.3, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.9.0, c'est elle que vos amis reçoivent. Ce document décrit la 0.11.3.
 
-À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.2-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
+À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.3-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
 
 **État des tests :**
 - **0.1.0** : testée en solo par l'hôte (chargement, rêve, recharge, envol, carte du Shérif).
@@ -53,6 +53,7 @@ Version 0.11.2, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.11.0** : deux rôles de plus, proposés par l'utilisateur, Vampire et Loup-garou. **Jamais lancés en jeu.** Installée le 8 octobre, pas publiée.
 - **0.11.1** : l'onglet LPROLES de l'hôte n'affiche plus qu'un groupe de réglages à la fois, TEST en deuxième ; les groupes des huit nouveaux rôles, absents de l'onglet en 0.10.0 et 0.11.0, y sont. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
 - **0.11.2** : Empoisonneur revu à la demande de l'utilisateur : 3 minutes, victime prévenue quand il en reste 2, antidote = l'échantillon raffiné d'une plante tirée au hasard. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
+- **0.11.3** : ligne du poison raccourcie pour tenir sur une rangée du bandeau de la tablette. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
 
 ## Ce qui est installé
 
@@ -164,7 +165,9 @@ Ce que fait la touche de pouvoir selon le rôle :
 - **Quand il lui reste 2 minutes** (« Prévenu avant sa mort », 120 s ; 0 = jamais, une valeur au moins égale au délai = aussitôt), la victime lit « EMPOISONNÉ : MORT DANS 120 S », puis « ANTIDOTE : ÉCHANTILLON G3M RAFFINÉ » (ou une autre plante).
 - **L'antidote** est l'**échantillon raffiné d'une seule plante**, celui que la centrifugeuse fait d'un bocal de cette plante. La plante est **tirée au hasard à chaque empoisonnement**, parmi les cinq (G3M, Y8Z, BO4, WX2, RU2). Un échantillon sorti du mélangeur (deux plantes) ne compte pas.
 - **Pour se soigner :** boire l'échantillon comme n'importe quel échantillon du jeu (la victime en reçoit aussi l'effet habituel). La touche de consommation du mod marche aussi, l'échantillon en main : il est alors consommé sans son effet.
-- Tant qu'elle est empoisonnée et prévenue, la **page du rôle** de la victime commence par « Empoisonné : mort dans … s - antidote : G3M raffiné, à boire », avec le compte à rebours. Cela vaut aussi pour un joueur sans rôle.
+- Tant qu'elle est empoisonnée et prévenue, la victime lit « Poison : mort dans … s - antidote : G3M raffiné », avec le compte à rebours, **sur sa tablette et dans l'onglet LPROLES** :
+  - avec un rôle, dans le **bandeau sombre** en haut de la page du rôle, à la place de la ligne d'état du rôle (utilisations restantes, etc.), qui revient une fois le poison terminé ;
+  - sans rôle, en **première ligne** de la page (qui dit ensuite « Aucun rôle spécial pour cette partie »).
 - Le bon échantillon soigne même s'il est bu avant l'avertissement.
 - L'Empoisonneur ne connaît pas la plante. Il lit sur sa page « … est empoisonné : mort dans … s », et apprend si son poison a été soigné.
 - Réglage « Antidote : un échantillon raffiné » sur NON : aucun antidote.

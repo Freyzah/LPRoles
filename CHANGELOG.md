@@ -2,7 +2,11 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.11.2
+## 0.11.3
+
+- Empoisonneur : la ligne « Poison : mort dans … s - antidote : … raffiné » de la victime est raccourcie pour tenir sur une rangée de la tablette.
+
+## 0.11.2 (non publiée)
 
 - **Empoisonneur :** le poison dure 3 minutes ; la victime est prévenue quand il lui en reste 2 et apprend son antidote, l'échantillon raffiné d'une plante tirée au hasard, à boire. Sa page de rôle affiche le compte à rebours et la plante.
 

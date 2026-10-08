@@ -227,8 +227,8 @@ S.STATUS = {
     spirit_left     = "Apparitions restantes : {n} sur {m}",
     poison_on       = "{tgt} est empoisonné : mort dans {act} s",
     -- any player, whatever the role, once told of the poison (in place of the role's own line)
-    poisoned        = "Empoisonné : mort dans {pleft} s",
-    poisoned_cure   = " - antidote : {pplant} raffiné, à boire",
+    poisoned        = "Poison : mort dans {pleft} s",
+    poisoned_cure   = " - antidote : {pplant} raffiné",
     amnesiac        = "Sans rôle : cherche un cadavre",
     jester          = "But : être tué par un employé",
     vamp_on         = "Vie en plus : {res} PV sur {bonus}",

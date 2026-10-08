@@ -1,4 +1,4 @@
-version 0.11.2
+version 0.11.3
 81364 Scripts/lpr_client.lua
 32839 Scripts/lpr_config.lua
 23662 Scripts/lpr_game.lua
@@ -9,8 +9,8 @@ version 0.11.2
 11380 Scripts/lpr_roletext.lua
 101669 Scripts/lpr_server.lua
 11122 Scripts/lpr_sound.lua
-21723 Scripts/lpr_strings.lua
-29006 Scripts/lpr_tablet.lua
+21708 Scripts/lpr_strings.lua
+29169 Scripts/lpr_tablet.lua
 3467 Scripts/lpr_update.lua
 20871 Scripts/lpr_util.lua
 862 Scripts/main.lua

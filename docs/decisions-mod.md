@@ -1389,3 +1389,13 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Contrôle ajouté :** `pages.py` refuse désormais une apostrophe collée à un mot en gras (« l'*objet* »), que la tablette dessine en deux morceaux écartés ; j'avais fait la faute trois fois.
 - **Contrôles :** syntaxe, noms du jeu (dont `Add Buff` et l'échantillon), pages. **Jamais lancé en jeu ; pas de relecture indépendante.**
 - **Version :** 0.11.2. Installée (jeu fermé), archive complète refaite. Pas publiée.
+
+## D107 — La ligne du poison sur la tablette (version 0.11.3)
+
+- **Question de l'utilisateur :** « est-ce que la ligne d'empoisonnement est aussi sur la tablette du joueur ? »
+- **Réponse, vérifiée dans le code de la tablette :** oui. La tablette et l'onglet LPROLES tirent leurs lignes de la même fonction (`RT.lines`). Avec un rôle, la ligne du poison prend la place de la ligne d'état, que la tablette écrit dans son bandeau sombre ; sans rôle, la tablette n'a pas de bandeau et la ligne est la première de la page.
+- **Deux retouches faites en vérifiant :**
+  - La ligne est raccourcie (« Poison : mort dans 118 s - antidote : G3M raffiné », 49 caractères), pour ne pas dépasser les lignes d'état déjà vues sur le bandeau en jeu (52 caractères pour une vision en cours). Le bandeau passe à la ligne s'il le faut, mais il pousserait alors les sept lignes d'explication vers le bas.
+  - La tablette colore le nom de la plante de la page (l'objet de recharge du rôle). Elle cherchait ce nom dans toutes les lignes, bandeau compris : pendant un empoisonnement elle aurait pris la plante de l'antidote, et l'objet de recharge aurait perdu sa couleur. Elle ne regarde plus que les lignes sous le bandeau. Pour un joueur sans rôle, la plante de l'antidote est donc bien colorée.
+- **Jamais lancé en jeu ; pas de relecture indépendante.**
+- **Version :** 0.11.3. Installée (jeu fermé), archive complète refaite. Pas publiée.
