@@ -1,6 +1,6 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.11.3, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.9.0, c'est elle que vos amis reçoivent. Ce document décrit la 0.11.3.
+Version 0.11.4, **préparée mais pas installée** : le jeu a la 0.11.3 (il tournait). **Rien n'est publié depuis la 0.9.0** (https://github.com/Freyzah/LPRoles) : c'est elle que reçoit la mise à jour automatique. Ce document décrit la 0.11.4.
 
 À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.3-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
 
@@ -54,6 +54,7 @@ Version 0.11.3, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.11.1** : l'onglet LPROLES de l'hôte n'affiche plus qu'un groupe de réglages à la fois, TEST en deuxième ; les groupes des huit nouveaux rôles, absents de l'onglet en 0.10.0 et 0.11.0, y sont. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
 - **0.11.2** : Empoisonneur revu à la demande de l'utilisateur : 3 minutes, victime prévenue quand il en reste 2, antidote = l'échantillon raffiné d'une plante tirée au hasard. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
 - **0.11.3** : ligne du poison raccourcie pour tenir sur une rangée du bandeau de la tablette. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
+- **0.11.4** : la vie en plus du Vampire s'ajoute au nombre affiché sur la barre de vie du jeu. **Jamais lancée en jeu.** Pas installée (le jeu tournait).
 
 ## Ce qui est installé
 
@@ -212,7 +213,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 
 - À 2,5 m au plus du **cadavre d'un joueur qu'il a tué**, il appuie et reste près de lui **3 s** : sa **vie maximale monte de 10 PV**, qu'il gagne aussitôt. Chaque cadavre ne sert qu'une fois ; le corps reste en place.
 - « Qu'il a tué » : c'est lui qui a porté le dernier coup, dans les 3 s avant la mort (comme pour le Martyr). Une grenade ou un poison ne comptent pas. Réglage « Seulement ses propres victimes » sur NON : n'importe quel cadavre convient.
-- **Le jeu plafonne la vie à 100.** La vie en plus est donc tenue par le mod, comme une **réserve au-dessus des 100** : après chaque coup reçu, la vie est remontée depuis la réserve. La barre de vie du jeu ne montre que les 100 ; la réserve se lit sur la page du rôle (« Vie en plus : 15 PV sur 20 »).
+- **Le jeu plafonne la vie à 100.** La vie en plus est donc tenue par le mod, comme une **réserve au-dessus des 100** : après chaque coup reçu, la vie est remontée depuis la réserve. Depuis la 0.11.4, le **nombre écrit sur la barre de vie** du jeu compte la réserve : 115 pour une vie pleine et 15 en réserve. La barre elle-même reste celle du jeu (pleine à 100) ; le détail se lit aussi sur la page du rôle (« Vie en plus : 15 PV sur 20 »).
 - La réserve **se régénère** au rythme de la vie du jeu, une fois la vie elle-même revenue à 100.
 - **Limite :** un coup qui retire 100 PV d'un seul coup tue quand même, le jeu décidant de la mort avant que le mod puisse intervenir.
 - À sa mort, la réserve est perdue ; s'il est réanimé, son maximum reste acquis et la réserve se refait peu à peu.

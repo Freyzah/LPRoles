@@ -1399,3 +1399,16 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
   - La tablette colore le nom de la plante de la page (l'objet de recharge du rôle). Elle cherchait ce nom dans toutes les lignes, bandeau compris : pendant un empoisonnement elle aurait pris la plante de l'antidote, et l'objet de recharge aurait perdu sa couleur. Elle ne regarde plus que les lignes sous le bandeau. Pour un joueur sans rôle, la plante de l'antidote est donc bien colorée.
 - **Jamais lancé en jeu ; pas de relecture indépendante.**
 - **Version :** 0.11.3. Installée (jeu fermé), archive complète refaite. Pas publiée.
+
+## D108 — La vie en plus du Vampire sur le HUD (version 0.11.4)
+
+- **Demande :** « est-ce possible d'améliorer le vampire pour qu'on puisse voir les hp en plus sur l'hud ? »
+- **Ce que dit le jeu :** la partie du HUD qui montre la vie (`W_PlayerState`) a une barre et un nombre. La barre est recalculée à chaque image à partir de la vie du personnage et du « Max HP » des données du joueur. Le nombre, lui, n'est écrit que par la fonction `Set HP`, appelée quand la vie change : c'est la vie du personnage, 100 au plus. Sa couleur et sa position sont animées à chaque image.
+- **Options :**
+  1. **Ajouter la réserve au nombre, juste après que le jeu l'a écrit (retenu).** Une accroche sur `Set HP` réécrit le nombre avec vie + réserve : « 115 ». Le texte passe par la fabrication de texte du moteur, comme tous ceux que le mod écrit. Quand la réserve change sans que la vie change (elle se régénère, un cadavre est vampirisé), le mod demande au jeu de réécrire le nombre.
+  2. Allonger la barre en montant le « Max HP » du jeu. La barre afficherait vie ÷ maximum : avec 100 de vie et un maximum de 120 elle ne serait jamais pleine, la vie du jeu ne dépassant pas 100. Trompeur.
+  3. Dessiner une seconde barre. Des éléments nouveaux dans le HUD du jeu, pour une information que le nombre donne déjà.
+  4. Écrire « 100 +15 ». Plus explicite, mais le nombre est posé sur la barre et se déplace avec elle : un texte deux fois plus long risquait de déborder.
+- **Ce qui ne change pas :** la barre (pleine à 100), la couleur du nombre (animée par le jeu), la ligne de la page du rôle.
+- **Contrôles :** syntaxe, noms du jeu (`Set HP`, `HPtext`, `Mec Ref` de `W_PlayerState`), pages. **Jamais lancé en jeu ; pas de relecture indépendante.**
+- **Version :** 0.11.4. Pas installée : le jeu tournait. Pas publiée.

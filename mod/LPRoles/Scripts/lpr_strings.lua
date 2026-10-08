@@ -157,7 +157,7 @@ S.ROLE_HOWTO = {
                   "!own À moins de {range} m d'un *cadavre*, appuie sur {pkey} et *reste près de lui* {chold} s.",
                   "Tu le *vampirises* : ta *vie maximale* monte de {per} PV, que tu gagnes aussitôt.",
                   "Chaque cadavre ne sert *qu'une fois*.",
-                  "Cette vie en plus se *régénère* comme le reste.",
+                  "Elle s'ajoute au *nombre* de ta barre de vie, et se *régénère* comme le reste.",
                   "Un coup qui retire *100 PV d'un seul coup* te tue quand même." },
     werewolf  = { "À moins de {range} m d'un *cadavre*, appuie sur {pkey} et *reste près de lui* {chold} s.",
                   "Tu le *dévores* : ta *vie* et ton *endurance* se régénèrent {per} % plus vite, jusqu'à la fin de la partie.",

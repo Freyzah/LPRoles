@@ -91,7 +91,7 @@ PROPERTIES = [
     ("TabletButton", "Color"), ("Tablet", "Hand Widget"), ("Mec", "Orientation"), ("Mec", "Head Collider"), ("Mec", "Head Hitbox"),
     ("PlayerList", "Target Mec"), ("PlayerList", "color_border"),
     ("WorldItem", "Data"), ("ItemSpawner", "Used"),
-    ("Mec", "PlayerData"), ("Mec", "Stamina Regenering"),
+    ("Mec", "PlayerData"), ("Mec", "Stamina Regenering"), ("PlayerStateW", "Mec Ref"), ("PlayerStateW", "HPtext"),
     ("PlayerData", "Min Regen"), ("PlayerData", "Max Regen"), ("PlayerData", "Regen HP Speed"),
 ]
 # Native functions whose first parameter is a text.
@@ -236,6 +236,7 @@ def main():
                       ("W_Settings_Text_C", "/game/ui/menu2/w_settings_text"),
                       ("W_Menu_MainTabButton_C", "/game/ui/menu2/w_menu_maintabbutton"),
                       ("W_Player_List_C", "/game/ui/game/w_player_list"),
+                      ("W_PlayerState_C", "/game/ui/game/w_playerstate"),
                       ("Vent_C", "/game/world/tasks/task_vents/vent"),
                       ("DeadBody_C", "/game/character/ghost/deadbody")):
         if cls not in g.pub.get(path, {}).values(): err(f"classe absente : {path}.{cls}")

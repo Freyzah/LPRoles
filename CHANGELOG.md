@@ -2,7 +2,11 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.11.3
+## 0.11.4
+
+- Vampire : sa vie en plus s'ajoute au nombre affiché sur la barre de vie (115 pour une vie pleine et 15 en réserve).
+
+## 0.11.3 (non publiée)
 
 - Empoisonneur : la ligne « Poison : mort dans … s - antidote : … raffiné » de la victime est raccourcie pour tenir sur une rangée de la tablette.
 

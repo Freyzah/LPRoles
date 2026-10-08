@@ -743,8 +743,29 @@ local function role_changed()
     for _, fn in ipairs(role_listeners) do U.try("état du rôle", fn, my_role) end
 end
 
+local HUD_STATE = "/Game/UI/Game/W_PlayerState.W_PlayerState_C"       -- the part of the HUD that shows life and stamina
+
+-- The number on the HUD's life bar is written by the game each time the life changes
+-- ("Set HP": the character's own life, 100 at most). Right after, the reserve is added to it:
+-- the Vampire reads 115 for a full life and 15 in reserve. The bar itself stays the game's.
+local function vamp_number(ps, mec)
+    if not vamp or vamp.reserve <= 0 or ghost then return end
+    local health = U.get(mec, "Health", 0)
+    if type(health) ~= "number" or health <= 0 then return end
+    G.text_call(U.get(ps, "HPtext", nil), "SetText", tostring(math.floor(health + vamp.reserve + 0.5)))
+end
+
+-- Has the game write that number again (the hook on "Set HP" then adds the reserve, if any).
+local function show_health()
+    local mec = G.local_mec()
+    local hud = mec and hud_of(mec)
+    local ps = hud and U.get(hud, "PlayerState", nil)
+    if U.valid(ps) then U.tcall(ps, "Set HP") end
+end
+
 local function vamp_changed()
     if my_status and my_role == "vampire" then my_status.res = vamp and vamp.reserve or 0 end
+    U.try("vie affichée", show_health)
     role_changed()
 end
 
@@ -766,9 +787,6 @@ local function vamp_absorb(mec, amount)
     local give = math.min(vamp.reserve, 100 - health)
     U.set(mec, "Health", health + give)
     vamp.reserve = vamp.reserve - give
-    local hud = hud_of(mec)
-    local ps = hud and U.get(hud, "PlayerState", nil)
-    if U.valid(ps) then U.tcall(ps, "Set HP") end
     vamp_changed()
 end
 
@@ -907,7 +925,10 @@ local function on_end()
     restore_bodies()
     end_gag(true)
     poisoned = false
-    vamp = nil
+    if vamp then
+        vamp = nil
+        U.try("vie affichée", show_health)     -- the game's own number again
+    end
     wolf_reset()
     -- no role any more until the next game
     my_role, my_status, safe_idx = nil, nil, nil
@@ -1029,7 +1050,10 @@ end
 -- ---------------------------------------------------------------- messages from the host
 local function set_role(role)
     if role ~= my_role then my_status, safe_idx, hint_shown = nil, nil, false end
-    if role ~= "vampire" then vamp = nil end
+    if role ~= "vampire" and vamp then
+        vamp = nil
+        U.try("vie affichée", show_health)
+    end
     if role ~= "werewolf" then wolf_reset() end
     my_role = role
     for _, fn in ipairs(role_listeners) do U.try("rôle", fn, role) end
@@ -1700,6 +1724,12 @@ function Cl.install()
     N.on("GAG", on_gag)
     N.on("POISON", on_poison)
     N.on("VAMP", on_vamp)
+    U.hook(HUD_STATE .. ":Set HP", function(ctx)
+        if not vamp then return end
+        local ps = ctx:get()
+        local mec = U.valid(ps) and U.get(ps, "Mec Ref", nil) or nil
+        if U.valid(mec) and is_local(mec) then U.try("vie du vampire", vamp_number, ps, mec) end
+    end)
     N.on("WOLF", on_wolf)
     N.on("HELLO", function()
         G.clear_messages()                     -- a new game: nothing left to show of the one before
