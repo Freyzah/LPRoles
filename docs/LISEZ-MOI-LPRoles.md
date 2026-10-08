@@ -1,6 +1,6 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.11.4, **publiée le 8 octobre 2026** sur GitHub (https://github.com/Freyzah/LPRoles) : tout joueur qui a la 0.9.0 ou plus la reçoit au lancement suivant du jeu. Le jeu de l'utilisateur avait encore la 0.11.3 au moment de la publication (il tournait) : il se mettra à jour de lui-même.
+Version 0.11.4, **publiée le 8 octobre 2026** sur GitHub (https://github.com/Freyzah/LPRoles) : tout joueur qui a la 0.9.0 ou plus la reçoit au lancement suivant du jeu. Le jeu de l'utilisateur s'est mis à jour tout seul de la 0.11.3 à la 0.11.4 à son lancement de 20 h 58 (3 s).
 
 À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.4-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
 
@@ -55,6 +55,8 @@ Version 0.11.4, **publiée le 8 octobre 2026** sur GitHub (https://github.com/Fr
 - **0.11.2** : Empoisonneur revu à la demande de l'utilisateur : 3 minutes, victime prévenue quand il en reste 2, antidote = l'échantillon raffiné d'une plante tirée au hasard. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
 - **0.11.3** : ligne du poison raccourcie pour tenir sur une rangée du bandeau de la tablette. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
 - **0.11.4** : la vie en plus du Vampire s'ajoute au nombre affiché sur la barre de vie du jeu. **Publiée le 8 octobre** à la demande de l'utilisateur, avec tout ce qui s'était accumulé depuis la 0.9.0 (huit rôles, nouvel onglet, antidote). Mise à jour vérifiée contre la vraie page depuis une copie exacte de la 0.11.3 et de la 0.9.0. **Rien de tout cela n'a encore tourné en jeu.**
+- **Essai à deux du 8 octobre (0.11.3, d'après le journal de l'hôte)** : Écho, Amnésique (rôle d'un employé puis d'un dissident), Empoisonneur (antidote pris une fois, mort à 180 s l'autre fois), Bâillonneur, Voleur, Bouffon (victoire puis fin de partie 3 s après), Vampire et Loup-garou ont tous fait ce qu'ils devaient côté hôte, sans aucune erreur. Le nouvel onglet a servi tout du long. Le journal ne dit pas ce que les joueurs ont vu ou entendu (micro coupé, lignes de la tablette, vie du Vampire) : à confirmer par l'utilisateur.
+- **Mise à jour automatique faite depuis le jeu** (8 octobre, 0.11.3 → 0.11.4) : téléchargée, installée et chargée dans le même lancement, fichiers identiques à la version publiée.
 
 ## Ce qui est installé
 

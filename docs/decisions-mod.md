@@ -1422,3 +1422,23 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Portée :** toute installation en 0.9.0 ou plus reçoit cette version, avec huit rôles, un onglet et un antidote qui n'ont jamais tourné en jeu. L'utilisateur le savait en demandant la publication.
 - **Règle pour la suite :** inchangée tant qu'il n'a pas répondu à la question posée deux fois : je ne publie que sur sa demande.
 - **Archive complète** refaite en 0.11.4 pour les premières installations ; une archive 0.11.3 déjà donnée se met à jour seule.
+
+## D110 — Premier essai à deux des nouveaux rôles, première mise à jour depuis le jeu (constats)
+
+- **Source :** le journal de l'utilisateur (hôte), session du 8 octobre de 20 h 13 à 20 h 54 en 0.11.3 avec une amie, puis relance à 20 h 58.
+- **Mise à jour automatique :** « Mise à jour faite au lancement : 0.11.3 -> 0.11.4 (3.0 s) », puis chargement en 0.11.4 dans le même lancement ; les fichiers installés sont identiques aux sources de la 0.11.4. C'était le dernier point jamais vu du mécanisme (D95).
+- **Rôles, d'après le journal de l'hôte, sans aucune ligne d'erreur :**
+  - **Écho :** sept retours, de 4,8 à 4,9 s en arrière.
+  - **Amnésique :** prend le rôle Écho d'une morte employée, puis s'en sert ; une autre fois, celui d'une morte dissidente, devient dissident, et la partie à deux se termine aussitôt (plus aucun employé en vie), ce qui est la règle.
+  - **Empoisonneur :** premier poison soigné par l'antidote au bout de 2 min 23 (plante rouge) ; second poison mortel à 180 s exactement.
+  - **Bâillonneur :** deux bâillons de 20 s lancés.
+  - **Voleur :** un défibrillateur pris à l'autre joueur.
+  - **Bouffon :** tué par une employée, victoire annoncée, fin de partie 3 s plus tard.
+  - **Vampire :** un cadavre vampirisé, « vie maximale 100 + 10, réserve 10 ».
+  - **Loup-garou :** valeurs du jeu lues (endurance 10 à 40 par seconde, 1 PV toutes les 2 s), +10 % puis +20 %.
+  - **Ange gardien et Liés** (plus anciens) : protégé sauvé, lien joué.
+- **Ce que le journal ne dit pas :** ce que les joueurs ont vu et entendu (micro réellement coupé, bandeaux, page de la tablette, objet volé dans le bon état, endurance plus rapide). À confirmer par l'utilisateur.
+- **Trois points relevés pour lui demander :**
+  1. Le Loup-garou a dévoré deux fois le même joueur à 58 s d'écart. C'est voulu si ce joueur a été réanimé puis tué de nouveau entre-temps (D103), une faute sinon.
+  2. La portée du Voleur a été passée de 250 à 600 cm juste après le vol : la valeur par défaut est peut-être trop courte.
+  3. Changer « Rôle forcé pour l'hôte » lui a demandé une vingtaine de clics à chaque essai.
