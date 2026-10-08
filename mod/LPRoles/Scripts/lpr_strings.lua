@@ -382,6 +382,8 @@ S.MENU_TAB           = "LPROLES"
 S.MENU_ROLE          = "TON RÔLE"
 S.MENU_NO_ROLE       = "AUCUN"
 S.MENU_HOST_ONLY     = "Les réglages de la partie sont modifiables par l'hôte."
+S.MENU_SECTION       = "Réglages affichés"
+S.MENU_ROLES         = "RÔLES ACTIFS"         -- every role's on/off switch, in one place
 
 S.PLANT_CODE = { [1] = "G3M", [2] = "Y8Z", [3] = "BO4", [4] = "WX2", [5] = "RU2" }
 

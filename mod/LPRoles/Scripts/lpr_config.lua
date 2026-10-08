@@ -4,9 +4,8 @@ local U = require("lpr_util")
 local C = {}
 
 -- Groups, in the order shown in the menu.
-C.GROUPS = { "MES RÉGLAGES", "GÉNÉRAL", "SHÉRIF", "RECRUTEUR", "RÊVEUR", "FÉE", "MÉDIUM", "ANGE GARDIEN", "TAUPE",
-             "TRAQUEUR", "HYPNOTISEUR", "MÉTAMORPHE", "NETTOYEUR", "CLANDESTIN", "LIÉS", "ÉCHANGEUR",
-             "MARTYR", "REVENANT", "TEST" }
+-- C.GROUPS, the groups of settings in the order they first appear below, is drawn from the
+-- settings themselves (after C.DEFS): a group cannot be forgotten in it.
 
 local CAMPS = { "any", "employee", "dissident" }
 -- What cures the Empoisonneur's poison: nothing, any fish, any jar holding a plant, or one item.
@@ -215,13 +214,25 @@ C.DEFS = {
     { key = "werewolf_hold",           group = "LOUP-GAROU", default = 3,     kind = "num",   min = 1, max = 10, step = 0.5, label = "Durée du geste (s)" },
 
     { key = "force_host_role",         group = "TEST", default = "none", kind = "choice",
-      choices = { "none", "sheriff", "infector", "dreamer", "fairy", "medium", "angel", "mole", "tracker",
-                  "hypnotist", "mimic", "cleaner", "stowaway", "linked", "swapper", "martyr", "revenant",
-                  "poisoner", "gagger", "thief", "echo", "amnesiac", "jester", "vampire", "werewolf" },
+      -- in the alphabetical order of the names shown (C.CHOICE_LABEL): easier to find among so many
+      choices = { "none", "amnesiac", "angel", "gagger", "jester", "stowaway", "swapper", "echo", "poisoner",
+                  "fairy", "hypnotist", "linked", "werewolf", "martyr", "medium", "mimic", "cleaner", "infector",
+                  "revenant", "dreamer", "sheriff", "mole", "tracker", "vampire", "thief" },
       label = "Rôle forcé pour l'hôte" },
     { key = "ignore_min_players",      group = "TEST", default = false, kind = "bool",  label = "Ignorer les joueurs minimum" },
     { key = "debug",                   group = "TEST", default = false, kind = "bool",  label = "Journal détaillé" },
 }
+
+C.GROUPS = {}
+do
+    local seen = {}
+    for _, d in ipairs(C.DEFS) do
+        if not seen[d.group] then
+            seen[d.group] = true
+            C.GROUPS[#C.GROUPS + 1] = d.group
+        end
+    end
+end
 
 -- How choice values are written on screen.
 C.CHOICE_LABEL = {

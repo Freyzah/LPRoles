@@ -55,6 +55,9 @@ def publish(version, changes=None, corrupt=False):
 
 def run(*extra, source=None):
     t = time.time()
+    # the real game may be running while these tests are: the script is given a process name
+    # that matches nothing, except where the test itself names one
+    if '-GameProcess' not in extra: extra += ('-GameProcess', 'aucun-jeu-pendant-les-essais')
     r = subprocess.run(['powershell', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File',
                         os.path.join(MOD, 'update.ps1'), '-Source', source or 'http://127.0.0.1:%d' % PORT] + list(extra),
                        capture_output=True, text=True, encoding='cp850', errors='replace')

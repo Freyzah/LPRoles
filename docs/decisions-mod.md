@@ -1348,3 +1348,21 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Même geste que le Vampire** (appui puis 3 s près du corps), même mécanisme côté hôte. Les deux rôles peuvent se servir du même corps, chacun une fois.
 - **Détail :** pour la vie, le jeu ne relit le rythme qu'au début d'un repos ; le gain s'applique donc au repos suivant.
 - **Version :** 0.11.0. Installée (jeu fermé), archive complète refaite. Pas publiée.
+
+## D105 — Onglet LPROLES : un groupe de réglages à la fois (version 0.11.1)
+
+- **Demande :** « est-ce possible d'améliorer le menu de réglages du mod car ça devient très long à scroll avec tout ces rôles, et du coup mettre de façon plus accessible la catégorie "Test" car actuellement je dois scroll tout en bas pour pouvoir changer le rôle forcé entre chaque test ».
+- **Erreur de ma part, trouvée en relisant le menu :** la liste des groupes affichés (`C.GROUPS`) était écrite à la main et je n'y avais pas ajouté les huit nouveaux rôles. En 0.10.0 et 0.11.0, leurs réglages existaient (dans `config.txt`, et par les touches F5 à F8) mais **leurs groupes n'apparaissaient pas dans l'onglet**, contrairement à ce que j'avais écrit. Aucun contrôle ne reliait cette liste aux réglages. Corrigé à la racine : la liste est maintenant tirée des réglages eux-mêmes, un groupe ne peut plus y manquer.
+- **Options pour raccourcir la page :**
+  1. **Une rangée « Réglages affichés » qui choisit le groupe montré ; les autres sont repliés (retenu).** La page de l'hôte fait au plus une dizaine de rangées. Les rangées repliées le sont comme celles de l'aide du rôle le sont depuis longtemps (visibilité « repliée »), une technique déjà éprouvée en jeu. Rien n'est créé ni détruit en changeant de groupe.
+  2. Seulement remonter TEST en haut. Règle la moitié de la demande ; la page resterait longue de 140 rangées.
+  3. Des groupes qui se déplient au clic sur leur titre. Les titres du jeu ne sont pas cliquables ; il faudrait d'autres gadgets que ceux du menu.
+  4. Plusieurs onglets. Chaque onglet déplace ceux du jeu dans la colonne (D-menu) : trop de manipulations pour un gain égal.
+- **Ordre :** MES RÉGLAGES, TEST, GÉNÉRAL, RÔLES ACTIFS, puis les rôles par ordre alphabétique (sans tenir compte des accents) : avec 24 rôles, on sait de quel côté tourner, et la flèche gauche boucle vers la fin de l'alphabet. TEST est à un clic ; si un rôle est forcé pour l'hôte, l'onglet s'ouvre dessus.
+- **RÔLES ACTIFS :** un groupe de plus, qui réunit les 24 interrupteurs. Sans lui, activer ou couper plusieurs rôles demanderait de visiter chaque groupe : ce serait pire qu'avant. Chaque interrupteur a donc deux rangées (ici et dans le groupe du rôle) ; un clic sur l'une réécrit l'autre.
+- **« Rôle forcé pour l'hôte » :** ses 24 choix passent aussi en ordre alphabétique, puisque l'utilisateur le change à chaque essai.
+- **Groupe retenu** d'un menu à l'autre pendant le lancement (le menu est reconstruit à chaque partie) ; pas enregistré dans `config.txt`.
+- **Les joueurs qui ne sont pas hôtes** gardent leur page d'avant (leur rôle, puis MES RÉGLAGES) : elle est courte.
+- **Notes de version :** une version jamais publiée est marquée « (non publiée) » dans `CHANGELOG.md` ; à la publication suivante, `deploy.py` joint ces sections aux notes, pour que la page GitHub dise tout ce qui arrive chez les joueurs.
+- **Contrôles :** syntaxe, noms du jeu, pages, ordre alphabétique vérifié par un calcul à part. **Jamais lancé en jeu ; pas de relecture indépendante.**
+- **Version :** 0.11.1. Installée (jeu fermé), archive complète refaite. Pas publiée.

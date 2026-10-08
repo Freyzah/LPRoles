@@ -1,8 +1,8 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.11.0, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.9.0, c'est elle que vos amis reçoivent. Ce document décrit la 0.11.0.
+Version 0.11.1, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.9.0, c'est elle que vos amis reçoivent. Ce document décrit la 0.11.1.
 
-À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.0-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
+À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.1-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
 
 **État des tests :**
 - **0.1.0** : testée en solo par l'hôte (chargement, rêve, recharge, envol, carte du Shérif).
@@ -51,6 +51,7 @@ Version 0.11.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.9.0** : le projet devient un dépôt GitHub ; le mod se met à jour tout seul au lancement du jeu (et par `mettre-a-jour.bat`). Aucun changement de jeu. Publiée et installée le 8 octobre. Mise à jour vérifiée hors du jeu, contre la vraie page GitHub. Premier lancement en jeu par l'utilisateur le 8 octobre : la vérification passe, le mod se charge normalement. Une vraie mise à jour depuis le jeu reste à voir.
 - **0.10.0** : six rôles de plus, Empoisonneur, Bâillonneur, Voleur, Écho, Amnésique et Bouffon (les deux derniers sont neutres). **Aucun n'a encore été lancé en jeu.** Installée le 8 octobre, pas publiée.
 - **0.11.0** : deux rôles de plus, proposés par l'utilisateur, Vampire et Loup-garou. **Jamais lancés en jeu.** Installée le 8 octobre, pas publiée.
+- **0.11.1** : l'onglet LPROLES de l'hôte n'affiche plus qu'un groupe de réglages à la fois, TEST en deuxième ; les groupes des huit nouveaux rôles, absents de l'onglet en 0.10.0 et 0.11.0, y sont. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
 
 ## Ce qui est installé
 
@@ -344,7 +345,13 @@ Un onglet **LPROLES** s'ajoute au menu Échap du jeu, juste après l'onglet « R
 
 - **Pour tous :** le rôle du joueur et le rappel de son fonctionnement (les mêmes lignes que sur la tablette ; une ligne longue continue sur la rangée suivante).
 - **Pour tous :** le groupe MES RÉGLAGES (touche de pouvoir, touche de consommation, page de la tablette), enregistré sur sa propre machine.
-- **Pour l'hôte :** tous les réglages de la partie, groupés par rôle. Les flèches changent les choix (oui/non, camp) et bouclent du dernier au premier ; les champs numériques se saisissent ou se font glisser. Chaque changement est enregistré aussitôt dans `config.txt`.
+- **Pour l'hôte :** tous les réglages de la partie, **un groupe à la fois** (depuis la 0.11.1). La première rangée de réglages, « Réglages affichés », choisit le groupe avec ses flèches ; seul ce groupe occupe la page.
+  - Ordre des groupes : **MES RÉGLAGES**, **TEST**, **GÉNÉRAL**, **RÔLES ACTIFS**, puis les rôles par ordre alphabétique. La flèche gauche depuis MES RÉGLAGES mène aux derniers rôles de l'alphabet.
+  - **TEST** est à un clic de MES RÉGLAGES. Quand un rôle est forcé pour l'hôte, l'onglet s'ouvre directement sur TEST.
+  - **RÔLES ACTIFS** réunit l'interrupteur OUI/NON de chaque rôle (et des Liés), par ordre alphabétique. Chaque rôle garde aussi le sien dans son propre groupe : les deux rangées restent identiques.
+  - Le groupe affiché est retenu jusqu'à la fermeture du jeu.
+  - « Rôle forcé pour l'hôte » propose désormais les rôles par ordre alphabétique.
+- Les flèches changent les choix (oui/non, camp) et bouclent du dernier au premier ; les champs numériques se saisissent ou se font glisser. Chaque changement est enregistré aussitôt dans `config.txt`.
 
 Tout est réglable : rôles actifs, nombre de rôles par partie, nombre minimum de joueurs, camps, durées, portées, nombre d'utilisations, durée des gestes.
 

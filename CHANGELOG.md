@@ -2,7 +2,13 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.11.0
+## 0.11.1
+
+- **Onglet LPROLES plus court pour l'hôte :** un seul groupe de réglages à la fois, choisi avec la rangée « Réglages affichés ». Dans l'ordre : MES RÉGLAGES, TEST, GÉNÉRAL, RÔLES ACTIFS, puis les rôles par ordre alphabétique.
+- **RÔLES ACTIFS** réunit l'interrupteur OUI/NON de tous les rôles.
+- « Rôle forcé pour l'hôte » liste les rôles par ordre alphabétique.
+
+## 0.11.0 (non publiée)
 
 Huit nouveaux rôles, chacun avec son groupe de réglages dans l'onglet LPROLES :
 
@@ -16,10 +22,6 @@ Huit nouveaux rôles, chacun avec son groupe de réglages dans l'onglet LPROLES 
 - **Loup-garou** (employé) : dévore un cadavre ; sa vie et son endurance se régénèrent 10 % plus vite, une fois par cadavre.
 
 Le réglage « Rôle forcé pour l'hôte » propose ces huit rôles pour les essayer.
-
-## 0.10.0
-
-Version intermédiaire, jamais publiée : les six premiers rôles de la 0.11.0.
 
 ## 0.9.0
 

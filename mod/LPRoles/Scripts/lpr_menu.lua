@@ -42,6 +42,12 @@ local status_source = nil                 -- function returning the host's value
 local attempts = {}                       -- menu address -> failed attempts before anything was added
 local seen_revision = -1                  -- settings revision the rows currently show
 local seen_open, opened_at = false, nil   -- the pause menu as last seen by the tick, and since when
+-- The host's settings are many: one group at a time is shown, chosen with the first row.
+local sections = {}                       -- names of the groups, in the order of that row
+local members = {}                        -- group name -> { { w, vis }, ... }: its title and its rows
+local selector = nil                      -- that row (nil for a player who is not the host: all is shown)
+local shown = nil                         -- the group on screen; kept from one menu to the next
+local FIRST_GROUPS = { "TEST", "GÉNÉRAL" }    -- right after the personal settings, before the roles
 
 -- ---------------------------------------------------------------- crash guard
 -- Only the building of the tab is guarded (see U.guard); updates are plain protected calls.
@@ -112,7 +118,8 @@ local function options_of(def)
 end
 
 local function current_index(row)
-    local v = C.get(row.def.key)
+    local v = shown
+    if not row.selector then v = C.get(row.def.key) end
     for i, x in ipairs(row.values) do
         if x == v then return i end
     end
@@ -124,6 +131,7 @@ local function add_title(page, ctx, pc, name)
     local w = create(CLASS.title, ctx, pc)
     page:AddChild(w)
     set_block_text(w, "Text", name)
+    return w
 end
 
 local function set_row_value(w, value)
@@ -156,6 +164,7 @@ local function add_selection(page, ctx, pc, def)
     page:AddChild(w)
     rows[U.key(w)] = row
     show_selection(row)
+    return w
 end
 
 local function show_value(row)
@@ -189,6 +198,42 @@ local function add_value(page, ctx, pc, def)
     end
     U.tcall(w, "Set Range", def.min, def.max, def.min, def.max)
     show_value(row)
+    return w
+end
+
+-- ---------------------------------------------------------------- one group at a time
+-- A name without its accents, in capitals: what the roles are sorted by ("ÉCHO" before "FÉE").
+local UNACCENTED = { ["É"] = "E", ["È"] = "E", ["Ê"] = "E", ["À"] = "A", ["Â"] = "A", ["Î"] = "I", ["Ô"] = "O",
+                     ["Û"] = "U", ["Ç"] = "C", ["é"] = "e", ["è"] = "e", ["ê"] = "e", ["à"] = "a", ["â"] = "a",
+                     ["î"] = "i", ["ô"] = "o", ["û"] = "u", ["ç"] = "c" }
+local function sort_key(name)
+    return (name:gsub("\195[\128-\191]", UNACCENTED)):upper()
+end
+
+-- The row that chooses the group: a selection like the others, tied to no setting.
+local function add_selector(page, ctx, pc)
+    local w = create(CLASS.selection, ctx, pc)
+    local row = { widget = w, selector = true, values = sections, labels = sections }
+    G.text_call(w, "Rename", S.MENU_SECTION)
+    page:AddChild(w)
+    rows[U.key(w)] = row
+    return row
+end
+
+-- Only the chosen group takes room on the page (the others are collapsed, as the unused rows
+-- of the role's help are); its rows are written again from the settings.
+local function apply_sections()
+    if not selector then return end
+    for name, list in pairs(members) do
+        for _, m in ipairs(list) do
+            if U.valid(m.w) then pcall(function() m.w:SetVisibility(name == shown and m.vis or 1) end) end      -- 1: collapsed
+        end
+    end
+    for _, row in pairs(rows) do
+        if row.section == shown and U.valid(row.widget) then
+            if row.values then show_selection(row) else show_value(row) end
+        end
+    end
 end
 
 -- Shows the current settings again (they can also change through the backup keys).
@@ -370,20 +415,72 @@ local function build(menu, mec)
     end
     U.try("menu : rôle", refresh_role)
 
-    -- Settings: each player's own (keys), then the game's, for the host only.
+    -- Settings: each player's own (keys), then the game's, for the host only. The host's are
+    -- many: a first row chooses the group shown. After the personal settings come the test
+    -- aids and the general settings, then every role's on/off switch in one group, then the
+    -- roles one by one (each with its switch again: two rows of one setting stay alike).
     local host = G.is_host()
-    for _, group in ipairs(C.GROUPS) do
-        if host or C.PERSONAL_GROUPS[group] then
-            U.try("menu : " .. group, add_title, page, mec, pc, group)
-            for _, def in ipairs(C.DEFS) do
-                if def.group == group then
-                    local add = (def.kind == "bool" or def.kind == "choice") and add_selection or add_value
-                    U.try("menu : " .. def.key, add, page, mec, pc, def)
-                end
-            end
+    sections, members, selector = {}, {}, nil
+    if host then selector = U.try("menu : choix du groupe", add_selector, page, mec, pc) end
+    local function member(section, w)
+        if not U.valid(w) then return end
+        local vis = 0
+        pcall(function() vis = w:GetVisibility() end)
+        members[section] = members[section] or {}
+        table.insert(members[section], { w = w, vis = vis })
+        local row = rows[U.key(w)]
+        if row then row.section = section end
+    end
+    local function add_group(section, defs)
+        sections[#sections + 1] = section
+        member(section, U.try("menu : " .. section, add_title, page, mec, pc, section))
+        for _, def in ipairs(defs) do
+            local add = (def.kind == "bool" or def.kind == "choice") and add_selection or add_value
+            member(section, U.try("menu : " .. def.key, add, page, mec, pc, def))
         end
     end
-    if not host then U.try("menu : note", add_text, page, mec, pc, "", S.MENU_HOST_ONLY) end
+    local function defs_where(wanted)
+        local out = {}
+        for _, def in ipairs(C.DEFS) do
+            if wanted(def) then out[#out + 1] = def end
+        end
+        return out
+    end
+    local function of_group(group) return defs_where(function(def) return def.group == group end) end
+    local placed = {}
+    for _, group in ipairs(C.GROUPS) do
+        if C.PERSONAL_GROUPS[group] then
+            add_group(group, of_group(group))
+            placed[group] = true
+        end
+    end
+    if host then
+        for _, group in ipairs(FIRST_GROUPS) do
+            add_group(group, of_group(group))
+            placed[group] = true
+        end
+        -- the roles in alphabetical order, here and in the row that chooses the group: with
+        -- that many, one knows which way to turn
+        local switches = defs_where(function(def) return def.key:match("^.+_enabled$") ~= nil end)
+        table.sort(switches, function(a, b) return sort_key(a.label) < sort_key(b.label) end)
+        add_group(S.MENU_ROLES, switches)
+        local roles = {}
+        for _, group in ipairs(C.GROUPS) do
+            if not placed[group] then roles[#roles + 1] = group end
+        end
+        table.sort(roles, function(a, b) return sort_key(a) < sort_key(b) end)
+        for _, group in ipairs(roles) do add_group(group, of_group(group)) end
+        -- the group last looked at; the first time, the test aids if a role is forced, else the first
+        local known = false
+        for _, name in ipairs(sections) do known = known or name == shown end
+        if not known then shown = (C.get("force_host_role") ~= "none") and "TEST" or sections[1] end
+        if selector then
+            U.try("menu : choix du groupe", show_selection, selector)
+            U.try("menu : groupe affiché", apply_sections)
+        end
+    else
+        U.try("menu : note", add_text, page, mec, pc, "", S.MENU_HOST_ONLY)
+    end
     seen_revision = C.revision
 
     add_tab_button(tab, mec, pc, page_index)
@@ -414,6 +511,15 @@ local function on_selection(ctx, dir)
     local w = ctx:get()
     local row = row_of(w)
     if not row or not row.values then return end
+    if row.selector then
+        -- another group of settings: nothing is changed, only what the page shows
+        if menu_open() then shown = row.values[((current_index(row) - 1 + dir) % #row.values) + 1] end
+        guarded("menu : groupe affiché", function()
+            show_selection(row)
+            apply_sections()
+        end)
+        return
+    end
     if not menu_open() then
         -- the game has already blanked the row: what it shows is put back, nothing changes
         guarded("menu : choix", show_selection, row)
@@ -424,6 +530,10 @@ local function on_selection(ctx, dir)
     C.set(row.def.key, row.values[i], true)
     guarded("menu : choix", function()
         show_selection(row)
+        -- a role's switch has a second row, in the group of all the switches
+        for _, other in pairs(rows) do
+            if other ~= row and other.values and other.def == row.def and U.valid(other.widget) then show_selection(other) end
+        end
         if row.def.key == "use_key" or row.def.key == "power_key" then
             refresh_rows()                      -- the other key takes the letter just left, if it was the same
             refresh_role()

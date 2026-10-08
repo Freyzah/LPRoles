@@ -205,11 +205,18 @@ def package(version=None):
     print(f"Archive créée ({os.path.getsize(out) // 1024} Ko) :", out)
 
 def release_notes(version):
-    """This version's section of CHANGELOG.md (from its "## <version>" title to the next one)."""
+    """This version's section of CHANGELOG.md (from its "## <version>" title to the next one), followed by
+    the sections right under it whose title says "(non publiée)": versions that were only ever installed
+    here, whose changes reach the players with this one."""
     text = open(os.path.join(ROOT, "CHANGELOG.md"), encoding="utf-8").read()
-    m = re.search(r"^## " + re.escape(version) + r"\b[^\n]*\n(.*?)(?=^## |\Z)", text, re.M | re.S)
-    if not m: sys.exit(f"CHANGELOG.md n'a pas de section « ## {version} »")
-    return m.group(1).strip() + "\n"
+    sections = re.findall(r"^## ([^\n]*)\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    at = [i for i, (title, _) in enumerate(sections) if re.match(re.escape(version) + r"\b", title)]
+    if not at: sys.exit(f"CHANGELOG.md n'a pas de section « ## {version} »")
+    out = [sections[at[0]][1].strip()]
+    for title, body in sections[at[0] + 1:]:
+        if "(non publiée)" not in title: break
+        out.append("### " + title.replace("(non publiée)", "").strip() + "\n\n" + body.strip())
+    return "\n\n".join(out) + "\n"
 
 def release_assets(out, version):
     """LPRoles.zip: the mod folder as it must be on a player's machine, files at the archive's root.
