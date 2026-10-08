@@ -57,6 +57,7 @@ local function fresh_game_fields(P)
     P.safe, P.marker_secs = nil, nil   -- Shérif: the safe person's key, and how long it was marked
     P.card = nil                   -- Shérif: the access card shown to this player: "shown", "taken", nil if none
     P.poison = nil                 -- poisoned by an Empoisonneur: { by, at, warn_at, warned }
+    P.poison_told = nil            -- the page of this player showed the poison at the last status sent
     P.gag_until = nil              -- Bâillonneur: this player's microphone is held off until then
     P.trail = nil                  -- Écho: where this player was lately: { { at, loc, yaw }, ... }
     P.fed, P.meals = nil, 0        -- Vampire, Loup-garou: the bodies used (key -> time of that death), and how many
@@ -217,7 +218,6 @@ local function jar_emptied(P)
     local w = P.jar_wait
     if not w or not G.holds_dirty_jar(P.mec) then return end
     P.jar_wait = nil
-    if w.cure then return w.cure(P) end                        -- emptied as an antidote, not for a use
     local code, spec = recharge_of(P)
     if P.role ~= w.role or code ~= w.code then return end      -- the host changed the item meanwhile
     local ok, max = room_for_use(P, spec)
@@ -527,8 +527,11 @@ end
 
 -- ---------------------------------------------------------------- Empoisonneur
 -- The victim dies some time after the power, with no blow from anybody. It is told beforehand
--- (how long before is the host's setting, never if 0) and may then save itself with the
--- antidote: the item in hand, consumed with the "consume" key like a recharge.
+-- (how long before is the host's setting, never if 0), and told its antidote: the refined
+-- sample of one plant, drawn at random for each poisoning. A refined sample is what the
+-- centrifuge makes of a jar holding a plant; the samples the mixer makes of two do not count.
+-- The victim drinks it the way the game has samples drunk (seen by the "Add Buff" hook), or
+-- holds it and presses the "consume" key.
 local function end_poison(T)
     local p = T.poison
     if not p then return nil end
@@ -546,38 +549,39 @@ local function cured(T)
     U.log("Empoisonneur : %s prend l'antidote", G.player_name(T.mec))
 end
 
--- held: the recharge item in hand (1-9, 0 for anything else)
-local function cure_fits(code, held)
-    if held == 0 then return false end
-    if code == C.CURE_FISH then return held > G.PLANT_KINDS end
-    if code == C.CURE_PLANT then return held <= G.PLANT_KINDS end
-    return held == code
+-- The refined sample of one plant: the centrifuge gives it the plant's number, and a time of
+-- 0 (1 for the red plant, the only one the mixer never gives as a result).
+local function is_antidote(plant, value, time)
+    return plant ~= nil and plant > 0 and value == plant and (plant == G.PLANT_MIXER or (time or 0) == 0)
 end
 
--- The "consume" key of a player who knows it is poisoned. True when the press was dealt with
--- here (the role's own recharge is then not tried).
+-- The game has just given this player the effect of something drunk (its state: value, time).
+local function on_drink(P, value, time)
+    local p = P.poison
+    if not p or not is_antidote(p.cure, value, time) then return end
+    cured(P)
+end
+
+-- The "consume" key of a player who knows it is poisoned, the antidote in hand: it is used up
+-- without its own effect. True when the press was dealt with here (the role's own recharge is
+-- then not tried).
 local function try_cure(P)
     local p = P.poison
-    local code = C.cure_code(C.get("poison_cure"))
-    if not p or not p.warned or code == 0 then return false end
-    local now = U.now()
-    if P.jar_wait or (P.recharged_at and now - P.recharged_at < RECHARGE_GAP) then return true end
-    local held = G.held_item(P.mec)
-    if not cure_fits(code, held) then
+    if not p or not p.warned or (p.cure or 0) == 0 then return false end
+    local data, value, time = G.hand_item_data(P.mec)
+    local name = data and G.hand_item(P.mec) or nil
+    if not (name and name:find(G.ASSET_SAMPLE, 1, true) and is_antidote(p.cure, value, time)) then
         if recharge_of(P) then return false end        -- perhaps the role's own item: a recharge
-        tell(P, "MSG", "POISON_CURE", code)
+        tell(P, "MSG", "POISON_CURE", p.cure)
         return true
     end
+    local now = U.now()
+    if P.recharged_at and now - P.recharged_at < RECHARGE_GAP then return true end
     P.recharged_at = now
-    if held <= G.PLANT_KINDS then
-        P.jar_wait = { cure = function(X) if X.poison then cured(X) end end, code = held, ends = now + JAR_WAIT }
-        tell(P, "EMPTYJAR", held)
-        return true
-    end
     U.tcall(P.mec, "Let Item")
     U.tcall(P.mec, "Net Let Item")
-    if G.held_item(P.mec) == held then
-        U.log("ERREUR : le poisson de %s n'a pas pu être retiré de sa main, pas d'antidote", G.player_name(P.mec))
+    if G.hand_item(P.mec) ~= nil then
+        U.log("ERREUR : l'échantillon de %s n'a pas pu être retiré de sa main, pas d'antidote", G.player_name(P.mec))
         return true
     end
     tell(P, "EATEN")
@@ -591,10 +595,10 @@ local function tick_poison(T, now)
     if not G.is_alive(T.mec) then return end_poison(T) end
     if p.warn_at and not p.warned and now >= p.warn_at then
         p.warned = true
+        T.status_sent = nil                    -- its page says so at once, and counts down
         tell(T, "POISON", 1)
         tell(T, "MSG", "POISON_YOU", math.max(1, math.ceil(p.at - now)))
-        local code = C.cure_code(C.get("poison_cure"))
-        if code > 0 then tell(T, "MSG", "POISON_CURE", code) end
+        if (p.cure or 0) > 0 then tell(T, "MSG", "POISON_CURE", p.cure) end
     end
     if now < p.at then return end
     end_poison(T)
@@ -1023,9 +1027,12 @@ local function poisoner_done(P, T, now)
     P.charges = P.charges - 1
     local delay = C.get("poison_delay")
     local warning = math.min(C.get("poison_warning"), delay)
-    T.poison = { by = P.key, at = now + delay, warn_at = warning > 0 and (now + delay - warning) or nil }
+    -- the antidote: the refined sample of one of the plants, another draw at every poisoning
+    local cure = C.get("poison_cure") and math.random(G.PLANT_KINDS) or 0
+    T.poison = { by = P.key, at = now + delay, warn_at = warning > 0 and (now + delay - warning) or nil, cure = cure }
     tell(P, "MSG", "POISON_DONE", idx(T))
-    U.log("Empoisonneur : %s empoisonne %s (mort dans %d s)", G.player_name(P.mec), G.player_name(T.mec), delay)
+    U.log("Empoisonneur : %s empoisonne %s (mort dans %d s, antidote : %s)", G.player_name(P.mec), G.player_name(T.mec),
+        delay, cure > 0 and ("échantillon raffiné de la plante " .. cure) or "aucun")
 end
 
 -- The microphone is switched off on the target's own machine (see lpr_client.lua).
@@ -2074,7 +2081,8 @@ local function status_of(P, now)
         local warning = math.min(C.get("poison_warning"), delay)
         v.range, v.delay = metres("poisoner_range"), delay
         if warning <= 0 then v.never = 1 elseif warning >= delay then v.wnow = 1 else v.warn = warning end
-        v.cure = C.cure_code(C.get("poison_cure"))
+        -- the antidote is only told with the warning: never warned, never known
+        if not C.get("poison_cure") then v.nocure = 1 elseif warning > 0 then v.cure = 1 end
         each_player(function(T)
             if T.poison and T.poison.by == P.key then v.tgt, v.act = idx(T) + 1, left(now, T.poison.at) end
         end)
@@ -2113,6 +2121,10 @@ local function status_of(P, now)
     if P.link then
         if P.link_done then v.exlink = who(P.link) else v.link = who(P.link) end
     end
+    -- any player told of a poison: the time left and the plant of the antidote
+    if P.poison and P.poison.warned then
+        v.pleft, v.pplant = left(now, P.poison.at), P.poison.cure
+    end
     local keys = {}
     for k in pairs(v) do keys[#keys + 1] = k end
     table.sort(keys)
@@ -2134,13 +2146,15 @@ local function send_statuses(now)
     local due = now - last_status >= 1
     if due then last_status = now end
     each_player(function(P)
-        if not (P.role or P.link) or not P.modded then return end
+        if not (P.role or P.link or (P.poison and P.poison.warned) or P.poison_told) or not P.modded then return end
         if not due and P.status_sent then return end
         local s = status_of(P, now)
         if s ~= P.status_sent then
             P.status_sent = s
             tell(P, "STATUS", P.role or "none", s)
         end
+        -- a player without a role nor a bond has a page only while poisoned: once more after, to clear it
+        P.poison_told = (P.poison and P.poison.warned) and true or nil
     end)
 end
 
@@ -2264,6 +2278,21 @@ function Sv.install()
             broadcast("SPIRIT", idx(P), 0)
         end
         if P.cleaned and game.active then undo_revival(P) end
+    end)
+    -- The game gives a player the effect of what it has just drunk: the item's state comes
+    -- along. Only looked at for a poisoned player.
+    hook(G.PATH_MEC, "Add Buff", function(ctx, state)
+        local P = player(ctx:get(), false)
+        if not P or not P.poison or not game.active then return end
+        local ok, value, time = pcall(function()
+            local st = state:get()
+            return st[G.F_STATE_VALUE], st[G.F_STATE_TIME]
+        end)
+        if not ok or type(value) ~= "number" then
+            U.log("Antidote : état de l'objet bu par %s illisible (%s)", G.player_name(P.mec), tostring(value))
+            return
+        end
+        U.try("antidote", on_drink, P, value, time)
     end)
     hook(G.PATH_GM, "Select Game Roles", function() on_game_start() end)
     hook(G.PATH_GM, "End Game", function() on_game_end() end)

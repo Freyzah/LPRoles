@@ -1084,7 +1084,7 @@ local MSG = {
     HOST_SHORT = { "warn", "num" }, HOST_NO_MOD = { "warn", "num" },
     CARD_SHOWN = { "role" }, CARD_TAKEN = { "info" }, CARD_NONE = { "warn" },
     POISON_DONE = { "good", "name", sfx = OK }, POISON_ALREADY = { "warn", sfx = FAIL },
-    POISON_YOU = { "bad", "num" }, POISON_CURE = { "info", "cure" }, POISON_CURED = { "good" },
+    POISON_YOU = { "bad", "num" }, POISON_CURE = { "info", "plant" }, POISON_CURED = { "good" },
     POISON_LOST = { "warn" }, POISON_DEAD = { "bad" },
     GAG_DONE = { "good", "name", sfx = OK },
     STEAL_DONE = { "good", "name", sfx = OK }, STEAL_NOTHING = { "warn", sfx = FAIL },
@@ -1114,8 +1114,8 @@ local function on_msg(id, a)
         arg = mec and G.player_name(mec) or "?"
     elseif spec[2] == "pkey" then
         arg = C.format("power_key")
-    elseif spec[2] == "cure" then
-        arg = S.CURE_SHORT[tonumber(a) or 0] or "?"
+    elseif spec[2] == "plant" then
+        arg = S.PLANT_CODE[tonumber(a) or 0] or "?"
     end
     if arg ~= nil then say(id, spec[1], arg) else say(id, spec[1]) end
 end

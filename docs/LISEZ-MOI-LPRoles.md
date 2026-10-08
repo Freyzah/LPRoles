@@ -1,8 +1,8 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.11.1, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.9.0, c'est elle que vos amis reçoivent. Ce document décrit la 0.11.1.
+Version 0.11.2, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.9.0, c'est elle que vos amis reçoivent. Ce document décrit la 0.11.2.
 
-À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.1-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
+À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.2-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
 
 **État des tests :**
 - **0.1.0** : testée en solo par l'hôte (chargement, rêve, recharge, envol, carte du Shérif).
@@ -52,6 +52,7 @@ Version 0.11.1, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.10.0** : six rôles de plus, Empoisonneur, Bâillonneur, Voleur, Écho, Amnésique et Bouffon (les deux derniers sont neutres). **Aucun n'a encore été lancé en jeu.** Installée le 8 octobre, pas publiée.
 - **0.11.0** : deux rôles de plus, proposés par l'utilisateur, Vampire et Loup-garou. **Jamais lancés en jeu.** Installée le 8 octobre, pas publiée.
 - **0.11.1** : l'onglet LPROLES de l'hôte n'affiche plus qu'un groupe de réglages à la fois, TEST en deuxième ; les groupes des huit nouveaux rôles, absents de l'onglet en 0.10.0 et 0.11.0, y sont. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
+- **0.11.2** : Empoisonneur revu à la demande de l'utilisateur : 3 minutes, victime prévenue quand il en reste 2, antidote = l'échantillon raffiné d'une plante tirée au hasard. **Jamais lancée en jeu.** Installée le 8 octobre, pas publiée.
 
 ## Ce qui est installé
 
@@ -136,7 +137,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 | **Échangeur** | Les deux | Échange sa place avec le joueur visé. 1 fois par partie |
 | **Martyr** | Employé | S'il est tué par un joueur, tout le monde apprend le camp de son tueur (ou son nom, selon le réglage) |
 | **Revenant** | Les deux | Une fois mort, son fantôme devient visible et audible de tous pendant 20 s. 1 fois à chaque mort : réanimé puis mort de nouveau, il peut recommencer |
-| **Empoisonneur** | Dissident | Empoisonne le joueur visé : il meurt 60 s plus tard, sans coup de personne. Prévenu 40 s avant, il peut se sauver en consommant un poisson. 1 fois par partie |
+| **Empoisonneur** | Dissident | Empoisonne le joueur visé : il meurt 3 minutes plus tard, sans coup de personne. Prévenu quand il lui reste 2 minutes, il peut se sauver en buvant l'échantillon raffiné d'une plante tirée au hasard. 1 fois par partie |
 | **Bâillonneur** | Dissident | Coupe le micro du joueur visé pendant 20 s : plus personne ne l'entend. 2 fois par partie |
 | **Voleur** | Les deux | À 2,5 m au plus, prend l'objet que tient le joueur visé. 2 fois par partie |
 | **Écho** | Les deux | Revient aussitôt là où il était 5 s plus tôt. 2 fois par partie |
@@ -159,11 +160,15 @@ Ce que fait la touche de pouvoir selon le rôle :
 
 ### Empoisonneur (dissident)
 
-- Il vise un joueur à 4 m au plus et appuie : la victime mourra **60 s** plus tard (« Mort après »). Rien ne se voit ni ne s'entend.
-- La victime est prévenue **40 s avant sa mort** (« Prévenu avant sa mort » ; 0 = jamais, une valeur au moins égale au délai = aussitôt) : « EMPOISONNÉ : MORT DANS 40 S », puis le nom de l'antidote.
-- **Antidote** (réglage « Antidote ») : par défaut **n'importe quel poisson**. Une fois prévenue, la victime le tient en main et appuie sur la touche de consommation. Autres choix : n'importe quelle plante en bocal, un objet précis, ou aucun antidote.
-- L'Empoisonneur lit sur sa page « … est empoisonné : mort dans … s », et apprend si son poison a été soigné.
-- La mort par poison n'a pas de tueur : le Martyr n'annonce rien, le Bouffon ne gagne pas. Un protégé de l'Ange gardien se relève comme d'habitude ; un Lié entraîne l'autre.
+- Il vise un joueur à 4 m au plus et appuie : la victime mourra **3 minutes** plus tard (« Mort après », 180 s). Rien ne se voit ni ne s'entend.
+- **Quand il lui reste 2 minutes** (« Prévenu avant sa mort », 120 s ; 0 = jamais, une valeur au moins égale au délai = aussitôt), la victime lit « EMPOISONNÉ : MORT DANS 120 S », puis « ANTIDOTE : ÉCHANTILLON G3M RAFFINÉ » (ou une autre plante).
+- **L'antidote** est l'**échantillon raffiné d'une seule plante**, celui que la centrifugeuse fait d'un bocal de cette plante. La plante est **tirée au hasard à chaque empoisonnement**, parmi les cinq (G3M, Y8Z, BO4, WX2, RU2). Un échantillon sorti du mélangeur (deux plantes) ne compte pas.
+- **Pour se soigner :** boire l'échantillon comme n'importe quel échantillon du jeu (la victime en reçoit aussi l'effet habituel). La touche de consommation du mod marche aussi, l'échantillon en main : il est alors consommé sans son effet.
+- Tant qu'elle est empoisonnée et prévenue, la **page du rôle** de la victime commence par « Empoisonné : mort dans … s - antidote : G3M raffiné, à boire », avec le compte à rebours. Cela vaut aussi pour un joueur sans rôle.
+- Le bon échantillon soigne même s'il est bu avant l'avertissement.
+- L'Empoisonneur ne connaît pas la plante. Il lit sur sa page « … est empoisonné : mort dans … s », et apprend si son poison a été soigné.
+- Réglage « Antidote : un échantillon raffiné » sur NON : aucun antidote.
+- La mort par poison n'a pas de tueur : le Martyr n'annonce rien, le Bouffon ne gagne pas, le Vampire n'en tire rien. Un protégé de l'Ange gardien se relève comme d'habitude ; un Lié entraîne l'autre.
 - Le poison disparaît si la victime meurt autrement entre-temps. Il agit même si l'Empoisonneur est mort.
 
 ### Bâillonneur (dissident)

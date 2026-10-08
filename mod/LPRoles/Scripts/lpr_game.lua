@@ -33,11 +33,16 @@ G.F_STATE_TIME = "Time_15_AFBBFC834F820A0E18A707A477B6D3FE"
 G.ASSET_ACCESS_CARD = "/Game/Items/Melee/AccessCard/DA_AccessCard.DA_AccessCard"
 G.ASSET_CONTAINER = "/Game/Items/Melee/SampleContainer/DA_Container.DA_Container"
 G.ASSET_FISH = "/Game/Items/Melee/Fish/DA_Fish.DA_Fish"
+-- What the centrifuge makes of a jar holding a plant: its state value is the plant's number;
+-- its state time is 0, or 1 for the red plant. The mixer makes one sample of two: the value
+-- of a plant from 1 to 4 with a time above 0.
+G.ASSET_SAMPLE = "/Game/Items/Melee/ProcessedSample/DA_Sample.DA_Sample"
 
 -- Recharge items are numbered: the plants first (1 to PLANT_KINDS, the plant's own number in
 -- the game), then the fish (the fish machine's number, after the plants). lpr_config.lua
 -- (ITEMS) and lpr_strings.lua (ITEM_NAME, ITEM_SHORT) list them in that order.
 G.PLANT_KINDS, G.FISH_KINDS = 5, 4
+G.PLANT_MIXER = 5         -- the red plant: the one the mixer adds to another
 G.DIRTY_JAR = -1          -- content of a jar left dirty (the game's centrifuge leaves it so)
 
 -- The banner on the HUD uses a very large font: about this many characters fit.

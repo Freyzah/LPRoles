@@ -131,8 +131,8 @@ S.ROLE_HOWTO = {
                   "?warn Il en est *prévenu* {warn} s avant sa mort.",
                   "?wnow Il en est *prévenu aussitôt*.",
                   "?never Il n'en est *jamais prévenu*.",
-                  "?cure Une fois prévenu, il peut se *sauver* en consommant {cure}.",
-                  "!cure Il n'existe *aucun antidote*." },
+                  "?cure Il apprend alors son *antidote* : *l'échantillon raffiné* d'une plante tirée au hasard, à boire.",
+                  "?nocure Il n'existe *aucun antidote*." },
     gagger    = { AIMED,
                   "Son *micro est coupé* pendant {dur} s : plus personne ne l'entend.",
                   "Il en est *prévenu*." },
@@ -191,13 +191,6 @@ S.ITEM_SHORT = {
     [6] = "POISSON SALMON", [7] = "POISSON TUNA", [8] = "POISSON COD", [9] = "POISSON SHRIMP",
 }
 
--- What cures the Empoisonneur's poison, by the antidote's number (lpr_config.lua, C.cure_code):
--- one of the items above, or any fish, or any plant.
-S.CURE_NAME = { [10] = "n'importe quel *poisson*", [11] = "un bocal de n'importe quelle *plante*" }
-S.CURE_SHORT = { [10] = "UN POISSON", [11] = "UN BOCAL DE PLANTE" }
-for i, name in pairs(S.ITEM_NAME) do S.CURE_NAME[i] = name end
-for i, name in pairs(S.ITEM_SHORT) do S.CURE_SHORT[i] = name end
-
 -- Liés: not a role but a bond between two players, whatever their roles. Shown right under
 -- the status line of the role (or alone, for a player without a role).
 S.LINK_LINE = "*Lié* à {link} : au premier de vous deux qui *meurt*, l'autre *meurt aussi*."
@@ -233,6 +226,9 @@ S.STATUS = {
     spirit_later    = "Après ta mort : {n} apparition(s)",
     spirit_left     = "Apparitions restantes : {n} sur {m}",
     poison_on       = "{tgt} est empoisonné : mort dans {act} s",
+    -- any player, whatever the role, once told of the poison (in place of the role's own line)
+    poisoned        = "Empoisonné : mort dans {pleft} s",
+    poisoned_cure   = " - antidote : {pplant} raffiné, à boire",
     amnesiac        = "Sans rôle : cherche un cadavre",
     jester          = "But : être tué par un employé",
     vamp_on         = "Vie en plus : {res} PV sur {bonus}",
@@ -342,7 +338,7 @@ S.SPIRIT_START       = "TU TE MANIFESTES"
 S.POISON_DONE        = "%s EST EMPOISONNÉ"
 S.POISON_ALREADY     = "IL EST DÉJÀ EMPOISONNÉ"
 S.POISON_YOU         = "EMPOISONNÉ : MORT DANS %d S"
-S.POISON_CURE        = "ANTIDOTE : %s"
+S.POISON_CURE        = "ANTIDOTE : ÉCHANTILLON %s RAFFINÉ"
 S.POISON_CURED       = "POISON SOIGNÉ"
 S.POISON_LOST        = "TON POISON A ÉTÉ SOIGNÉ"
 S.POISON_DEAD        = "LE POISON T'A TUÉ"

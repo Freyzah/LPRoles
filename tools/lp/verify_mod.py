@@ -42,7 +42,7 @@ FUNCTIONS = [
     ("Mec", "Set Center of Mass Offset", 0, ""), ("Mec", "Death Deaf", 0, ""), ("Mec", "Death Update", 0, ""),
     ("Mec", "Set Sample", 1, ""), ("Mec", "Net Deal Damage", 8, "Server"), ("Mec", "Net Death", 3, "Server"),
     ("Mec", "Hit Health", 3, "Client"), ("Mec", "Let Item", 0, "Client"), ("Mec", "Net Let Item", 0, "Server"),
-    ("Mec", "Net Set Item State", 1, "Server"),
+    ("Mec", "Net Set Item State", 1, "Server"), ("Mec", "Add Buff", 2, "Server"),
     ("GM", "Select Game Roles", 1, ""), ("GM", "End Game", 2, ""), ("GM", "Set HackerSphere", 1, ""),
     ("HUD", "Death Hidders", 1, ""), ("Notif", "Show Message", 2, ""), ("UpperNotif", "Show Message", 2, ""),
     ("PlayerStateW", "Set HP", 0, ""),
@@ -147,6 +147,7 @@ NATIVE_OBJECTS = ["/Script/UMG.ScrollBox", "/Script/UMG.VerticalBox", "/Script/U
                   "/Script/SteamCorePro.Default__SteamUtilities", "/Script/Engine.PlayerController"]
 ASSETS = ["/Game/Items/Melee/AccessCard/DA_AccessCard", "/Game/Items/Melee/SampleContainer/DA_Container",
           "/Game/Items/Melee/Fish/DA_Fish", "/Game/Items/Melee/ProcessedSample/Materials/M_HackerSphere",
+          "/Game/Items/Melee/ProcessedSample/DA_Sample",
           "/ControlRig/Controls/ControlRigXRayMaterial", "/Engine/BasicShapes/Sphere"]
 STRUCT_FIELDS = {"Str_AliveState": ["Alive_1_FD4B56084F2C8B7E0C61E289ED8A12E8", "Location_6_3846B1B5464EC1C009D1039EC345EE21", "Orientation_9_CABC5B924EC7C54F522C87A43A8B161B"],
                  "Str_Item": ["Data_18_5511228644AD6F4D6D0589BD4438C32F", "State_19_AFBBFC834F820A0E18A707A477B6D3FE"],

@@ -1366,3 +1366,26 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Notes de version :** une version jamais publiée est marquée « (non publiée) » dans `CHANGELOG.md` ; à la publication suivante, `deploy.py` joint ces sections aux notes, pour que la page GitHub dise tout ce qui arrive chez les joueurs.
 - **Contrôles :** syntaxe, noms du jeu, pages, ordre alphabétique vérifié par un calcul à part. **Jamais lancé en jeu ; pas de relecture indépendante.**
 - **Version :** 0.11.1. Installée (jeu fermé), archive complète refaite. Pas publiée.
+
+## D106 — Empoisonneur : antidote raffiné tiré au hasard, 3 minutes (version 0.11.2)
+
+- **Demande :** « Pour l'antidote, je pensais à l'item donné quand on "raffine" une ou deux plantes entre elles, et l'antidote serait choisi à chaque fois aléatoirement parmi toutes les plantes raffinées (hors raffinages de plusieurs plantes, seulement ceux d'une seule plante), et pour les timings, il faudrait que l'empoisonnement dure 3minutes, et qu'à 2 minutes restantes le joueur apprend qu'il est empoisonné et la plante de l'antidote ».
+- **Ce que dit le jeu :**
+  - La **centrifugeuse** prend un bocal contenant une plante (numéro 1 à 5), rend le bocal sale et sort un **échantillon** (`/Game/Items/Melee/ProcessedSample/DA_Sample`) dont l'état porte le numéro de la plante et un « temps » de 0 (1 pour la plante rouge).
+  - Le **mélangeur** prend un échantillon d'une plante de 1 à 4 et un échantillon rouge, et sort un échantillon du numéro de la première avec un « temps » supérieur à 0. Il ne sort jamais de numéro 5.
+  - Un échantillon d'une seule plante se reconnaît donc ainsi : numéro de la plante voulue, et temps nul (ou plante rouge).
+  - Boire un échantillon appelle chez l'hôte `Add Buff(état, données)`, avec l'état de l'objet bu.
+- **Décisions :**
+  - L'antidote d'un empoisonnement est tiré parmi les cinq plantes au moment où le poison est donné, et gardé par l'hôte. L'Empoisonneur ne le connaît pas.
+  - Délais par défaut : mort après 180 s, victime prévenue 120 s avant (les réglages restent ceux de D97, en secondes ; maximum porté à 600).
+  - Les anciens choix d'antidote (poisson, plante en bocal, objet précis), que j'avais imaginés en D97, sont retirés : le réglage devient un simple OUI/NON.
+- **Comment la victime se soigne, options :**
+  1. **En buvant l'échantillon comme le jeu le prévoit, vu par une accroche sur `Add Buff` (retenu), avec en secours la touche de consommation du mod.** Boire est le geste que tout joueur fera spontanément ; s'il ne soignait pas, le joueur perdrait son antidote et mourrait sans comprendre. La touche du mod reste possible (l'échantillon est alors retiré de la main par les appels déjà utilisés pour le poisson, sans son effet).
+  2. Seulement la touche du mod. Plus sûr techniquement (rien de nouveau), mais piégeux pour le joueur.
+- **Risque noté :** c'est la première fois que le mod lit un paramètre de type structure dans une accroche (`état` de `Add Buff`). Si cette lecture échoue en jeu, le journal l'écrit (« état de l'objet bu … illisible ») et il reste la touche de consommation.
+- **Où lire l'antidote :** deux bandeaux à l'avertissement, puis la première ligne de la page du rôle (tablette et onglet) tant que le poison court : « Empoisonné : mort dans … s - antidote : G3M raffiné, à boire ». Elle remplace la ligne d'état du rôle plutôt que de s'ajouter, la tablette n'affichant que sept lignes. Un joueur sans rôle a la même ligne.
+- **Soin avant l'avertissement :** le bon échantillon bu par hasard soigne quand même.
+- **Réglages de l'utilisateur :** son `config.txt` gardait les valeurs de la 0.10.0 (60 s et 40 s) ; je les ai mises à 180 et 120, comme demandé. L'ancien choix d'antidote (« fish ») n'est plus une valeur valable : le mod reprend la valeur par défaut, OUI.
+- **Contrôle ajouté :** `pages.py` refuse désormais une apostrophe collée à un mot en gras (« l'*objet* »), que la tablette dessine en deux morceaux écartés ; j'avais fait la faute trois fois.
+- **Contrôles :** syntaxe, noms du jeu (dont `Add Buff` et l'échantillon), pages. **Jamais lancé en jeu ; pas de relecture indépendante.**
+- **Version :** 0.11.2. Installée (jeu fermé), archive complète refaite. Pas publiée.

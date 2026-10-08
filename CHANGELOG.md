@@ -2,7 +2,11 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.11.1
+## 0.11.2
+
+- **Empoisonneur :** le poison dure 3 minutes ; la victime est prévenue quand il lui en reste 2 et apprend son antidote, l'échantillon raffiné d'une plante tirée au hasard, à boire. Sa page de rôle affiche le compte à rebours et la plante.
+
+## 0.11.1 (non publiée)
 
 - **Onglet LPROLES plus court pour l'hôte :** un seul groupe de réglages à la fois, choisi avec la rangée « Réglages affichés ». Dans l'ordre : MES RÉGLAGES, TEST, GÉNÉRAL, RÔLES ACTIFS, puis les rôles par ordre alphabétique.
 - **RÔLES ACTIFS** réunit l'interrupteur OUI/NON de tous les rôles.
@@ -12,7 +16,7 @@ La section d'une version est reprise telle quelle sur sa page GitHub.
 
 Huit nouveaux rôles, chacun avec son groupe de réglages dans l'onglet LPROLES :
 
-- **Empoisonneur** (dissident) : le joueur visé meurt 60 s plus tard, sans coup de personne. Il est prévenu 40 s avant et peut se sauver en consommant un poisson (délais et antidote réglables).
+- **Empoisonneur** (dissident) : le joueur visé meurt 3 minutes plus tard, sans coup de personne. Prévenu quand il lui reste 2 minutes, il peut se sauver en buvant l'échantillon raffiné d'une plante tirée au hasard (durées réglables).
 - **Bâillonneur** (dissident) : coupe le micro du joueur visé pendant 20 s.
 - **Voleur** (les deux camps) : prend l'objet que tient un joueur à 2,5 m au plus.
 - **Écho** (les deux camps) : revient là où il était 5 s plus tôt.

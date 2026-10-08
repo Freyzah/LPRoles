@@ -8,8 +8,6 @@ local C = {}
 -- settings themselves (after C.DEFS): a group cannot be forgotten in it.
 
 local CAMPS = { "any", "employee", "dissident" }
--- What cures the Empoisonneur's poison: nothing, any fish, any jar holding a plant, or one item.
-local CURES = { "none", "fish", "plant", "g3m", "y8z", "bo4", "wx2", "ru2", "salmon", "tuna", "cod", "shrimp" }
 
 -- What a role can consume to get a use back: nothing, a jar holding one of the five plants, or
 -- one of the four fish of the fish machine. The position in this list, minus one, is the
@@ -165,9 +163,9 @@ C.DEFS = {
     { key = "poisoner_min_players",    group = "EMPOISONNEUR", default = 5,     kind = "int",   min = 3, max = 16, step = 1, label = "Joueurs minimum" },
     { key = "poisoner_charges",        group = "EMPOISONNEUR", default = 1,     kind = "int",   min = 1, max = 3, step = 1, label = "Empoisonnements par partie" },
     { key = "poisoner_range",          group = "EMPOISONNEUR", default = 400,   kind = "int",   min = 200, max = 2000, step = 100, label = "Portée de visée (cm)" },
-    { key = "poison_delay",            group = "EMPOISONNEUR", default = 60,    kind = "int",   min = 10, max = 300, step = 5, label = "Mort après (s)" },
-    { key = "poison_warning",          group = "EMPOISONNEUR", default = 40,    kind = "int",   min = 0, max = 300, step = 5, label = "Prévenu avant sa mort (s, 0 = non)" },
-    { key = "poison_cure",             group = "EMPOISONNEUR", default = "fish", kind = "choice", choices = CURES, label = "Antidote" },
+    { key = "poison_delay",            group = "EMPOISONNEUR", default = 180,   kind = "int",   min = 10, max = 600, step = 10, label = "Mort après (s)" },
+    { key = "poison_warning",          group = "EMPOISONNEUR", default = 120,   kind = "int",   min = 0, max = 600, step = 10, label = "Prévenu avant sa mort (s, 0 = non)" },
+    { key = "poison_cure",             group = "EMPOISONNEUR", default = true,  kind = "bool",  label = "Antidote : un échantillon raffiné" },
     { key = "poisoner_item",           group = "EMPOISONNEUR", default = "none", kind = "choice", choices = ITEMS, label = "Objet de recharge" },
 
     { key = "gagger_enabled",          group = "BÂILLONNEUR", default = true,  kind = "bool",  label = "Bâillonneur" },
@@ -244,8 +242,6 @@ C.CHOICE_LABEL = {
     hypnotist = "HYPNOTISEUR", mimic = "MÉTAMORPHE", cleaner = "NETTOYEUR", stowaway = "CLANDESTIN", linked = "LIÉ", swapper = "ÉCHANGEUR", martyr = "MARTYR", revenant = "REVENANT",
     poisoner = "EMPOISONNEUR", gagger = "BÂILLONNEUR", thief = "VOLEUR", echo = "ÉCHO", amnesiac = "AMNÉSIQUE", jester = "BOUFFON",
     vampire = "VAMPIRE", werewolf = "LOUP-GAROU",
-    -- antidotes that are not one item
-    fish = "UN POISSON", plant = "UNE PLANTE",
     -- plants by the code written on their jar, fish by the word the fish machine shows
     g3m = "PLANTE G3M", y8z = "PLANTE Y8Z", bo4 = "PLANTE BO4", wx2 = "PLANTE WX2", ru2 = "PLANTE RU2",
     salmon = "POISSON SALMON", tuna = "POISSON TUNA", cod = "POISSON COD", shrimp = "POISSON SHRIMP",
@@ -284,14 +280,6 @@ function C.item_code(value)
         if name == value then return i - 1 end
     end
     return 0
-end
-
--- Number of an antidote setting's value: 0 none, 1-9 one item, then any fish, any plant.
-C.CURE_FISH, C.CURE_PLANT = 10, 11
-function C.cure_code(value)
-    if value == "fish" then return C.CURE_FISH end
-    if value == "plant" then return C.CURE_PLANT end
-    return C.item_code(value)
 end
 
 local function clamp(def, n)

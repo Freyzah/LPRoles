@@ -33,8 +33,8 @@ local function fill(template, v)
         local out
         if k == "item" then
             return S.ITEM_NAME[v[k]] or "?"
-        elseif k == "cure" then
-            return S.CURE_NAME[v[k]] or "?"
+        elseif k == "pplant" then
+            out = S.PLANT_CODE[v[k]] or "?"
         elseif k == "key" then
             out = C.format("use_key")
         elseif k == "pkey" then
@@ -66,7 +66,7 @@ local status_line   -- defined below
 -- What the status line is about: "active" (an effect is running), "empty" (nothing left, or
 -- something to do first) or "normal".
 local function status_kind(role, v)
-    if set(v, "act") or set(v, "conv") then return "active" end
+    if set(v, "act") or set(v, "conv") or set(v, "pleft") then return "active" end
     if role == "dreamer" or role == "fairy" then return set(v, "n") and "normal" or "empty" end
     if role == "angel" then return set(v, "tgt") and "normal" or "empty" end
     if role == "revenant" and not set(v, "dead") then return "normal" end
@@ -74,8 +74,16 @@ local function status_kind(role, v)
     return "normal"
 end
 
+-- A player who knows it is poisoned: the time left and the antidote, before anything else.
+local function poison_line(v)
+    if not set(v, "pleft") then return nil end
+    return fill(S.STATUS.poisoned .. (set(v, "pplant") and S.STATUS.poisoned_cure or ""), v)
+end
+
 status_line = function(role, v)
     local st = S.STATUS
+    local poisoned = poison_line(v)
+    if poisoned then return poisoned end
     if role == "dreamer" or role == "fairy" then
         if set(v, "act") then return fill(role == "dreamer" and st.dream_on or st.fly_on, v) end
         if set(v, "n") then return st.charge_ready end
@@ -128,7 +136,9 @@ function RT.lines(role, status, safe_idx)
     local v = {}
     for k, x in pairs(status or {}) do v[k] = x end
     if not role then
-        -- no role, but perhaps a bond (Liés), still to act or over
+        -- no role, but perhaps a poison to know of, or a bond (Liés), still to act or over
+        local poisoned = poison_line(v)
+        if poisoned then out[#out + 1] = poisoned end
         if set(v, "link") then out[#out + 1] = fill(S.LINK_LINE, v) end
         if set(v, "exlink") then out[#out + 1] = fill(S.LINK_OVER, v) end
         for _, l in ipairs(S.ROLE_HOWTO.none) do out[#out + 1] = l end

@@ -43,7 +43,7 @@ for m in re.finditer(r'(\w+)\s*=\s*\{(.*?)\},[ \t]*(?:--[^\n]*)?\n', block('S.RO
 def kv(name): return {k: lua_str(v) for k, v in re.findall(r'(\w+)\s*=\s*' + STR, block(name))}
 RECH, STAT = kv('S.RECHARGE'), kv('S.STATUS')
 ITEM = {int(k): lua_str(v) for k, v in re.findall(r'\[(\d+)\]\s*=\s*' + STR, block('S.ITEM_NAME'))}
-CURE = {**ITEM, **{int(k): lua_str(v) for k, v in re.findall(r'\[(\d+)\]\s*=\s*' + STR, block('S.CURE_NAME'))}}
+PLANT = {int(k): v for k, v in re.findall(r'\[(\d+)\] = "(\w+)"', re.search(r'S\.PLANT_CODE = \{(.*?)\}', src).group(1))}
 LINK = lua_str(re.search(r'S\.LINK_LINE = ' + STR, src).group(1))
 LINK_OVER = lua_str(re.search(r'S\.LINK_OVER = ' + STR, src).group(1))
 TENTHS = set(re.findall(r'(\w+) = true', re.search(r'RT\.TENTHS = \{(.*?)\}', rt, re.S).group(1)))
@@ -78,7 +78,7 @@ def fill(t, v, key=KEY, pkey=PKEY):
     def rep(m):
         k = m.group(1)
         if k == 'item': return ITEM.get(v.get(k), '?')
-        if k == 'cure': return CURE.get(v.get(k), '?')
+        if k == 'pplant': return '*' + PLANT.get(v.get(k), '?') + '*'
         if k == 'key': out = key
         elif k == 'pkey': out = pkey
         elif v.get(k) is None: out = '?'
@@ -90,8 +90,13 @@ def fill(t, v, key=KEY, pkey=PKEY):
 def isset(v, k): return v.get(k) not in (None, 0)
 def can_recharge(v): return isset(v, 'item') and (v.get('rmax') is None or isset(v, 'rleft'))
 
+def poison_line(v):
+    if not isset(v, 'pleft'): return None
+    return fill(STAT['poisoned'] + (STAT['poisoned_cure'] if isset(v, 'pplant') else ''), v)
+
 def status_line(role, v):
     st = STAT
+    if poison_line(v): return poison_line(v)
     if role in ('dreamer', 'fairy'):
         if isset(v, 'act'): return fill(st['dream_on'] if role == 'dreamer' else st['fly_on'], v)
         if isset(v, 'n'): return st['charge_ready']
@@ -131,6 +136,7 @@ def status_line(role, v):
 def lines(role, status, safe_idx=None):
     out, v = [], dict(status or {})
     if not role:
+        if poison_line(v): out.append(poison_line(v))
         if isset(v, 'link'): out.append(fill(LINK, v))
         if isset(v, 'exlink'): out.append(fill(LINK_OVER, v))
         return out + HOWTO['none']
@@ -217,7 +223,6 @@ ITEM_KEY = {'dreamer': 'dreamer_item', 'fairy': 'fairy_item', 'medium': 'medium_
             'hypnotist': 'hypno_item', 'mimic': 'mimic_item', 'cleaner': 'cleaner_item', 'stowaway': 'stowaway_item',
             'swapper': 'swapper_item', 'infector': 'infector_item', 'poisoner': 'poisoner_item',
             'gagger': 'gagger_item', 'thief': 'thief_item', 'echo': 'echo_item'}
-CURE_CODE = {'none': 0, 'fish': 10, 'plant': 11}
 
 def status_of(role, C, P):
     """What the player's machine has after the host's message (integers, tenths, and back)."""
@@ -268,8 +273,9 @@ def status_of(role, C, P):
     elif role == 'poisoner':
         uses('poisoner_charges')
         delay, warning = g('poison_delay'), min(g('poison_warning'), g('poison_delay'))
-        v.update(range=metres('poisoner_range'), delay=delay, tgt=P.get('tgt'), act=P.get('act'),
-                 cure=CURE_CODE.get(g('poison_cure'), ITEMS.index(g('poison_cure')) if g('poison_cure') in ITEMS else 0))
+        v.update(range=metres('poisoner_range'), delay=delay, tgt=P.get('tgt'), act=P.get('act'))
+        if not g('poison_cure'): v['nocure'] = 1
+        elif warning > 0: v['cure'] = 1
         v['never' if warning <= 0 else ('wnow' if warning >= delay else 'warn')] = 1 if warning <= 0 or warning >= delay else warning
     elif role == 'gagger':
         uses('gagger_charges'); v.update(dur=g('gag_duration'), range=metres('gagger_range'))
@@ -297,6 +303,7 @@ def status_of(role, C, P):
     else:
         v.pop('eyes', None)
     if P.get('link'): v['exlink' if P.get('link_done') else 'link'] = P['link']
+    if P.get('pleft'): v.update(pleft=P['pleft'], pplant=P.get('pplant', 0))
     wire = {k: int(x * 10 + 0.5) if k in TENTHS else int(x + 0.5)
             for k, x in v.items() if isinstance(x, (int, float))}
     return {k: (x / 10 if k in TENTHS else x) for k, x in wire.items()}
@@ -331,6 +338,8 @@ def check(role, ls, problems, where):
     for l in ls:
         if '?' in plain(l): problems.append('%s : valeur manquante dans « %s »' % (where, plain(l)))
         if l.count('*') % 2: problems.append('%s : étoiles non appariées dans « %s »' % (where, l))
+        # "l'*objet*" is drawn in two pieces with a gap between them: the stars go around "l'objet"
+        if re.search(r"\w'\*", l): problems.append('%s : apostrophe juste avant un mot en gras dans « %s »' % (where, l))
         if re.search(r'^[a-zà-ÿ(]', plain(l)): problems.append('%s : ligne qui ne commence pas une phrase « %s »' % (where, plain(l)))
         if not re.search(r'[.!]$', plain(l)) and l is not ls[0]: problems.append('%s : phrase sans point final « %s »' % (where, plain(l)))
     for l in ls[1:]:
@@ -381,9 +390,10 @@ def main():
         show('FAIRY, autres réglages : ' + name, ls)
         check('fairy', ls, problems, 'fairy (%s)' % name)
         pages += 1
-    for role, name, c in [('poisoner', 'jamais prévenu, pas d\'antidote', dict(C, poison_warning=0, poison_cure='none')),
-                          ('poisoner', 'prévenu aussitôt, antidote : une plante', dict(C, poison_warning=300, poison_cure='plant')),
-                          ('poisoner', 'antidote : un objet précis, avec recharge', dict(C, poison_cure='cod', poisoner_item='tuna')),
+    for role, name, c in [('poisoner', 'jamais prévenu, pas d\'antidote', dict(C, poison_warning=0, poison_cure=False)),
+                          ('poisoner', 'jamais prévenu, antidote jamais dit', dict(C, poison_warning=0)),
+                          ('poisoner', 'prévenu aussitôt', dict(C, poison_warning=600)),
+                          ('poisoner', 'pas d\'antidote, avec recharge', dict(C, poison_cure=False, poisoner_item='tuna')),
                           ('jester', 'sa victoire ne termine pas la partie', dict(C, jester_ends_game=False)),
                           ('vampire', 'tous les cadavres', dict(C, vampire_own_kills=False))]:
         ls = lines(role, status_of(role, c, {}))
@@ -413,6 +423,16 @@ def main():
                             check(role, ls, problems, '%s (%s, limite %d, yeux %s, objet %s)' % (role, name, limit, eyes, item))
                             worst = max(worst, len(ls) - 1)
                             pages += 1
+    # a poisoned player: its page says so before anything else, whatever its role
+    for role, name, P in [('medium', 'empoisonné, antidote connu', {'pleft': 118, 'pplant': 1, 'link': 2}),
+                          ('fairy', 'empoisonné, pas d\'antidote', {'pleft': 30}),
+                          ('amnesiac', 'empoisonné, antidote : la plante rouge', {'pleft': 95, 'pplant': 5})]:
+        ls = lines(role, status_of(role, C, P))
+        show('%s, %s' % (role.upper(), name), ls)
+        check(role, ls, problems, '%s (%s)' % (role, name))
+        pages += 1
+    print('\n== sans rôle, empoisonné')
+    for l in lines(None, {'pleft': 118, 'pplant': 3}): print('   - ' + plain(l))
     print('\n== sans rôle, lié')
     for l in lines(None, {'link': 2}): print('   - ' + plain(l))
     ls = lines('angel', status_of('angel', C, {'link': 2, 'link_done': True, 'tgt': 2, 'saved': True}))
