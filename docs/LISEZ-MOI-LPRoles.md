@@ -48,7 +48,7 @@ Version 0.9.0, publiée sur GitHub (https://github.com/Freyzah/LPRoles) et insta
 - **0.8.13** : les cinq sons du mod sont mis au même niveau d'écoute (ils différaient de 14 dB), et chaque joueur a un réglage « Volume des sons du mod ». Essayée par l'utilisateur : les sons suivent le curseur de volume du jeu, le réglage du mod fonctionne, les niveaux conviennent.
 - **0.8.14** : son de l'envol de la Fée baissé de 3 dB, à la demande de l'utilisateur. Installée le 7 octobre.
 - **0.8.15** : les deux boutons latéraux de la souris (SOURIS 4, SOURIS 5) s'ajoutent aux touches proposées pour « activer le pouvoir » et « consommer l'objet en main ». Essayée par l'utilisateur : les boutons fonctionnent.
-- **0.9.0** : le projet devient un dépôt GitHub ; le mod se met à jour tout seul au lancement du jeu (et par `mettre-a-jour.bat`). Aucun changement de jeu. Publiée et installée le 8 octobre. Mise à jour vérifiée hors du jeu, contre la vraie page GitHub ; **jamais lancée depuis le jeu.**
+- **0.9.0** : le projet devient un dépôt GitHub ; le mod se met à jour tout seul au lancement du jeu (et par `mettre-a-jour.bat`). Aucun changement de jeu. Publiée et installée le 8 octobre. Mise à jour vérifiée hors du jeu, contre la vraie page GitHub. Premier lancement en jeu par l'utilisateur le 8 octobre : la vérification passe, le mod se charge normalement. Une vraie mise à jour depuis le jeu reste à voir.
 
 ## Ce qui est installé
 
@@ -75,7 +75,7 @@ Le jeu doit être **relancé** pour charger une nouvelle version du mod.
 - **Pour la couper :** MES RÉGLAGES, « Mise à jour automatique au lancement » sur NON (ou `auto_update = false` dans `config.txt`).
 - **Le journal** (`journal.txt`) note à chaque lancement ce que la mise à jour a fait et le temps qu'elle a pris.
 - Le mod ne revient jamais à une version plus ancienne que celle installée.
-- **Jamais lancée depuis le jeu à ce jour** (vérifiée hors du jeu, voir D95). Il est possible qu'une fenêtre noire apparaisse un instant au démarrage.
+- **Lancée depuis le jeu le 8 octobre** (0.9.0, rien de nouveau à installer) : la vérification a pris 4,8 s, pendant que le jeu chargeait ; le mod s'est mis en place au même moment qu'avant, sans erreur. **Pas encore vu :** une vraie mise à jour faite depuis le jeu (ce sera la prochaine version), et si une fenêtre noire apparaît un instant au démarrage.
 
 **Pour tout désactiver :** renommer `dwmapi.dll` en `dwmapi.dll.off`.
 **Pour désactiver seulement LPRoles :** supprimer `ue4ss\Mods\LPRoles\enabled.txt`.
