@@ -48,6 +48,7 @@ local members = {}                        -- group name -> { { w, vis }, ... }: 
 local selector = nil                      -- that row (nil for a player who is not the host: all is shown)
 local shown = nil                         -- the group on screen; kept from one menu to the next
 local FIRST_GROUPS = { "TEST", "GÉNÉRAL" }    -- right after the personal settings, before the roles
+local FORCED = "force_host_role"          -- the test aid changed between every trial: it has a group of its own
 
 -- ---------------------------------------------------------------- crash guard
 -- Only the building of the tab is guarded (see U.guard); updates are plain protected calls.
@@ -118,6 +119,7 @@ local function options_of(def)
 end
 
 local function current_index(row)
+    if row.radio then return C.get(FORCED) == row.radio and 2 or 1 end
     local v = shown
     if not row.selector then v = C.get(row.def.key) end
     for i, x in ipairs(row.values) do
@@ -218,6 +220,18 @@ local function add_selector(page, ctx, pc)
     page:AddChild(w)
     rows[U.key(w)] = row
     return row
+end
+
+-- One row of the group "RÔLE FORCÉ": a role, OUI when it is the one forced on the host. One
+-- click chooses it (and another takes it away), instead of turning through every role.
+local function add_radio(page, ctx, pc, value)
+    local w = create(CLASS.selection, ctx, pc)
+    local row = { widget = w, radio = value, values = { false, true }, labels = { "NON", "OUI" } }
+    G.text_call(w, "Rename", C.CHOICE_LABEL[value] or value)
+    page:AddChild(w)
+    rows[U.key(w)] = row
+    show_selection(row)
+    return w
 end
 
 -- Only the chosen group takes room on the page (the others are collapsed, as the unused rows
@@ -458,6 +472,16 @@ local function build(menu, mec)
         for _, group in ipairs(FIRST_GROUPS) do
             add_group(group, of_group(group))
             placed[group] = true
+            if group == "TEST" and C.def(FORCED) then
+                -- right after the test aids: the role forced on the host, one row per role
+                sections[#sections + 1] = S.MENU_FORCED
+                member(S.MENU_FORCED, U.try("menu : " .. S.MENU_FORCED, add_title, page, mec, pc, S.MENU_FORCED))
+                for _, value in ipairs(C.def(FORCED).choices) do
+                    if value ~= "none" then
+                        member(S.MENU_FORCED, U.try("menu : rôle forcé " .. value, add_radio, page, mec, pc, value))
+                    end
+                end
+            end
         end
         -- the roles in alphabetical order, here and in the row that chooses the group: with
         -- that many, one knows which way to turn
@@ -470,10 +494,10 @@ local function build(menu, mec)
         end
         table.sort(roles, function(a, b) return sort_key(a) < sort_key(b) end)
         for _, group in ipairs(roles) do add_group(group, of_group(group)) end
-        -- the group last looked at; the first time, the test aids if a role is forced, else the first
+        -- the group last looked at; the first time, the forced role's if one is forced, else the first
         local known = false
         for _, name in ipairs(sections) do known = known or name == shown end
-        if not known then shown = (C.get("force_host_role") ~= "none") and "TEST" or sections[1] end
+        if not known then shown = (C.get(FORCED) ~= "none") and S.MENU_FORCED or sections[1] end
         if selector then
             U.try("menu : choix du groupe", show_selection, selector)
             U.try("menu : groupe affiché", apply_sections)
@@ -518,6 +542,22 @@ local function on_selection(ctx, dir)
             show_selection(row)
             apply_sections()
         end)
+        return
+    end
+    if row.radio then
+        if not menu_open() then
+            guarded("menu : choix", show_selection, row)
+            return
+        end
+        C.set(FORCED, C.get(FORCED) == row.radio and "none" or row.radio, true)
+        guarded("menu : rôle forcé", function()
+            -- the row that had it says NON again, and the test aids' own row follows
+            for _, other in pairs(rows) do
+                if (other.radio or (other.def and other.def.key == FORCED)) and U.valid(other.widget) then show_selection(other) end
+            end
+        end)
+        seen_revision = C.revision
+        U.log("Réglage %s = %s (onglet LPROLES, groupe %s)", FORCED, C.format(FORCED), S.MENU_FORCED)
         return
     end
     if not menu_open() then

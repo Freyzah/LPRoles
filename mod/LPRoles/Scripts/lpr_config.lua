@@ -179,7 +179,7 @@ C.DEFS = {
     { key = "thief_min_players",       group = "VOLEUR", default = 4,     kind = "int",   min = 2, max = 16, step = 1, label = "Joueurs minimum" },
     { key = "thief_camp",              group = "VOLEUR", default = "any", kind = "choice", choices = CAMPS, label = "Camp" },
     { key = "thief_charges",           group = "VOLEUR", default = 2,     kind = "int",   min = 1, max = 5, step = 1, label = "Vols par partie" },
-    { key = "thief_range",             group = "VOLEUR", default = 250,   kind = "int",   min = 100, max = 600, step = 50, label = "Portée (cm)" },
+    { key = "thief_range",             group = "VOLEUR", default = 600,   kind = "int",   min = 100, max = 1000, step = 50, label = "Portée (cm)" },
     { key = "thief_item",              group = "VOLEUR", default = "none", kind = "choice", choices = ITEMS, label = "Objet de recharge" },
 
     { key = "echo_enabled",            group = "ÉCHO", default = true,  kind = "bool",  label = "Écho" },

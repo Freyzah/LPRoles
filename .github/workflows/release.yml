@@ -18,6 +18,9 @@ jobs:
       - name: Vérifier la syntaxe des scripts
         run: python3 tools/lp/luacheck.py mod/LPRoles/Scripts/*.lua
 
+      - name: Vérifier que les bandeaux tiennent à l'écran
+        run: python3 tools/lp/banners.py
+
       # échoue si l'étiquette n'est pas la version des sources, si manifest.txt n'est pas à
       # jour ou si CHANGELOG.md n'a pas de section pour cette version
       - name: Construire LPRoles.zip, version.txt et les notes

@@ -1442,3 +1442,25 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
   1. Le Loup-garou a dévoré deux fois le même joueur à 58 s d'écart. C'est voulu si ce joueur a été réanimé puis tué de nouveau entre-temps (D103), une faute sinon.
   2. La portée du Voleur a été passée de 250 à 600 cm juste après le vol : la valeur par défaut est peut-être trop courte.
   3. Changer « Rôle forcé pour l'hôte » lui a demandé une vingtaine de clics à chaque essai.
+
+## D111 — Bandeaux mal coupés, portée du Voleur, choix du rôle forcé (version 0.11.5)
+
+- **Retour de l'utilisateur après l'essai à deux :** « J'ai pu un peu tout tester et tout a l'air de fonctionner ! ». Sur mes trois questions de D110 :
+  1. Loup-garou dévorant deux fois : « c'est parfait comme ça on touche pas ». Mais : « le message qui indique qu'on a gagné de la régen est un peu long du coup on se retrouve à avoir un message qui affiche juste "%" à la fin, il faut éviter ce genre de choses (je crois qu'il y a le même problème pour l'empoisonneur) ».
+  2. Portée du Voleur plus grande par défaut : « oui ! ».
+  3. Choix du rôle forcé plus rapide : « pourquoi pas oui ».
+- **Bandeaux, la cause :** un message de plus de 30 caractères est coupé en plusieurs bandeaux. La coupe comptait les **octets** : une lettre accentuée en vaut deux. « DÉVORÉ : RÉGÉNÉRATION +10 % » fait 27 caractères mais 32 octets : il était coupé, et le « % » partait seul. « ANTIDOTE : ÉCHANTILLON G3M RAFFINÉ » (34 caractères) était coupé de toute façon.
+- **Bandeaux, ce qui change :**
+  - la longueur est comptée en caractères ;
+  - un signe ou une unité reste collé au mot d'avant (« 10 % », « ANTIDOTE : », « 120 S », « SOURIS 5 ») ;
+  - quand deux bandeaux sont nécessaires, la coupe se fait au milieu plutôt qu'au bout (jamais un petit reste) ;
+  - cinq bandeaux sont raccourcis pour tenir en un seul : antidote (« ANTIDOTE : G3M RAFFINÉ À BOIRE »), bâillon, appel du Revenant, mise à jour, victoire du Bouffon (« LE BOUFFON … GAGNE », qui tient avec un nom de 12 caractères).
+- **« Il faut éviter ce genre de choses » :** nouvel outil `tools/lp/banners.py`. Il écrit chaque bandeau avec des valeurs types (nom court, moyen, très long ; nombres ; objet le plus long ; touche « SOURIS 5 »), le coupe comme le mod, et refuse : un bandeau sans nom de joueur qui ne tient pas en un seul (sauf six messages destinés à l'hôte, listés), et tout morceau de moins de six caractères ou fait de signes. Lancé avec les autres contrôles, et par la publication sur GitHub.
+- **Options écartées pour les bandeaux :** élargir la limite à 38 caractères (la largeur mesurée en D-notes est « environ 38 » : trop juste pour s'y fier) ; ne corriger que les deux messages signalés (le défaut de comptage touchait tous les messages accentués).
+- **Voleur :** portée par défaut 600 cm, celle que l'utilisateur avait réglée lui-même pendant l'essai ; maximum porté à 1000. Son `config.txt` a déjà 600.
+- **Rôle forcé, options :**
+  1. **Un groupe RÔLE FORCÉ dans l'onglet, une rangée OUI/NON par rôle (retenu).** Un clic au lieu d'une vingtaine. Les rangées ne sont pas des réglages de plus : elles écrivent toutes le même réglage `force_host_role`, une seule est sur OUI. Le groupe vient juste après TEST, et l'onglet s'ouvre dessus quand un rôle est forcé. La rangée d'origine reste dans TEST.
+  2. Des touches du clavier pour passer au rôle suivant. Toujours un appui par rôle.
+  3. Mettre la rangée dans le groupe de chaque rôle. Il faudrait d'abord aller au groupe : autant de clics.
+- **Contrôles :** syntaxe, noms du jeu, pages, bandeaux, essais de la mise à jour. **Jamais lancé en jeu ; pas de relecture indépendante.**
+- **Version :** 0.11.5. Pas installée : le jeu tournait.

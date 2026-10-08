@@ -1,7 +1,7 @@
 -- LPRoles - shared helpers (logging, safe calls, scheduler)
 local U = {}
 
-U.VERSION = "0.11.4"
+U.VERSION = "0.11.5"
 
 -- Mod folder as a path that file functions can really open. Relative paths depend on the
 -- game's working directory, so every candidate is tested by opening the mod's own main.lua.
@@ -183,21 +183,52 @@ function U.split(s, sep)
     return out
 end
 
--- Cuts a text into lines of at most `width` characters, breaking at spaces.
+-- Number of characters of a text (an accented letter takes several bytes).
+function U.length(s)
+    local _, n = tostring(s):gsub("[^\128-\191]", "")
+    return n
+end
+
+-- Cuts a text into lines of at most `width` characters, breaking at spaces (the banner shows
+-- them one after the other). Lengths are counted in characters, not bytes: "RÉGÉNÉRATION" is
+-- twelve long. A word made of signs only, or a unit after a number, stays with the word before
+-- it ("10 %", "ANTIDOTE :", "(20 S)"), and so does a mouse button's number ("SOURIS 5"). And
+-- when one line is not enough, the lines are made
+-- about the same length, so that the last one is never a small leftover.
 function U.wrap(text, width)
-    local lines, line = {}, ""
+    local words = {}
     for word in tostring(text):gmatch("%S+") do
-        if line == "" then
-            line = word
-        elseif #line + 1 + #word <= width then
-            line = line .. " " .. word
+        local prev = words[#words]
+        if prev and (word:match("^[%%:;!?%)]+$") or (word:match("^%a[%.%)]*$") and prev:match("%d$"))
+                     or (word:match("^%d+$") and prev:match("SOURIS$"))) then
+            words[#words] = prev .. " " .. word
         else
-            lines[#lines + 1] = line
-            line = word
+            words[#words + 1] = word
         end
     end
-    if line ~= "" then lines[#lines + 1] = line end
-    return lines
+    local function fill(limit)
+        local lines, line, len = {}, nil, 0
+        for _, w in ipairs(words) do
+            local wl = U.length(w)
+            if line and len + 1 + wl <= limit then
+                line, len = line .. " " .. w, len + 1 + wl
+            else
+                if line then lines[#lines + 1] = line end
+                line, len = w, wl
+            end
+        end
+        if line then lines[#lines + 1] = line end
+        return lines
+    end
+    local best = fill(width)
+    if #best <= 1 then return best end
+    -- the narrowest lines that still take no more lines than that
+    local total = U.length(table.concat(words, " "))
+    for limit = math.ceil(total / #best), width - 1 do
+        local lines = fill(limit)
+        if #lines <= #best then return lines end
+    end
+    return best
 end
 
 function U.shuffle(t)

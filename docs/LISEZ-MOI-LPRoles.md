@@ -1,6 +1,6 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.11.4, **publiée le 8 octobre 2026** sur GitHub (https://github.com/Freyzah/LPRoles) : tout joueur qui a la 0.9.0 ou plus la reçoit au lancement suivant du jeu. Le jeu de l'utilisateur s'est mis à jour tout seul de la 0.11.3 à la 0.11.4 à son lancement de 20 h 58 (3 s).
+Version 0.11.5, **préparée mais pas installée** : le jeu a la 0.11.4. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.11.4, c'est elle que reçoit la mise à jour automatique. Ce document décrit la 0.11.5.
 
 À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.4-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
 
@@ -57,6 +57,8 @@ Version 0.11.4, **publiée le 8 octobre 2026** sur GitHub (https://github.com/Fr
 - **0.11.4** : la vie en plus du Vampire s'ajoute au nombre affiché sur la barre de vie du jeu. **Publiée le 8 octobre** à la demande de l'utilisateur, avec tout ce qui s'était accumulé depuis la 0.9.0 (huit rôles, nouvel onglet, antidote). Mise à jour vérifiée contre la vraie page depuis une copie exacte de la 0.11.3 et de la 0.9.0. **Rien de tout cela n'a encore tourné en jeu.**
 - **Essai à deux du 8 octobre (0.11.3, d'après le journal de l'hôte)** : Écho, Amnésique (rôle d'un employé puis d'un dissident), Empoisonneur (antidote pris une fois, mort à 180 s l'autre fois), Bâillonneur, Voleur, Bouffon (victoire puis fin de partie 3 s après), Vampire et Loup-garou ont tous fait ce qu'ils devaient côté hôte, sans aucune erreur. Le nouvel onglet a servi tout du long. Le journal ne dit pas ce que les joueurs ont vu ou entendu (micro coupé, lignes de la tablette, vie du Vampire) : à confirmer par l'utilisateur.
 - **Mise à jour automatique faite depuis le jeu** (8 octobre, 0.11.3 → 0.11.4) : téléchargée, installée et chargée dans le même lancement, fichiers identiques à la version publiée.
+- **Retour de l'utilisateur après l'essai à deux (8 octobre)** : « J'ai pu un peu tout tester et tout a l'air de fonctionner ». Le Loup-garou qui dévore deux fois un joueur réanimé puis retué est voulu.
+- **0.11.5** : bandeaux qui ne se coupent plus mal (un « % » seul sur le bandeau suivant), portée du Voleur à 6 m par défaut, groupe RÔLE FORCÉ dans l'onglet. **Jamais lancée en jeu.** Pas installée (le jeu tournait).
 
 ## Ce qui est installé
 
@@ -112,7 +114,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 | **Clandestin** | Se cache, près d'une bouche d'aération ; un nouvel appui (après 1 s) le fait sortir |
 | **Revenant** | Se manifeste, une fois mort |
 | **Écho** | Le retour en arrière part aussitôt |
-| **Empoisonneur, Bâillonneur, Voleur** | Comme le Traqueur : appuyer en regardant un joueur, le pouvoir agit aussitôt (le Voleur doit être à 2,5 m au plus) |
+| **Empoisonneur, Bâillonneur, Voleur** | Comme le Traqueur : appuyer en regardant un joueur, le pouvoir agit aussitôt (le Voleur doit être à 6 m au plus) |
 | **Amnésique** | Appuyer en regardant un cadavre, ou à moins de 2,5 m de lui |
 | **Bouffon** | Rien : il n'a pas de pouvoir à lancer |
 | **Traqueur, Hypnotiseur, Métamorphe, Échangeur** | Appuyer en regardant un joueur : le pouvoir agit **aussitôt** sur lui. Sans personne en vue, rien ne se passe et rien n'est dépensé (« PERSONNE EN VUE ») |
@@ -143,7 +145,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 | **Revenant** | Les deux | Une fois mort, son fantôme devient visible et audible de tous pendant 20 s. 1 fois à chaque mort : réanimé puis mort de nouveau, il peut recommencer |
 | **Empoisonneur** | Dissident | Empoisonne le joueur visé : il meurt 3 minutes plus tard, sans coup de personne. Prévenu quand il lui reste 2 minutes, il peut se sauver en buvant l'échantillon raffiné d'une plante tirée au hasard. 1 fois par partie |
 | **Bâillonneur** | Dissident | Coupe le micro du joueur visé pendant 20 s : plus personne ne l'entend. 2 fois par partie |
-| **Voleur** | Les deux | À 2,5 m au plus, prend l'objet que tient le joueur visé. 2 fois par partie |
+| **Voleur** | Les deux | À 6 m au plus, prend l'objet que tient le joueur visé. 2 fois par partie |
 | **Écho** | Les deux | Revient aussitôt là où il était 5 s plus tôt. 2 fois par partie |
 | **Amnésique** | Neutre | Sans pouvoir au départ. Prend, une fois pour toutes, le rôle et le camp d'un mort |
 | **Bouffon** | Neutre | Gagne seul s'il est tué par un employé ; sa victoire termine la partie |
@@ -165,7 +167,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 ### Empoisonneur (dissident)
 
 - Il vise un joueur à 4 m au plus et appuie : la victime mourra **3 minutes** plus tard (« Mort après », 180 s). Rien ne se voit ni ne s'entend.
-- **Quand il lui reste 2 minutes** (« Prévenu avant sa mort », 120 s ; 0 = jamais, une valeur au moins égale au délai = aussitôt), la victime lit « EMPOISONNÉ : MORT DANS 120 S », puis « ANTIDOTE : ÉCHANTILLON G3M RAFFINÉ » (ou une autre plante).
+- **Quand il lui reste 2 minutes** (« Prévenu avant sa mort », 120 s ; 0 = jamais, une valeur au moins égale au délai = aussitôt), la victime lit « EMPOISONNÉ : MORT DANS 120 S », puis « ANTIDOTE : G3M RAFFINÉ À BOIRE » (ou une autre plante).
 - **L'antidote** est l'**échantillon raffiné d'une seule plante**, celui que la centrifugeuse fait d'un bocal de cette plante. La plante est **tirée au hasard à chaque empoisonnement**, parmi les cinq (G3M, Y8Z, BO4, WX2, RU2). Un échantillon sorti du mélangeur (deux plantes) ne compte pas.
 - **Pour se soigner :** boire l'échantillon comme n'importe quel échantillon du jeu (la victime en reçoit aussi l'effet habituel). La touche de consommation du mod marche aussi, l'échantillon en main : il est alors consommé sans son effet.
 - Tant qu'elle est empoisonnée et prévenue, la victime lit « Poison : mort dans … s - antidote : G3M raffiné », avec le compte à rebours, **sur sa tablette et dans l'onglet LPROLES** :
@@ -180,13 +182,13 @@ Ce que fait la touche de pouvoir selon le rôle :
 ### Bâillonneur (dissident)
 
 - Il vise un joueur à 10 m au plus et appuie : le **micro de la victime est coupé 20 s**. Personne ne l'entend, vivants ou morts.
-- La victime lit « BÂILLONNÉ : MICRO COUPÉ (20 S) » ; l'icône de micro du jeu passe à l'état coupé. À la fin : « TON MICRO REMARCHE ».
+- La victime lit « BÂILLONNÉ : MICRO COUPÉ 20 S » ; l'icône de micro du jeu passe à l'état coupé. À la fin : « TON MICRO REMARCHE ».
 - C'est la machine de la victime qui coupe son propre micro, par le même réglage que le jeu utilise pour un Rêveur endormi.
 - La mort de la victime met fin au bâillon.
 
 ### Voleur (les deux camps)
 
-- Il vise un joueur à **2,5 m** au plus et appuie : l'objet que la victime **tient en main** passe dans la main du Voleur, dans le même état (munitions, plante du bocal…).
+- Il vise un joueur à **6 m** au plus (« Portée », 600 cm depuis la 0.11.5, 250 avant) et appuie : l'objet que la victime **tient en main** passe dans la main du Voleur, dans le même état (munitions, plante du bocal…).
 - Il faut que la main du Voleur soit vide (« TA MAIN DOIT ÊTRE VIDE ») et que la victime tienne quelque chose (« IL NE TIENT RIEN »). Dans ces deux cas rien n'est dépensé.
 - La victime lit « ON T'A VOLÉ TON OBJET », sans le nom du Voleur.
 - Le sac n'est pas touché. On ne vole pas un Rêveur endormi.
@@ -206,7 +208,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 ### Bouffon (neutre)
 
 - Il n'a pas de pouvoir. Il **gagne seul si un employé le tue**. Tué par un dissident, par le poison, une explosion ou une chute, il a perdu.
-- Sa victoire est annoncée à tous (« LE BOUFFON GAGNE : … »), puis la partie s'arrête 3 s plus tard, comme quand l'hôte l'arrête lui-même : le jeu n'affiche ni victoire ni défaite. L'annonce est répétée au retour dans le lobby.
+- Sa victoire est annoncée à tous (« LE BOUFFON … GAGNE »), puis la partie s'arrête 3 s plus tard, comme quand l'hôte l'arrête lui-même : le jeu n'affiche ni victoire ni défaite. L'annonce est répétée au retour dans le lobby.
 - Réglage « Sa victoire termine la partie » sur NON : la victoire est seulement annoncée, la partie continue sans lui.
 - Pour le reste du jeu, il compte comme un employé : les dissidents doivent aussi l'éliminer pour gagner.
 - Le tueur est celui qui l'a frappé dans les 3 s avant sa mort, comme pour le Martyr.
@@ -350,6 +352,13 @@ Un rôle dont les utilisations sont comptées peut en récupérer une en consomm
 - Elle se désactive dans MES RÉGLAGES (« Page du rôle sur la tablette »).
 - Si le jeu s'arrête pendant sa construction, elle est mise en pause au lancement suivant seulement ; après deux arrêts de suite, jusqu'à ce qu'on appuie sur **F10**. Même règle pour l'onglet LPROLES.
 
+## Bandeaux
+
+- Le bandeau du jeu affiche une trentaine de caractères. Un message plus long est coupé en plusieurs bandeaux, montrés l'un après l'autre.
+- Depuis la 0.11.5 : la longueur est comptée en caractères (les lettres accentuées comptaient pour deux, ce qui coupait trop tôt) ; un signe ou une unité reste avec le mot qui précède (« 10 % », « 120 S », « SOURIS 5 ») ; et quand il faut deux bandeaux, ils sont de longueurs voisines.
+- Tous les bandeaux sans nom de joueur tiennent en un seul. Avec un nom très long, un bandeau peut encore passer sur deux.
+- `python tools/lp/banners.py` le vérifie pour chaque bandeau, avec des valeurs types ; la publication le lance aussi.
+
 ## Menu Échap, onglet LPROLES
 
 Un onglet **LPROLES** s'ajoute au menu Échap du jeu, juste après l'onglet « Règles ».
@@ -357,8 +366,9 @@ Un onglet **LPROLES** s'ajoute au menu Échap du jeu, juste après l'onglet « R
 - **Pour tous :** le rôle du joueur et le rappel de son fonctionnement (les mêmes lignes que sur la tablette ; une ligne longue continue sur la rangée suivante).
 - **Pour tous :** le groupe MES RÉGLAGES (touche de pouvoir, touche de consommation, page de la tablette), enregistré sur sa propre machine.
 - **Pour l'hôte :** tous les réglages de la partie, **un groupe à la fois** (depuis la 0.11.1). La première rangée de réglages, « Réglages affichés », choisit le groupe avec ses flèches ; seul ce groupe occupe la page.
-  - Ordre des groupes : **MES RÉGLAGES**, **TEST**, **GÉNÉRAL**, **RÔLES ACTIFS**, puis les rôles par ordre alphabétique. La flèche gauche depuis MES RÉGLAGES mène aux derniers rôles de l'alphabet.
-  - **TEST** est à un clic de MES RÉGLAGES. Quand un rôle est forcé pour l'hôte, l'onglet s'ouvre directement sur TEST.
+  - Ordre des groupes : **MES RÉGLAGES**, **TEST**, **RÔLE FORCÉ**, **GÉNÉRAL**, **RÔLES ACTIFS**, puis les rôles par ordre alphabétique. La flèche gauche depuis MES RÉGLAGES mène aux derniers rôles de l'alphabet.
+  - **TEST** est à un clic de MES RÉGLAGES.
+  - **RÔLE FORCÉ** (depuis la 0.11.5) liste tous les rôles, un par rangée, par ordre alphabétique : un clic sur un rôle le force pour l'hôte (OUI), un clic de plus l'enlève. Une seule rangée est sur OUI à la fois. C'est le même réglage que « Rôle forcé pour l'hôte » du groupe TEST, qui reste là. Quand un rôle est forcé, l'onglet s'ouvre directement sur ce groupe.
   - **RÔLES ACTIFS** réunit l'interrupteur OUI/NON de chaque rôle (et des Liés), par ordre alphabétique. Chaque rôle garde aussi le sien dans son propre groupe : les deux rangées restent identiques.
   - Le groupe affiché est retenu jusqu'à la fermeture du jeu.
   - « Rôle forcé pour l'hôte » propose désormais les rôles par ordre alphabétique.

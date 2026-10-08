@@ -1,5 +1,7 @@
 -- LPRoles - texts shown to players (edit here to rename a role)
--- The on-screen banner uses a very large font: keep each line under about 30 characters.
+-- The on-screen banner uses a very large font: a banner fits in one piece up to 30 characters
+-- (G.BANNER_WIDTH); a longer one is cut into several, shown one after the other. Write them to
+-- fit in one piece: tools/lp/banners.py checks every banner with typical values.
 -- Internal role ids never change (config.txt uses them); only the names below are shown.
 local S = {}
 
@@ -333,17 +335,17 @@ S.SWAP_YOU           = "QUELQU'UN A PRIS TA PLACE"
 S.MARTYR_CAMP_DISSIDENT = "MARTYR : TUÉ PAR UN DISSIDENT"
 S.MARTYR_CAMP_EMPLOYEE  = "MARTYR : TUÉ PAR UN EMPLOYÉ"
 S.MARTYR_NAME        = "MARTYR : TUÉ PAR %s"
-S.SPIRIT_READY       = "MORT : TOUCHE %s POUR TE MONTRER"
+S.SPIRIT_READY       = "TOUCHE %s : TE MONTRER"
 S.SPIRIT_START       = "TU TE MANIFESTES"
 S.POISON_DONE        = "%s EST EMPOISONNÉ"
 S.POISON_ALREADY     = "IL EST DÉJÀ EMPOISONNÉ"
 S.POISON_YOU         = "EMPOISONNÉ : MORT DANS %d S"
-S.POISON_CURE        = "ANTIDOTE : ÉCHANTILLON %s RAFFINÉ"
+S.POISON_CURE        = "ANTIDOTE : %s RAFFINÉ À BOIRE"
 S.POISON_CURED       = "POISON SOIGNÉ"
 S.POISON_LOST        = "TON POISON A ÉTÉ SOIGNÉ"
 S.POISON_DEAD        = "LE POISON T'A TUÉ"
 S.GAG_DONE           = "%s EST BÂILLONNÉ"
-S.GAG_YOU            = "BÂILLONNÉ : MICRO COUPÉ (%d S)"
+S.GAG_YOU            = "BÂILLONNÉ : MICRO COUPÉ %d S"
 S.GAG_END            = "TON MICRO REMARCHE"
 S.STEAL_DONE         = "OBJET VOLÉ À %s"
 S.STEAL_NOTHING      = "IL NE TIENT RIEN"
@@ -355,7 +357,7 @@ S.ECHO_NOTHING       = "PAS ENCORE DE TRAJET À REJOUER"
 S.AMNESIA_DONE       = "TU HÉRITES DE %s"
 S.AMNESIA_NO_ROLE    = "CE MORT N'AVAIT PAS DE RÔLE"
 S.AMNESIA_DISSIDENT  = "TU DEVIENS DISSIDENT"
-S.JESTER_WIN         = "LE BOUFFON GAGNE : %s"
+S.JESTER_WIN         = "LE BOUFFON %s GAGNE"
 S.JESTER_LOST        = "TUÉ PAR UN DISSIDENT : PERDU"
 S.VAMP_DONE          = "SANG BU : +%d PV MAX"
 S.VAMP_NOT_YOURS     = "CE N'EST PAS TA VICTIME"
@@ -372,7 +374,7 @@ S.TABLET_OFF         = "PAGE TABLETTE EN PAUSE APRÈS UN ARRÊT DU JEU : F10 POU
 S.DIAG_OK            = "LPROLES %s OK"
 S.DIAG_BACK          = "LPROLES %s : ONGLET ET PAGE REMIS"
 S.INSTALL_BROKEN     = "LPROLES : INSTALLATION INCOMPLÈTE, RECOPIER LE MOD"
-S.UPDATED            = "LPROLES MIS À JOUR : VERSION %s"
+S.UPDATED            = "LPROLES MIS À JOUR : %s"
 
 S.MENU_TAB           = "LPROLES"
 S.MENU_ROLE          = "TON RÔLE"
@@ -380,6 +382,7 @@ S.MENU_NO_ROLE       = "AUCUN"
 S.MENU_HOST_ONLY     = "Les réglages de la partie sont modifiables par l'hôte."
 S.MENU_SECTION       = "Réglages affichés"
 S.MENU_ROLES         = "RÔLES ACTIFS"         -- every role's on/off switch, in one place
+S.MENU_FORCED        = "RÔLE FORCÉ"           -- the role forced on the host, one row per role
 
 S.PLANT_CODE = { [1] = "G3M", [2] = "Y8Z", [3] = "BO4", [4] = "WX2", [5] = "RU2" }
 

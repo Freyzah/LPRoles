@@ -39,7 +39,7 @@ Le mod tient un journal, `ue4ss\Mods\LPRoles\journal.txt`, conservé d'un lancem
 |---|---|
 | `mod/LPRoles/` | Le mod tel qu'il est installé : `Scripts/` (Lua), `sounds/`, `update.ps1`, `mettre-a-jour.bat` |
 | `tools/deploy.py` | Installe le mod dans le jeu, construit les archives |
-| `tools/lp/` | Vérifications (`luacheck.py`, `verify_mod.py`, `pages.py`) et outils d'analyse du jeu |
+| `tools/lp/` | Vérifications (`luacheck.py`, `verify_mod.py`, `pages.py`, `banners.py`) et outils d'analyse du jeu |
 | `tools/test_update.py` | Essais de la mise à jour contre un serveur local |
 | `.github/workflows/release.yml` | Publication d'une version |
 
@@ -51,6 +51,7 @@ Avant toute version :
 python tools/lp/luacheck.py mod/LPRoles/Scripts/*.lua
 python tools/lp/verify_mod.py
 python tools/lp/pages.py
+python tools/lp/banners.py
 python tools/test_update.py
 ```
 

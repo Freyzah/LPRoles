@@ -2,6 +2,12 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
+## 0.11.5
+
+- **Bandeaux :** un message n'est plus coupé en laissant un « % » ou un mot seul sur le bandeau suivant. Les bandeaux trop longs sont raccourcis (antidote, bâillon, victoire du Bouffon, mise à jour, Revenant).
+- **Voleur :** portée de 6 m par défaut (2,5 m avant).
+- **Onglet LPROLES :** nouveau groupe RÔLE FORCÉ, un rôle par rangée : un clic suffit pour changer le rôle forcé de l'hôte.
+
 ## 0.11.4
 
 - Vampire : sa vie en plus s'ajoute au nombre affiché sur la barre de vie (115 pour une vie pleine et 15 en réserve).
