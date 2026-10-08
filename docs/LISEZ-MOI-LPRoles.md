@@ -75,7 +75,7 @@ Le jeu doit être **relancé** pour charger une nouvelle version du mod.
 - **Pour la couper :** MES RÉGLAGES, « Mise à jour automatique au lancement » sur NON (ou `auto_update = false` dans `config.txt`).
 - **Le journal** (`journal.txt`) note à chaque lancement ce que la mise à jour a fait et le temps qu'elle a pris.
 - Le mod ne revient jamais à une version plus ancienne que celle installée.
-- **Lancée depuis le jeu le 8 octobre** (0.9.0, rien de nouveau à installer) : la vérification a pris 4,8 s, pendant que le jeu chargeait ; le mod s'est mis en place au même moment qu'avant, sans erreur. **Pas encore vu :** une vraie mise à jour faite depuis le jeu (ce sera la prochaine version), et si une fenêtre noire apparaît un instant au démarrage.
+- **Lancée depuis le jeu le 8 octobre** (0.9.0, rien de nouveau à installer) : la vérification a pris 4,8 s, pendant que le jeu chargeait ; le mod s'est mis en place au même moment qu'avant, sans erreur. **Pas encore vu :** une vraie mise à jour faite depuis le jeu (ce sera la prochaine version). L'utilisateur n'a vu aucune fenêtre noire au démarrage.
 
 **Pour tout désactiver :** renommer `dwmapi.dll` en `dwmapi.dll.off`.
 **Pour désactiver seulement LPRoles :** supprimer `ue4ss\Mods\LPRoles\enabled.txt`.
