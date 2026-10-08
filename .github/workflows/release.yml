@@ -1,0 +1,31 @@
+# Publie une version quand une étiquette vX.Y.Z est poussée : c'est cette page que le mod
+# consulte pour se mettre à jour (mod/LPRoles/update.ps1).
+name: Publier une version
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérifier la syntaxe des scripts
+        run: python3 tools/lp/luacheck.py mod/LPRoles/Scripts/*.lua
+
+      # échoue si l'étiquette n'est pas la version des sources, si manifest.txt n'est pas à
+      # jour ou si CHANGELOG.md n'a pas de section pour cette version
+      - name: Construire LPRoles.zip, version.txt et les notes
+        run: python3 tools/deploy.py --release-assets dist --expect "${GITHUB_REF_NAME#v}"
+
+      - name: Créer la page de la version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "$GITHUB_REF_NAME" dist/LPRoles.zip dist/version.txt
+          --title "LPRoles ${GITHUB_REF_NAME#v}" --notes-file dist/notes.md --verify-tag

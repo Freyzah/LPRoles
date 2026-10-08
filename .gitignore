@@ -1,0 +1,26 @@
+# Données tirées du jeu : elles appartiennent à son éditeur (tools/lp/bp.py les refabrique)
+/analysis/*
+!/analysis/NOTES.md
+
+# Logiciels téléchargés et archives construites
+/tools/FModel*/
+/tools/ue4ss-official/
+/tools/nexus-bundle-old/
+*.zip
+/dist/
+
+# Réglage propre à cette machine : le dossier du jeu
+/tools/dossier-du-jeu.txt
+
+# Fichiers que le mod écrit lui-même quand il tourne
+/mod/LPRoles/config.txt
+/mod/LPRoles/journal*.txt
+/mod/LPRoles/*_guard.txt
+/mod/LPRoles/reprise-061.txt
+/mod/LPRoles/update-result.txt
+LPRoles-son-*
+
+# Divers
+__pycache__/
+/.omc/
+/.gstack/

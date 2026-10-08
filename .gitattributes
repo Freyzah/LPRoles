@@ -1,0 +1,5 @@
+# Les mêmes octets partout : manifest.txt compte la taille de chaque script.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.wav binary
+*.zip binary
