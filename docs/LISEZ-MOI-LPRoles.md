@@ -1,8 +1,8 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.9.0, **préparée mais pas encore installée ni publiée** : le jeu a la 0.8.15. Ce document décrit la 0.9.0.
+Version 0.9.0, publiée sur GitHub (https://github.com/Freyzah/LPRoles) et installée le 8 octobre 2026.
 
-À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète.
+À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.9.0-pour-les-joueurs.zip`.
 
 **État des tests :**
 - **0.1.0** : testée en solo par l'hôte (chargement, rêve, recharge, envol, carte du Shérif).
@@ -48,7 +48,7 @@ Version 0.9.0, **préparée mais pas encore installée ni publiée** : le jeu a 
 - **0.8.13** : les cinq sons du mod sont mis au même niveau d'écoute (ils différaient de 14 dB), et chaque joueur a un réglage « Volume des sons du mod ». Essayée par l'utilisateur : les sons suivent le curseur de volume du jeu, le réglage du mod fonctionne, les niveaux conviennent.
 - **0.8.14** : son de l'envol de la Fée baissé de 3 dB, à la demande de l'utilisateur. Installée le 7 octobre.
 - **0.8.15** : les deux boutons latéraux de la souris (SOURIS 4, SOURIS 5) s'ajoutent aux touches proposées pour « activer le pouvoir » et « consommer l'objet en main ». Essayée par l'utilisateur : les boutons fonctionnent.
-- **0.9.0** : le projet devient un dépôt GitHub ; le mod se met à jour tout seul au lancement du jeu (et par `mettre-a-jour.bat`). Aucun changement de jeu. Mise à jour vérifiée hors du jeu ; **jamais lancée depuis le jeu.** Pas installée.
+- **0.9.0** : le projet devient un dépôt GitHub ; le mod se met à jour tout seul au lancement du jeu (et par `mettre-a-jour.bat`). Aucun changement de jeu. Publiée et installée le 8 octobre. Mise à jour vérifiée hors du jeu, contre la vraie page GitHub ; **jamais lancée depuis le jeu.**
 
 ## Ce qui est installé
 

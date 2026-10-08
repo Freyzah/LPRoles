@@ -1236,4 +1236,8 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
   - Qui peut publier une version sur le dépôt fait exécuter son code chez tous les joueurs au lancement suivant. C'est le propre de toute mise à jour automatique ; le compte GitHub doit être bien protégé (double authentification).
   - Un antivirus peut trouver suspect qu'un jeu lance PowerShell pour télécharger un fichier. En cas de blocage : couper le réglage et utiliser `mettre-a-jour.bat`.
   - Sans réseau, le lancement attend au plus quelques secondes puis continue avec la version en place.
-- **Version :** 0.9.0. Préparée dans les sources ; pas installée dans le jeu ni publiée tant que le dépôt GitHub n'existe pas.
+- **Version :** 0.9.0. Préparée dans les sources en attendant que le dépôt GitHub existe.
+- **Suite, le 8 octobre :** l'utilisateur a créé le dépôt public `Freyzah/LPRoles`. Projet poussé, étiquette `v0.9.0` : le flux GitHub a réussi du premier coup et publié `LPRoles.zip` et `version.txt`.
+  - Essai contre la vraie page, dans une copie d'installation 0.8.15 : mise à jour en 1,9 s par la commande exacte du mod, tous les fichiers identiques aux sources, réglages et son personnel gardés ; relancée, elle répond « rien de nouveau » en 0,7 à 0,8 s.
+  - L'archive construite par GitHub n'a pas la même empreinte que celle construite ici (compression différente d'un système à l'autre) ; son contenu, lui, est identique. Sans importance : `version.txt` est écrit à côté de l'archive qu'il décrit.
+  - 0.9.0 installée dans le jeu (fermé), archive complète `LPRoles-0.9.0-pour-les-joueurs.zip` refaite, celle de la 0.8.15 supprimée. Reste à voir en jeu : le premier lancement.
