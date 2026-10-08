@@ -2,9 +2,9 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.10.0
+## 0.11.0
 
-Six nouveaux rôles, chacun avec son groupe de réglages dans l'onglet LPROLES :
+Huit nouveaux rôles, chacun avec son groupe de réglages dans l'onglet LPROLES :
 
 - **Empoisonneur** (dissident) : le joueur visé meurt 60 s plus tard, sans coup de personne. Il est prévenu 40 s avant et peut se sauver en consommant un poisson (délais et antidote réglables).
 - **Bâillonneur** (dissident) : coupe le micro du joueur visé pendant 20 s.
@@ -12,8 +12,14 @@ Six nouveaux rôles, chacun avec son groupe de réglages dans l'onglet LPROLES :
 - **Écho** (les deux camps) : revient là où il était 5 s plus tôt.
 - **Amnésique** (neutre) : prend le rôle et le camp d'un mort, une fois pour toutes.
 - **Bouffon** (neutre) : gagne seul s'il est tué par un employé ; sa victoire termine la partie.
+- **Vampire** (dissident) : vampirise le cadavre d'un joueur qu'il a tué et gagne 10 PV de vie maximale, une fois par cadavre.
+- **Loup-garou** (employé) : dévore un cadavre ; sa vie et son endurance se régénèrent 10 % plus vite, une fois par cadavre.
 
-Le réglage « Rôle forcé pour l'hôte » propose ces six rôles pour les essayer.
+Le réglage « Rôle forcé pour l'hôte » propose ces huit rôles pour les essayer.
+
+## 0.10.0
+
+Version intermédiaire, jamais publiée : les six premiers rôles de la 0.11.0.
 
 ## 0.9.0
 

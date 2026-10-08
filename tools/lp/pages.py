@@ -121,6 +121,8 @@ def status_line(role, v):
         return fill(st['spirit_left'] if isset(v, 'dead') else st['spirit_later'], v)
     elif role == 'poisoner':
         if isset(v, 'act'): return fill(st['poison_on'] + st['uses_too'], v)
+    elif role == 'vampire': return fill(st['vamp_on'], v) if isset(v, 'bonus') else st['vamp_none']
+    elif role == 'werewolf': return fill(st['wolf_on'], v) if isset(v, 'pct') else st['wolf_none']
     elif role == 'amnesiac': return st['amnesiac']
     elif role == 'jester': return st['jester']
     if v.get('m') is not None: return fill(st['uses'], v)
@@ -156,12 +158,12 @@ def lines(role, status, safe_idx=None):
 
 def orphan(word):
     """A word that must not start a row: a lone punctuation mark or a unit."""
-    return re.match(r'^[:;!?]$', word) is not None or re.match(r'^[sm][.,)]*$', word) is not None
+    return re.match(r'^[:;!?]$', word) is not None or re.match(r'^[sm%][.,)]*$', word) is not None
 
 def clings(word, before):
     if re.match(r'^[:;!?]$', word): return True
     if re.match(r'^\d[.,)]*$', word) and before.endswith('SOURIS'): return True
-    return re.match(r'^[sm][.,)]*$', word) is not None and re.search(r'\d$', before) is not None
+    return re.match(r'^[sm%][.,)]*$', word) is not None and re.search(r'\d$', before) is not None
 
 def segments(line):
     out, em, i = [], False, 0
@@ -279,6 +281,14 @@ def status_of(role, C, P):
         v.update(range=metres('amnesiac_range'), reach=BODY_REACH / 100)
     elif role == 'jester':
         v.update(ends=int(g('jester_ends_game')))
+    elif role == 'vampire':
+        meals = P.get('meals', 0)
+        v.update(meals=meals, per=g('vampire_hp'), bonus=meals * g('vampire_hp'), own=int(g('vampire_own_kills')),
+                 range=metres('vampire_range'), chold=g('vampire_hold'), res=P.get('res', 0))   # res: kept by the player's machine
+    elif role == 'werewolf':
+        meals = P.get('meals', 0)
+        v.update(meals=meals, per=g('werewolf_percent'), pct=meals * g('werewolf_percent'),
+                 range=metres('werewolf_range'), chold=g('werewolf_hold'))
     code = ITEMS.index(g(ITEM_KEY[role])) if role in ITEM_KEY else 0
     if code:
         v['item'] = code
@@ -295,7 +305,7 @@ BODY_REACH = float(re.search(r'local BODY_REACH = (\d+)', server).group(1))
 
 ROLES = ['sheriff', 'infector', 'dreamer', 'fairy', 'medium', 'angel', 'mole', 'tracker', 'hypnotist', 'mimic',
          'cleaner', 'stowaway', 'swapper', 'martyr', 'revenant', 'poisoner', 'gagger', 'thief', 'echo',
-         'amnesiac', 'jester']
+         'amnesiac', 'jester', 'vampire', 'werewolf']
 
 def states_of(role):
     out = [('au départ', {})]
@@ -303,6 +313,8 @@ def states_of(role):
         out.append(('effet en cours', {'act': 8, 'charges': 1, 'tgt': 2}))
         out.append(('plus d\'utilisation', {'charges': 0}))
     if role in ('hypnotist', 'cleaner', 'swapper', 'gagger', 'thief', 'echo'): out.append(('plus d\'utilisation', {'charges': 0}))
+    if role == 'vampire': out += [('un cadavre vampirisé', {'meals': 1, 'res': 10}), ('deux cadavres, réserve entamée', {'meals': 2, 'res': 5})]
+    if role == 'werewolf': out += [('deux cadavres dévorés', {'meals': 2})]
     if role == 'poisoner': out += [('poison en cours', {'act': 42, 'tgt': 2, 'charges': 0}), ('plus d\'utilisation', {'charges': 0})]
     if role in ('dreamer', 'fairy'): out += [('effet en cours', {'act': 8, 'charges': 0}), ('charge vide', {'charges': 0})]
     if role == 'revenant': out += [('mort', {'dead': 1}), ('mort, se manifeste', {'dead': 1, 'act': 5, 'charges': 0}),
@@ -372,7 +384,8 @@ def main():
     for role, name, c in [('poisoner', 'jamais prévenu, pas d\'antidote', dict(C, poison_warning=0, poison_cure='none')),
                           ('poisoner', 'prévenu aussitôt, antidote : une plante', dict(C, poison_warning=300, poison_cure='plant')),
                           ('poisoner', 'antidote : un objet précis, avec recharge', dict(C, poison_cure='cod', poisoner_item='tuna')),
-                          ('jester', 'sa victoire ne termine pas la partie', dict(C, jester_ends_game=False))]:
+                          ('jester', 'sa victoire ne termine pas la partie', dict(C, jester_ends_game=False)),
+                          ('vampire', 'tous les cadavres', dict(C, vampire_own_kills=False))]:
         ls = lines(role, status_of(role, c, {}))
         show('%s, autres réglages : %s' % (role.upper(), name), ls)
         check(role, ls, problems, '%s (%s)' % (role, name))

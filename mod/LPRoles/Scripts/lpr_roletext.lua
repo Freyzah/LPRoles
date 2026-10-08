@@ -107,6 +107,10 @@ status_line = function(role, v)
         return fill(set(v, "dead") and st.spirit_left or st.spirit_later, v)
     elseif role == "poisoner" then
         if set(v, "act") then return fill(st.poison_on .. st.uses_too, v) end
+    elseif role == "vampire" then
+        return set(v, "bonus") and fill(st.vamp_on, v) or st.vamp_none
+    elseif role == "werewolf" then
+        return set(v, "pct") and fill(st.wolf_on, v) or st.wolf_none
     elseif role == "amnesiac" then
         return st.amnesiac
     elseif role == "jester" then
@@ -169,12 +173,12 @@ function RT.plain(line)
 end
 
 -- A word that must stay on the row of what comes before it: a punctuation mark written after
--- a space (" : ", " ; "), a unit after a number ("3 s.", "2,5 m),"), or the number of a mouse
--- button ("SOURIS 4").
+-- a space (" : ", " ; "), a unit after a number ("3 s.", "2,5 m),", "10 %"), or the number of
+-- a mouse button ("SOURIS 4").
 local function clings(word, before)
     if word:match("^[:;!?]$") then return true end
     if word:match("^%d[%.,%)]*$") and before:match("SOURIS$") then return true end
-    return word:match("^[sm][%.,%)]*$") ~= nil and before:match("%d$") ~= nil
+    return word:match("^[sm%%][%.,%)]*$") ~= nil and before:match("%d$") ~= nil
 end
 
 -- Number of characters of a text (accented letters take several bytes).

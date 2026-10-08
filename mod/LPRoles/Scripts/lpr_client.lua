@@ -38,6 +38,8 @@ local disguise_gen = 0       -- so that an old "stop protecting" timer cannot en
 local list_colors = {}       -- Métamorphe: player index -> { mec, color }, the colour its row of the player list keeps
 local poisoned = false       -- the host said so: the "consume" key may then serve for the antidote
 local gag = nil              -- Bâillonneur: this player's microphone is held off: { ends, next }
+local vamp = nil             -- Vampire: life above the game's maximum: { max, reserve, acc, at }
+local wolf = nil             -- Loup-garou: the game's own regeneration values, to give back: { asset, min, max, hp }
 
 -- ---------------------------------------------------------------- notifications
 local function say(id, color, ...)
@@ -731,6 +733,113 @@ local function on_card(on, x, y, z, walls)
         through and "vue à travers les murs" or "sans traverser les murs")
 end
 
+-- ---------------------------------------------------------------- Vampire: life above the game's maximum
+-- The game keeps a character's life on its player's machine and never lets it go above 100.
+-- What the Vampire gains is kept here, as a reserve on top of those 100: after every hit the
+-- life is filled up again from it. So the reserve is spent first - but a single hit that
+-- takes 100 at once still kills. The reserve comes back the way the game's own life does: one
+-- point at each of its regeneration beats, once the life itself is full.
+local function role_changed()
+    for _, fn in ipairs(role_listeners) do U.try("état du rôle", fn, my_role) end
+end
+
+local function vamp_changed()
+    if my_status and my_role == "vampire" then my_status.res = vamp and vamp.reserve or 0 end
+    role_changed()
+end
+
+local function on_vamp(meals, per)
+    local max = (tonumber(meals) or 0) * (tonumber(per) or 0)
+    if not vamp then vamp = { max = 0, reserve = 0, acc = 0 } end
+    local gained = math.max(0, max - vamp.max)
+    vamp.max = max
+    vamp.reserve = math.min(max, vamp.reserve + gained)
+    U.log("Vampire : vie maximale 100 + %d, réserve %d", vamp.max, vamp.reserve)
+    vamp_changed()
+end
+
+-- Right after a hit on the local character (amount: what it took).
+local function vamp_absorb(mec, amount)
+    if (amount or 0) <= 0 or vamp.reserve <= 0 then return end
+    local health = U.get(mec, "Health", 0)
+    if type(health) ~= "number" or health <= 0 or health >= 100 then return end     -- dying: nothing to give back
+    local give = math.min(vamp.reserve, 100 - health)
+    U.set(mec, "Health", health + give)
+    vamp.reserve = vamp.reserve - give
+    local hud = hud_of(mec)
+    local ps = hud and U.get(hud, "PlayerState", nil)
+    if U.valid(ps) then U.tcall(ps, "Set HP") end
+    vamp_changed()
+end
+
+local function tick_vamp(now)
+    if not vamp then return end
+    local dt = now - (vamp.at or now)
+    vamp.at = now
+    local mec = G.local_mec()
+    if not mec or ghost then return end
+    if U.get(mec, "Alive", true) ~= true then          -- dead: the life above the maximum is lost
+        if vamp.reserve > 0 then
+            vamp.reserve, vamp.acc = 0, 0
+            vamp_changed()
+        end
+        return
+    end
+    if vamp.reserve >= vamp.max then return end
+    if U.get(mec, "Stamina Regenering", false) ~= true or U.get(mec, "Health", 0) < 100 then return end
+    local data = U.get(mec, "PlayerData", nil)
+    local beat = U.valid(data) and U.get(data, "Regen HP Speed", nil) or nil
+    if type(beat) ~= "number" or beat <= 0 then beat = 3 end
+    vamp.acc = (vamp.acc or 0) + dt / beat
+    if vamp.acc >= 1 then
+        vamp.acc = vamp.acc - 1
+        vamp.reserve = math.min(vamp.max, vamp.reserve + 1)
+        vamp_changed()
+    end
+end
+
+-- ---------------------------------------------------------------- Loup-garou: faster regeneration
+-- The game reads how fast stamina and life come back from its player data ("Min Regen" and
+-- "Max Regen": stamina per second; "Regen HP Speed": seconds between two points of life).
+-- On this machine only those three values are scaled, from the values found the first time,
+-- and given back as soon as the role or the game is over: the data outlives a game.
+local function wolf_reset()
+    local w = wolf
+    if not w then return end
+    wolf = nil
+    if U.valid(w.asset) then
+        U.set(w.asset, "Min Regen", w.min)
+        U.set(w.asset, "Max Regen", w.max)
+        U.set(w.asset, "Regen HP Speed", w.hp)
+        U.log("Loup-garou : régénération du jeu remise à ses valeurs")
+    end
+end
+
+local function on_wolf(_, pct)
+    local total = tonumber(pct) or 0
+    if total <= 0 then return wolf_reset() end
+    local mec = G.local_mec()
+    if not mec then return end
+    if not wolf then
+        local asset = U.get(mec, "PlayerData", nil)
+        local min = U.valid(asset) and U.get(asset, "Min Regen", nil) or nil
+        local max = U.valid(asset) and U.get(asset, "Max Regen", nil) or nil
+        local hp = U.valid(asset) and U.get(asset, "Regen HP Speed", nil) or nil
+        if type(min) ~= "number" or type(max) ~= "number" or type(hp) ~= "number" or hp <= 0 then
+            U.log("Loup-garou : valeurs de régénération du jeu illisibles, rien n'est changé")
+            return
+        end
+        wolf = { asset = asset, min = min, max = max, hp = hp }
+        U.log("Loup-garou : régénération du jeu : endurance %.2f à %.2f par seconde, 1 PV toutes les %.2f s", min, max, hp)
+    end
+    if not U.valid(wolf.asset) then return end
+    local f = 1 + total / 100
+    U.set(wolf.asset, "Min Regen", wolf.min * f)
+    U.set(wolf.asset, "Max Regen", wolf.max * f)
+    U.set(wolf.asset, "Regen HP Speed", wolf.hp / f)
+    U.log("Loup-garou : régénération accélérée de %d %%", total)
+end
+
 -- ---------------------------------------------------------------- Bâillonneur: the microphone held off
 -- The game only sends the voice of a character whose "Can Talk" is true (a sleeping Rêveur's
 -- is switched off the same way, see enter_ghost): held false for as long as the host says.
@@ -798,6 +907,8 @@ local function on_end()
     restore_bodies()
     end_gag(true)
     poisoned = false
+    vamp = nil
+    wolf_reset()
     -- no role any more until the next game
     my_role, my_status, safe_idx = nil, nil, nil
     for _, fn in ipairs(role_listeners) do U.try("rôle", fn, nil) end
@@ -918,6 +1029,8 @@ end
 -- ---------------------------------------------------------------- messages from the host
 local function set_role(role)
     if role ~= my_role then my_status, safe_idx, hint_shown = nil, nil, false end
+    if role ~= "vampire" then vamp = nil end
+    if role ~= "werewolf" then wolf_reset() end
     my_role = role
     for _, fn in ipairs(role_listeners) do U.try("rôle", fn, role) end
 end
@@ -979,6 +1092,8 @@ local MSG = {
     ECHO_DONE = { "good", sfx = OK }, ECHO_NOTHING = { "warn", sfx = FAIL },
     AMNESIA_DONE = { "good", "name", sfx = OK }, AMNESIA_NO_ROLE = { "warn", sfx = FAIL }, AMNESIA_DISSIDENT = { "bad" },
     JESTER_WIN = { "role", "name" }, JESTER_LOST = { "bad" },
+    VAMP_DONE = { "good", "num", sfx = OK }, VAMP_NOT_YOURS = { "warn", sfx = FAIL }, FEED_USED = { "warn", sfx = FAIL },
+    WOLF_DONE = { "good", "num", sfx = OK },
 }
 
 local function on_msg(id, a)
@@ -1009,6 +1124,8 @@ local function on_status(role, text)
     if role == "none" then role = nil end     -- no role, but something to show (Liés)
     if role ~= my_role then return end
     my_status = RT.parse(text)
+    -- kept on this machine, not by the host: what is left of the Vampire's extra life
+    if my_role == "vampire" then my_status.res = vamp and vamp.reserve or 0 end
     for _, fn in ipairs(role_listeners) do U.try("état du rôle", fn, my_role) end
 end
 
@@ -1480,7 +1597,8 @@ end
 -- start. The Rêveur's stays on the eyes: for that role the key only says so.
 local POWER_ROLES = { infector = true, fairy = true, medium = true, angel = true, tracker = true, hypnotist = true,
                       mimic = true, cleaner = true, stowaway = true, swapper = true, revenant = true,
-                      poisoner = true, gagger = true, thief = true, echo = true, amnesiac = true }
+                      poisoner = true, gagger = true, thief = true, echo = true, amnesiac = true,
+                      vampire = true, werewolf = true }
 local last_power = 0
 
 local function use_power()
@@ -1531,7 +1649,9 @@ is_local = function(mec)
 end
 
 local function on_hit_health(mec, amount)
-    if not ghost or not is_local(mec) then return end
+    if not is_local(mec) then return end
+    if vamp and not ghost then vamp_absorb(mec, amount) end
+    if not ghost then return end
     if ghost.kind == "fairy" then
         -- Untouchable while flying. A lethal hit is also ignored by the game itself:
         -- its death sequence starts 0.1 s later and stops when "Alive" is false.
@@ -1579,6 +1699,8 @@ function Cl.install()
     N.on("SWAPFX", on_swap_fx)
     N.on("GAG", on_gag)
     N.on("POISON", on_poison)
+    N.on("VAMP", on_vamp)
+    N.on("WOLF", on_wolf)
     N.on("HELLO", function()
         G.clear_messages()                     -- a new game: nothing left to show of the one before
         U.log("L'hôte demande qui a le mod (début de partie)")
@@ -1632,6 +1754,7 @@ function Cl.install()
     U.every_tick("corps nettoyés", tick_cleaned)
     U.every_tick("hypnose", tick_hypno)
     U.every_tick("bâillon", tick_gag)
+    U.every_tick("vampire", tick_vamp)
     -- Tell the host we have the mod: once per character, every 2 s until the host has answered
     -- (ten times at most: the host only answers the first time it hears of a player), then
     -- again now and then in case the host has changed.
@@ -1642,6 +1765,8 @@ function Cl.install()
         local mec = G.local_mec()
         if not mec then
             if ghost then ghost = nil end
+            vamp = nil
+            wolf_reset()                           -- the game was left: its values go back as they were
             hello_sent_for, acked_for, tries = nil, nil, 0   -- the next character says it again at once
             return
         end

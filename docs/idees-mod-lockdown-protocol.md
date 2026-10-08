@@ -147,3 +147,7 @@ Pistes proposées mais non retenues : Légiste (camp du tueur près d'un cadavre
 Retenus par l'utilisateur parmi mes dix propositions : **Empoisonneur**, **Bâillonneur**, **Voleur**, **Écho**, **Amnésique**, **Bouffon**. Fonctionnement détaillé : `LISEZ-MOI-LPRoles.md` ; décisions : `decisions-mod.md` (D96 à D102).
 
 Pistes proposées mais non retenues : Détective (apprend si le joueur visé a frappé quelqu'un dans la dernière minute), Vigile (balise invisible qui prévient quand quelqu'un passe), Vengeur (à sa mort, son tueur meurt aussi, ou est montré à tous), Médecin (rend sa vie à un joueur visé).
+
+## Rôles ajoutés en version 0.11.0 (8 octobre 2026)
+
+Idées de l'utilisateur : **Vampire** (dissident ; vampirise les cadavres de ses victimes, +10 PV max à chaque fois) et **Loup-garou** (employé ; dévore les cadavres, +10 % de régénération de vie et d'endurance à chaque fois). Décisions : `decisions-mod.md` (D103 et D104).

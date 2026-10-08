@@ -1318,3 +1318,33 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Délai de 3 s** entre l'annonce et la fin : le temps de lire le bandeau.
 - **Limite connue :** une grenade tue sans tueur connu, donc ne fait pas gagner le Bouffon.
 - **Version :** 0.10.0. Installée (jeu fermé), archive complète refaite. Pas publiée.
+
+## D103 — Vampire (version 0.11.0)
+
+- **Demande :** « un rôle "Vampire", il pourrait "vampiriser" les gens qu'il a tué (une fois par cadavre), lui donnait 10 hp max en plus à chaque fois (donc un rôle dissident) ».
+- **Ce que dit le jeu :** la vie d'un personnage est tenue par la machine de son joueur, et la fonction qui applique un coup (`Hit Health`) la borne à 100 (`Clamp(vie - dégâts, 0, 100)`), puis déclenche la mort si elle tombe à 0. Les soins ne s'appliquent que sous 100. Le « Max HP » des données du joueur ne sert qu'à dessiner la barre de vie. Une accroche du mod sur cette fonction passe après elle.
+- **Comment donner de la vie au-dessus de 100, options :**
+  1. **Une réserve tenue par le mod, au-dessus des 100 du jeu (retenu).** Sur la machine du Vampire, après chaque coup reçu, la vie est remontée depuis la réserve (jusqu'à 100). Tant qu'il reste de la réserve, la vie reste donc pleine : la réserve est dépensée en premier, ce qui revient bien à 100 + réserve points de vie. Rien n'est écrit au-dessus de 100 : la barre de vie et les soins du jeu se comportent normalement.
+  2. Écrire une vie supérieure à 100. Le coup suivant la rabattrait à 100 (la borne est dans la fonction du jeu), et la barre de vie n'est pas faite pour ça.
+  3. Réduire les dégâts reçus à la place. Ce n'est pas ce qui est demandé, et l'effet serait proportionnel aux coups plutôt qu'un nombre de points.
+- **Limite assumée :** un coup de 100 d'un seul coup tue, le jeu décidant de la mort avant le passage du mod. Écrit sur la page du rôle.
+- **« HP max » et non simple bonus :** la réserve se régénère, au rythme de la vie du jeu (un point à chaque battement de `Regen HP Speed`, pendant que le jeu régénère et une fois la vie à 100). Chaque cadavre donne ses 10 PV tout de suite : un maximum qu'il faudrait d'abord remplir ne servirait à rien sur le moment.
+- **« Les gens qu'il a tué » :** l'hôte note à chaque mort qui a porté le dernier coup dans les 3 s (le mécanisme du Martyr). Réglage « Seulement ses propres victimes », OUI par défaut ; sur NON, tout cadavre convient (utile aussi parce que grenades et poison ne désignent personne).
+- **Le geste :** appui près du cadavre puis 3 s à rester près de lui, comme le Nettoyeur, plutôt qu'un effet immédiat : le temps passé sur le corps est ce qui expose le Vampire. Le corps reste en place.
+- **Une fois par cadavre :** retenu par joueur mort et par mort ; un joueur réanimé puis tué de nouveau est un nouveau cadavre.
+- **Qui sait quoi :** l'hôte ne connaît que le nombre de cadavres ; la réserve est tenue par la machine du joueur, qui l'ajoute à ce que la page du rôle affiche.
+- **Contrôles :** syntaxe, noms du jeu, pages. **Jamais lancé en jeu ; pas de relecture indépendante.**
+
+## D104 — Loup-garou (version 0.11.0)
+
+- **Demande :** « en gentil, le Loup Garou, qui lui aussi pourrait interagir avec les cadavres, sauf que lui ça lui améliorerait sa régénération d'endurance/hp, de 10% à chaque fois ».
+- **Ce que dit le jeu :** il a bien une régénération, réglée par les données du joueur (`Data_Player`, un seul objet par machine) : `Min Regen` et `Max Regen` (endurance récupérée par seconde au repos, selon la fatigue et la vie), `Regen HP Speed` (secondes entre deux points de vie rendus, tant que le jeu « régénère » et que la vie est sous 100).
+- **Options :**
+  1. **Multiplier ces trois valeurs sur la machine du Loup-garou (retenu).** `Min Regen` et `Max Regen` × (1 + 10 % par cadavre), `Regen HP Speed` divisé d'autant. C'est exactement « régénérer 10 % plus vite », calculé par le jeu lui-même.
+  2. Ajouter de la vie et de l'endurance par le mod, à côté du jeu. Il faudrait recopier les formules du jeu (repos, délais après l'effort, fatigue) : fragile, et faux à la première mise à jour du jeu.
+- **Précaution :** ces données survivent à la partie. Les valeurs d'origine sont lues une fois, tout est toujours recalculé à partir d'elles, et elles sont remises à la fin de la partie, au changement de rôle et quand le joueur quitte la partie. Un redémarrage du jeu les recharge de toute façon.
+- **Effets cumulés par addition** (deux cadavres : +20 %), pas par multiplication : plus simple à lire sur la page du rôle.
+- **N'importe quel cadavre**, puisque c'est un employé : il ne tue pas, en principe. Camp réglable, employé par défaut.
+- **Même geste que le Vampire** (appui puis 3 s près du corps), même mécanisme côté hôte. Les deux rôles peuvent se servir du même corps, chacun une fois.
+- **Détail :** pour la vie, le jeu ne relit le rythme qu'au début d'un repos ; le gain s'applique donc au repos suivant.
+- **Version :** 0.11.0. Installée (jeu fermé), archive complète refaite. Pas publiée.

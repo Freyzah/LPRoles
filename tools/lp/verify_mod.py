@@ -24,7 +24,8 @@ DUMPS = {"Mec": "Character__Mec", "GM": "Gameplay__GM", "HUD": "UI__Game__W_inGa
          "TabButton": "UI__Menu2__W_Menu_MainTabButton", "NewMenu": "UI__Menu2__W_NewMenu",
          "MainTab": "UI__Menu2__W_Menu_MainTab", "PlayerList": "UI__Game__W_Player_List",
          "DeadBody": "Character__Ghost__DeadBody", "TabletUI": "Character__Tablet__Interface__W_Tablet_UI", "TabletButton": "Character__Tablet__Interface__W_Tablet_ButtonText", "Tablet": "Character__Tablet__Tablet",
-         "WorldItem": "Items__WorldItem", "ItemSpawner": "Items__Item_Spawner"}
+         "WorldItem": "Items__WorldItem", "ItemSpawner": "Items__Item_Spawner",
+         "PlayerData": "Character__Data_Player"}
 
 EV_RIGHT = "BndEvt__W_Settings_Selection_ButtonR_K2Node_ComponentBoundEvent_5_OnButtonPressedEvent__DelegateSignature"
 EV_LEFT = "BndEvt__W_Settings_Selection_ButtonL_K2Node_ComponentBoundEvent_4_OnButtonPressedEvent__DelegateSignature"
@@ -90,6 +91,8 @@ PROPERTIES = [
     ("TabletButton", "Color"), ("Tablet", "Hand Widget"), ("Mec", "Orientation"), ("Mec", "Head Collider"), ("Mec", "Head Hitbox"),
     ("PlayerList", "Target Mec"), ("PlayerList", "color_border"),
     ("WorldItem", "Data"), ("ItemSpawner", "Used"),
+    ("Mec", "PlayerData"), ("Mec", "Stamina Regenering"),
+    ("PlayerData", "Min Regen"), ("PlayerData", "Max Regen"), ("PlayerData", "Regen HP Speed"),
 ]
 # Native functions whose first parameter is a text.
 TEXT_NATIVES = {"SetText"}

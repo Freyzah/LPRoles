@@ -59,6 +59,8 @@ local function fresh_game_fields(P)
     P.poison = nil                 -- poisoned by an Empoisonneur: { by, at, warn_at, warned }
     P.gag_until = nil              -- Bâillonneur: this player's microphone is held off until then
     P.trail = nil                  -- Écho: where this player was lately: { { at, loc, yaw }, ... }
+    P.fed, P.meals = nil, 0        -- Vampire, Loup-garou: the bodies used (key -> time of that death), and how many
+    P.killed_by = nil              -- key of the player whose blow killed this one (nil: nobody's)
     P.clean_aim = nil
     P.status_sent = nil
 end
@@ -629,13 +631,14 @@ local function stop_act(P)
 end
 
 -- The dead body (of a player of this game, and not removed) closest to this player, within
--- `reach` cm.
-local function body_near(P, reach)
+-- `reach` cm; accept(T), when given, leaves bodies out.
+local function body_near(P, reach, accept)
     local from = G.location(P.mec)
     if not from then return nil end
     local best, best_d = nil, reach
     each_player(function(T)
         if T == P or not T.camp or T.cleaned or G.is_alive(T.mec) then return end
+        if accept and not accept(T) then return end
         local at = G.death_spot(T.mec)
         if not at then return end
         local d = U.dist(from, at)
@@ -668,6 +671,67 @@ local function tick_cleaner(P, now)
     broadcast("CLEAN", idx(T))
     tell(P, "MSG", "CLEAN_DONE", idx(T))
     U.log("Nettoyeur : %s fait disparaître le corps de %s", G.player_name(P.mec), G.player_name(T.mec))
+end
+
+-- ---------------------------------------------------------------- Vampire, Loup-garou
+-- The power key pressed near a body, then staying near it, like the Nettoyeur; the body stays
+-- where it is. Each body serves a player once (a player raised then killed again is a new one).
+-- What is gained lives on the player's own machine, which holds its life and its stamina (see
+-- lpr_client.lua): the host only says how many bodies were used.
+local FEED = {
+    vampire = {
+        range = "vampire_range", hold = "vampire_hold", refused = "VAMP_NOT_YOURS",
+        fits = function(P, T) return not C.get("vampire_own_kills") or T.killed_by == P.key end,
+        done = function(P, T)
+            tell(P, "VAMP", P.meals, C.get("vampire_hp"))
+            tell(P, "MSG", "VAMP_DONE", C.get("vampire_hp"))
+            U.log("Vampire : %s vampirise le corps de %s (%d fois)", G.player_name(P.mec), G.player_name(T.mec), P.meals)
+        end,
+    },
+    werewolf = {
+        range = "werewolf_range", hold = "werewolf_hold",
+        fits = function() return true end,
+        done = function(P, T)
+            tell(P, "WOLF", P.meals, P.meals * C.get("werewolf_percent"))
+            tell(P, "MSG", "WOLF_DONE", C.get("werewolf_percent"))
+            U.log("Loup-garou : %s dévore le corps de %s (%d fois)", G.player_name(P.mec), G.player_name(T.mec), P.meals)
+        end,
+    },
+}
+
+local function tick_feed(P, now)
+    local spec = FEED[P.role]
+    if not spec or not P.act then return end
+    if not G.is_alive(P.mec) then return stop_act(P) end
+    local reach = C.get(spec.range)
+    local function used(X)
+        local f = P.fed and P.fed[X.key]
+        return f ~= nil and (f == true or f == X.died_at)
+    end
+    local T = body_near(P, reach, function(X) return not used(X) and spec.fits(P, X) end)
+    if not T then
+        -- why: the body was left, or the one that is there cannot serve
+        local why = "NO_BODY"
+        local any = body_near(P, reach)
+        if P.clean_aim then
+            why = "TARGET_LOST"
+        elseif any then
+            why = used(any) and "FEED_USED" or spec.refused or "NO_BODY"
+        end
+        tell(P, "MSG", why)
+        return stop_act(P)
+    end
+    if not P.clean_aim or P.clean_aim.key ~= T.key then
+        P.clean_aim = { key = T.key, since = now }
+        tell(P, "MSG", "TARGET", idx(T))
+        return
+    end
+    if now - P.clean_aim.since < C.get(spec.hold) then return end
+    stop_act(P)
+    P.fed = P.fed or {}
+    P.fed[T.key] = T.died_at or true
+    P.meals = (P.meals or 0) + 1
+    spec.done(P, T)
 end
 
 -- A cleaned body brought back anyway (a player without the mod can still reach it): dead again.
@@ -1162,7 +1226,7 @@ local function on_power(P)
         echo_back(P, now)
     elseif role == "jester" then
         return                                     -- no power to start
-    elseif AIM[role] or role == "cleaner" or role == "infector" then
+    elseif AIM[role] or FEED[role] or role == "cleaner" or role == "infector" then
         if P.act then P.act.at = now else P.act = { at = now } end
     end
 end
@@ -1355,6 +1419,9 @@ end
 
 local function on_death(P)
     P.died_at = U.now()
+    -- whose blow it was (as for the Martyr: the last one, if recent), for the Vampire
+    local blow = P.last_hit
+    P.killed_by = (blow and P.died_at - blow.at <= MARTYR_WINDOW) and blow.by or nil
     P.jar_wait = nil
     if P.dreaming then end_dream(P, "death", true) end
     if P.fairy then end_fairy(P) end
@@ -1552,6 +1619,9 @@ local SPECS = {
     -- whose deaths end the game) their holder is an employee.
     { id = "amnesiac",  prefix = "amnesiac", camp = employee, mod = "need" },
     { id = "jester",    prefix = "jester",   camp = employee, mod = "need" },
+    { id = "vampire",   prefix = "vampire",  camp = dissident, mod = "need", init = function(P) P.meals, P.fed = 0, nil end },
+    { id = "werewolf",  prefix = "werewolf", camp = camp_of("werewolf_camp"), mod = "need",
+      init = function(P) P.meals, P.fed = 0, nil end },
 }
 local SPEC_BY_ID = {}
 for _, s in ipairs(SPECS) do SPEC_BY_ID[s.id] = s end
@@ -2021,6 +2091,15 @@ local function status_of(P, now)
         v.range, v.reach = metres("amnesiac_range"), BODY_REACH / 100
     elseif r == "jester" then
         v.ends = C.get("jester_ends_game") and 1 or 0
+    elseif r == "vampire" then
+        local meals = P.meals or 0
+        v.meals, v.per, v.bonus = meals, C.get("vampire_hp"), meals * C.get("vampire_hp")
+        v.own = C.get("vampire_own_kills") and 1 or 0
+        v.range, v.chold = metres("vampire_range"), C.get("vampire_hold")
+    elseif r == "werewolf" then
+        local meals = P.meals or 0
+        v.meals, v.per, v.pct = meals, C.get("werewolf_percent"), meals * C.get("werewolf_percent")
+        v.range, v.chold = metres("werewolf_range"), C.get("werewolf_hold")
     end
     -- the item that gives a use back, and what is left of the host's limit
     local item = recharge_of(P)
@@ -2122,6 +2201,7 @@ local function tick(now)
         if P.role == "cleaner" then U.try("nettoyeur", tick_cleaner, P, now) end
         if AIM[P.role] then U.try("visée", tick_aim, P, now) end
         if P.role == "echo" then U.try("écho", tick_trail, P, now) end
+        if FEED[P.role] then U.try("cadavre", tick_feed, P, now) end
         if P.poison then U.try("poison", tick_poison, P, now) end
         if P.infected_at and now >= P.infected_at then U.try("conversion", convert, P) end
     end)

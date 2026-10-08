@@ -1,8 +1,8 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.10.0, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.9.0, c'est elle que vos amis reçoivent. Ce document décrit la 0.10.0.
+Version 0.11.0, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.9.0, c'est elle que vos amis reçoivent. Ce document décrit la 0.11.0.
 
-À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.10.0-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
+À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.11.0-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
 
 **État des tests :**
 - **0.1.0** : testée en solo par l'hôte (chargement, rêve, recharge, envol, carte du Shérif).
@@ -50,6 +50,7 @@ Version 0.10.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.8.15** : les deux boutons latéraux de la souris (SOURIS 4, SOURIS 5) s'ajoutent aux touches proposées pour « activer le pouvoir » et « consommer l'objet en main ». Essayée par l'utilisateur : les boutons fonctionnent.
 - **0.9.0** : le projet devient un dépôt GitHub ; le mod se met à jour tout seul au lancement du jeu (et par `mettre-a-jour.bat`). Aucun changement de jeu. Publiée et installée le 8 octobre. Mise à jour vérifiée hors du jeu, contre la vraie page GitHub. Premier lancement en jeu par l'utilisateur le 8 octobre : la vérification passe, le mod se charge normalement. Une vraie mise à jour depuis le jeu reste à voir.
 - **0.10.0** : six rôles de plus, Empoisonneur, Bâillonneur, Voleur, Écho, Amnésique et Bouffon (les deux derniers sont neutres). **Aucun n'a encore été lancé en jeu.** Installée le 8 octobre, pas publiée.
+- **0.11.0** : deux rôles de plus, proposés par l'utilisateur, Vampire et Loup-garou. **Jamais lancés en jeu.** Installée le 8 octobre, pas publiée.
 
 ## Ce qui est installé
 
@@ -111,6 +112,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 | **Traqueur, Hypnotiseur, Métamorphe, Échangeur** | Appuyer en regardant un joueur : le pouvoir agit **aussitôt** sur lui. Sans personne en vue, rien ne se passe et rien n'est dépensé (« PERSONNE EN VUE ») |
 | **Ange gardien** | Appuyer en regardant un joueur : son nom s'affiche (« CIBLE : … »), puis il faut le garder en vue 1,5 s (réglage « Protégé à garder en vue », groupe ANGE GARDIEN ; 0 = choix immédiat). Sans personne en vue, le mod cherche pendant 2,5 s |
 | **Recruteur** | Appuyer près d'un employé, puis rester près de lui 4 s |
+| **Vampire, Loup-garou** | Appuyer près d'un cadavre, puis rester près de lui 3 s |
 | **Nettoyeur** | Appuyer près d'un cadavre, puis rester près de lui 3 s |
 | **Rêveur** | Rien : le bandeau rappelle de fermer les deux yeux |
 
@@ -139,6 +141,8 @@ Ce que fait la touche de pouvoir selon le rôle :
 | **Écho** | Les deux | Revient aussitôt là où il était 5 s plus tôt. 2 fois par partie |
 | **Amnésique** | Neutre | Sans pouvoir au départ. Prend, une fois pour toutes, le rôle et le camp d'un mort |
 | **Bouffon** | Neutre | Gagne seul s'il est tué par un employé ; sa victoire termine la partie |
+| **Vampire** | Dissident | Vampirise le cadavre d'un joueur qu'il a tué : +10 PV de vie maximale, une fois par cadavre |
+| **Loup-garou** | Employé | Dévore un cadavre : sa vie et son endurance se régénèrent 10 % plus vite, une fois par cadavre |
 
 **Liés** n'est pas un rôle mais un lien entre deux joueurs, qui s'ajoute à leurs rôles éventuels : au premier des deux qui meurt, l'autre meurt aussi. Le lien ne joue qu'une fois : ensuite il est rompu, même si l'un des deux revient (défibrillateur, Ange gardien). Un lié sauvé par un Ange gardien d'une mort ordinaire ne déclenche pas le lien. Chacun connaît le nom de l'autre. Le lien ne compte pas dans le nombre de rôles par partie. Réglages dans le groupe LIÉS (activé ou non, joueurs minimum, camps des deux liés).
 
@@ -194,6 +198,24 @@ Ce que fait la touche de pouvoir selon le rôle :
 - Réglage « Sa victoire termine la partie » sur NON : la victoire est seulement annoncée, la partie continue sans lui.
 - Pour le reste du jeu, il compte comme un employé : les dissidents doivent aussi l'éliminer pour gagner.
 - Le tueur est celui qui l'a frappé dans les 3 s avant sa mort, comme pour le Martyr.
+
+### Vampire (dissident, depuis la 0.11.0)
+
+- À 2,5 m au plus du **cadavre d'un joueur qu'il a tué**, il appuie et reste près de lui **3 s** : sa **vie maximale monte de 10 PV**, qu'il gagne aussitôt. Chaque cadavre ne sert qu'une fois ; le corps reste en place.
+- « Qu'il a tué » : c'est lui qui a porté le dernier coup, dans les 3 s avant la mort (comme pour le Martyr). Une grenade ou un poison ne comptent pas. Réglage « Seulement ses propres victimes » sur NON : n'importe quel cadavre convient.
+- **Le jeu plafonne la vie à 100.** La vie en plus est donc tenue par le mod, comme une **réserve au-dessus des 100** : après chaque coup reçu, la vie est remontée depuis la réserve. La barre de vie du jeu ne montre que les 100 ; la réserve se lit sur la page du rôle (« Vie en plus : 15 PV sur 20 »).
+- La réserve **se régénère** au rythme de la vie du jeu, une fois la vie elle-même revenue à 100.
+- **Limite :** un coup qui retire 100 PV d'un seul coup tue quand même, le jeu décidant de la mort avant que le mod puisse intervenir.
+- À sa mort, la réserve est perdue ; s'il est réanimé, son maximum reste acquis et la réserve se refait peu à peu.
+- Réglages (groupe VAMPIRE) : « PV max gagnés par cadavre » (10), « Seulement ses propres victimes » (OUI), « Portée » (250 cm), « Durée du geste » (3 s).
+
+### Loup-garou (employé par défaut, depuis la 0.11.0)
+
+- À 2,5 m au plus d'un **cadavre**, quel qu'il soit, il appuie et reste près de lui **3 s** : sa **vie et son endurance se régénèrent 10 % plus vite**, jusqu'à la fin de la partie. Chaque cadavre ne sert qu'une fois ; les effets s'additionnent (deux cadavres : 20 %).
+- Le jeu a déjà une régénération : l'endurance revient quand on se repose, et la vie remonte d'un point à intervalles réguliers. Le mod accélère ces valeurs-là, sur la machine du Loup-garou seulement, et les remet comme elles étaient à la fin de la partie, s'il change de rôle ou s'il quitte la partie. Le journal note les valeurs du jeu la première fois.
+- Pour la vie, le nouveau rythme prend effet au repos suivant.
+- Le Vampire et le Loup-garou peuvent se servir du même cadavre, chacun une fois. Un corps que le Nettoyeur a fait disparaître ne sert plus à personne.
+- Réglages (groupe LOUP-GAROU) : « Camp » (employé), « Régénération par cadavre » (10 %), « Portée » (250 cm), « Durée du geste » (3 s).
 
 ### Les rôles neutres et le jeu
 

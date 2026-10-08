@@ -26,6 +26,8 @@ S.ROLE_NAME = {
     echo      = "ÉCHO",
     amnesiac  = "AMNÉSIQUE",
     jester    = "BOUFFON",
+    vampire   = "VAMPIRE",
+    werewolf  = "LOUP-GAROU",
 }
 
 -- Shown one after the other when the role is announced (how the role works is on the tablet
@@ -52,6 +54,8 @@ S.ROLE_BANNER = {
     echo      = { "TU ES ÉCHO" },
     amnesiac  = { "TU ES AMNÉSIQUE", "TROUVE UN CADAVRE" },
     jester    = { "TU ES LE BOUFFON", "FAIS-TOI TUER PAR UN EMPLOYÉ" },
+    vampire   = { "TU ES VAMPIRE" },
+    werewolf  = { "TU ES LOUP-GAROU" },
 }
 
 -- How each role works, shown in the LPROLES tab and on the tablet. Every line is a whole
@@ -149,6 +153,15 @@ S.ROLE_HOWTO = {
                   "?ends Ta victoire *termine la partie*.",
                   "!ends Ta victoire est *annoncée à tous* ; la partie continue sans toi.",
                   "Pour le reste du jeu, tu comptes comme un *employé*." },
+    vampire   = { "?own À moins de {range} m du *cadavre* d'un joueur *que tu as tué*, appuie sur {pkey} et *reste près de lui* {chold} s.",
+                  "!own À moins de {range} m d'un *cadavre*, appuie sur {pkey} et *reste près de lui* {chold} s.",
+                  "Tu le *vampirises* : ta *vie maximale* monte de {per} PV, que tu gagnes aussitôt.",
+                  "Chaque cadavre ne sert *qu'une fois*.",
+                  "Cette vie en plus se *régénère* comme le reste.",
+                  "Un coup qui retire *100 PV d'un seul coup* te tue quand même." },
+    werewolf  = { "À moins de {range} m d'un *cadavre*, appuie sur {pkey} et *reste près de lui* {chold} s.",
+                  "Tu le *dévores* : ta *vie* et ton *endurance* se régénèrent {per} % plus vite, jusqu'à la fin de la partie.",
+                  "Chaque cadavre ne sert *qu'une fois*." },
     none      = { "Aucun rôle spécial pour cette partie." },
 }
 
@@ -222,6 +235,10 @@ S.STATUS = {
     poison_on       = "{tgt} est empoisonné : mort dans {act} s",
     amnesiac        = "Sans rôle : cherche un cadavre",
     jester          = "But : être tué par un employé",
+    vamp_on         = "Vie en plus : {res} PV sur {bonus}",
+    vamp_none       = "Aucun cadavre vampirisé",
+    wolf_on         = "Régénération accélérée de {pct} %",
+    wolf_none       = "Aucun cadavre dévoré",
     waiting         = "En attente des informations de l'hôte",
 }
 
@@ -344,6 +361,10 @@ S.AMNESIA_NO_ROLE    = "CE MORT N'AVAIT PAS DE RÔLE"
 S.AMNESIA_DISSIDENT  = "TU DEVIENS DISSIDENT"
 S.JESTER_WIN         = "LE BOUFFON GAGNE : %s"
 S.JESTER_LOST        = "TUÉ PAR UN DISSIDENT : PERDU"
+S.VAMP_DONE          = "SANG BU : +%d PV MAX"
+S.VAMP_NOT_YOURS     = "CE N'EST PAS TA VICTIME"
+S.FEED_USED          = "CE CADAVRE A DÉJÀ SERVI"
+S.WOLF_DONE          = "DÉVORÉ : RÉGÉNÉRATION +%d %%"
 S.HOST_SHORT         = "%d RÔLE(S) NON ATTRIBUÉ(S) : RÉGLAGE JOUEURS MINIMUM"
 S.HOST_NO_MOD        = "%d JOUEUR(S) SANS LE MOD"
 S.MOD_ACK            = "LPROLES ACTIF (HÔTE %s)"

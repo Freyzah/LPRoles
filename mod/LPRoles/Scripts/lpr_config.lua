@@ -200,10 +200,24 @@ C.DEFS = {
     { key = "jester_min_players",      group = "BOUFFON", default = 6,     kind = "int",   min = 4, max = 16, step = 1, label = "Joueurs minimum" },
     { key = "jester_ends_game",        group = "BOUFFON", default = true,  kind = "bool",  label = "Sa victoire termine la partie" },
 
+    { key = "vampire_enabled",         group = "VAMPIRE", default = true,  kind = "bool",  label = "Vampire" },
+    { key = "vampire_min_players",     group = "VAMPIRE", default = 5,     kind = "int",   min = 3, max = 16, step = 1, label = "Joueurs minimum" },
+    { key = "vampire_hp",              group = "VAMPIRE", default = 10,    kind = "int",   min = 5, max = 50, step = 5, label = "PV max gagnés par cadavre" },
+    { key = "vampire_own_kills",       group = "VAMPIRE", default = true,  kind = "bool",  label = "Seulement ses propres victimes" },
+    { key = "vampire_range",           group = "VAMPIRE", default = 250,   kind = "int",   min = 100, max = 600, step = 50, label = "Portée (cm)" },
+    { key = "vampire_hold",            group = "VAMPIRE", default = 3,     kind = "num",   min = 1, max = 10, step = 0.5, label = "Durée du geste (s)" },
+
+    { key = "werewolf_enabled",        group = "LOUP-GAROU", default = true,  kind = "bool",  label = "Loup-garou" },
+    { key = "werewolf_min_players",    group = "LOUP-GAROU", default = 5,     kind = "int",   min = 3, max = 16, step = 1, label = "Joueurs minimum" },
+    { key = "werewolf_camp",           group = "LOUP-GAROU", default = "employee", kind = "choice", choices = CAMPS, label = "Camp" },
+    { key = "werewolf_percent",        group = "LOUP-GAROU", default = 10,    kind = "int",   min = 5, max = 50, step = 5, label = "Régénération par cadavre (%)" },
+    { key = "werewolf_range",          group = "LOUP-GAROU", default = 250,   kind = "int",   min = 100, max = 600, step = 50, label = "Portée (cm)" },
+    { key = "werewolf_hold",           group = "LOUP-GAROU", default = 3,     kind = "num",   min = 1, max = 10, step = 0.5, label = "Durée du geste (s)" },
+
     { key = "force_host_role",         group = "TEST", default = "none", kind = "choice",
       choices = { "none", "sheriff", "infector", "dreamer", "fairy", "medium", "angel", "mole", "tracker",
                   "hypnotist", "mimic", "cleaner", "stowaway", "linked", "swapper", "martyr", "revenant",
-                  "poisoner", "gagger", "thief", "echo", "amnesiac", "jester" },
+                  "poisoner", "gagger", "thief", "echo", "amnesiac", "jester", "vampire", "werewolf" },
       label = "Rôle forcé pour l'hôte" },
     { key = "ignore_min_players",      group = "TEST", default = false, kind = "bool",  label = "Ignorer les joueurs minimum" },
     { key = "debug",                   group = "TEST", default = false, kind = "bool",  label = "Journal détaillé" },
@@ -218,6 +232,7 @@ C.CHOICE_LABEL = {
     medium = "MÉDIUM", angel = "ANGE GARDIEN", mole = "TAUPE", tracker = "TRAQUEUR",
     hypnotist = "HYPNOTISEUR", mimic = "MÉTAMORPHE", cleaner = "NETTOYEUR", stowaway = "CLANDESTIN", linked = "LIÉ", swapper = "ÉCHANGEUR", martyr = "MARTYR", revenant = "REVENANT",
     poisoner = "EMPOISONNEUR", gagger = "BÂILLONNEUR", thief = "VOLEUR", echo = "ÉCHO", amnesiac = "AMNÉSIQUE", jester = "BOUFFON",
+    vampire = "VAMPIRE", werewolf = "LOUP-GAROU",
     -- antidotes that are not one item
     fish = "UN POISSON", plant = "UNE PLANTE",
     -- plants by the code written on their jar, fish by the word the fish machine shows
