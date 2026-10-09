@@ -2,7 +2,11 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.13.0
+## 0.13.1
+
+- **Hypnose :** le son « Hypnose Proc » est pour l'hypnotisé, au moment où ses yeux se ferment ; le son de l'hypnose s'enchaîne par-dessous. L'Hypnotiseur retrouve le son de démarrage ordinaire.
+
+## 0.13.0 (non publiée)
 
 - **Dix nouveaux sons de rôles**, composés par une amie : le Clandestin qui entre dans sa bouche d'aération et en sort, la transformation du Métamorphe, l'hypnose (un son pour l'Hypnotiseur, un autre pour l'hypnotisé tant que ses yeux sont fermés), le nettoyage d'un corps, le recrutement (chez le recruté, au moment où il devient dissident), l'apparition du Revenant, le protégé de l'Ange gardien qui se relève, et la mort du Martyr (chez tous les joueurs, avec l'annonce de son tueur).
 - **Entendus aussi par les joueurs proches :** Clandestin, Métamorphe, Nettoyeur, Revenant et protégé de l'Ange gardien, avec la même portée que l'envol de la Fée (jusqu'à 21 m).

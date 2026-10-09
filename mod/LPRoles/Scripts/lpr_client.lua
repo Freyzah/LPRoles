@@ -449,7 +449,9 @@ local function hold_eyes_shut(mec)
     U.tcall(mec, "Check Eyes State")
 end
 
-local HYPNO_FADE_IN = 0.3    -- seconds: the sound of a hypnosis comes in fast, the hypnosis is short
+-- Seconds over which the sound of a hypnosis comes in: under the sound of its start, whose
+-- strong part lasts about as long, so that one leads into the other.
+local HYPNO_FADE_IN = 0.8
 
 local function on_hypno(tenths)
     local mec = G.local_mec()
@@ -458,7 +460,9 @@ local function on_hypno(tenths)
     hypno = { ends = U.now() + secs }
     say("HYPNO_YOU", "bad")
     hold_eyes_shut(mec)
-    -- heard for as long as the eyes are held shut, on a player of its own
+    -- the sound of the hypnosis that strikes, then the one heard for as long as the eyes are
+    -- held shut, each on a player of its own
+    role_sound("hypnosis")
     U.try("son de l'hypnose", play_sound, "hypnotized", "role_sounds", secs, "hypno", HYPNO_FADE_IN)
 end
 
@@ -1252,7 +1256,7 @@ local MSG = {
     ANGEL_SET = { "good", "name", sfx = OK }, ANGEL_SAVED = { "good", own = "angel" },
     ANGEL_SAVED_YOU = { "good", own = "angel" },
     TRACK_START = { "good", "name", sfx = OK }, TRACK_END = { "info" }, TRACK_BUSY = { "warn", sfx = FAIL },
-    HYPNO_DONE = { "good", "name", sfx = OK, own = "hypnosis" }, HYPNO_IMMUNE = { "warn", sfx = FAIL },
+    HYPNO_DONE = { "good", "name", sfx = OK }, HYPNO_IMMUNE = { "warn", sfx = FAIL },   -- the hypnosis has sounds of its own, for its target
     LINKED_TO = { "role", "name" }, LINK_DEAD = { "bad" },
     SWAP_DONE = { "good", "name" }, SWAP_FAILED = { "warn", sfx = FAIL }, SWAP_YOU = { "bad" },   -- the swap has a sound of its own
     MIMIC_START = { "good", "name", sfx = OK, own = "shapeshift" }, MIMIC_END = { "info", own = "shapeshift" },
@@ -1615,7 +1619,7 @@ end
 -- A role's own sound (a file of the "sounds" folder), heard as it is by the player it is
 -- about. Those that come from somebody else's deed play on a player of their own. Returns
 -- whether it plays: not when the player switched the roles' sounds off, or without the file.
-local OWN_CHANNEL = { martyr = "event", recruit = "event", angel = "event" }
+local OWN_CHANNEL = { martyr = "event", recruit = "event", angel = "event", hypnosis = "event" }
 
 role_sound = function(name)
     return U.try("son de rôle", play_sound, name, "role_sounds", nil, OWN_CHANNEL[name]) == true

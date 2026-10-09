@@ -1528,7 +1528,7 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Choix de ma part** (annoncés dans le tableau montré avant les questions, ou pris ensuite) :
   - *Métamorphe :* le son aussi quand il reprend sa peau. Pas autour de lui s'il la reprend en mourant.
   - *Martyr :* chez tous les joueurs, à plat, avec l'annonce ; rien quand rien n'est annoncé.
-  - *Hypnose :* `Hypnose Proc` pour l'Hypnotiseur (à la place du son de démarrage), `hypnotisé` pour la cible, coupé à la durée de l'hypnose avec un fondu d'entrée de 0,3 s (celui de l'envol, 1 s, mangerait un tiers d'une hypnose de 3 s).
+  - *Hypnose :* `Hypnose Proc` pour l'Hypnotiseur (à la place du son de démarrage), `hypnotisé` pour la cible, coupé à la durée de l'hypnose avec un fondu d'entrée de 0,3 s (celui de l'envol, 1 s, mangerait un tiers d'une hypnose de 3 s). **Corrigé en D115 : les deux sons sont pour la cible.**
   - *Recruteur :* lui garde le son de démarrage ordinaire.
   - *Nettoyeur :* le son est autour du Nettoyeur, pas du corps : chaque machine cache le corps à sa façon, et il se tient à 2,5 m au plus.
   - *Clandestin :* le son est posé à l'endroit de la bouche. Son personnage est envoyé 40 m sous la bouche pendant la cachette : un son accroché à lui serait hors de portée.
@@ -1549,3 +1549,17 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
   - l'emplacement du son du Revenant : il est accroché au personnage du mort, que je suppose être là où est son fantôme.
 - **Contrôles :** syntaxe, noms du jeu, pages (dont les trois nouvelles lignes), bandeaux, essais de la mise à jour ; les quinze WAV relus comme le mod les lit (format, durée), et la coupe à une durée avec ses deux fondus recalculée sur les vrais fichiers. **Jamais lancé en jeu ; pas de relecture indépendante.**
 - **Version :** 0.13.0. Installée (jeu fermé) : les deux sons refaits ont remplacé ceux du dossier du jeu, qui étaient bien ceux du mod. Archive complète refaite, celle de la 0.12.0 supprimée. Pas publiée.
+
+## D115 — « Hypnose Proc » est pour l'hypnotisé (version 0.13.1)
+
+- **Correction de l'utilisateur :** « pour hypnose proc c'est pour l'hypnotisé au moment où il se fait hypnotiser, puis ça enchaîne sur le son hypnotisé que tu as déjà mis ».
+- **Mon erreur :** j'avais lu « proc » comme le son du déclencheur, donc de l'Hypnotiseur (D114). Le tableau montré avant mes questions le disait ; la question elle-même ne portait que sur « autour ou non ».
+- **Fait :** quand ses yeux se ferment, la cible entend `hypnosis.wav` (un coup, puis une résonance de 3 s), et `hypnotized.wav` monte par-dessous, coupé à la durée de l'hypnose.
+- **« Ça enchaîne », options :**
+  1. **Les deux sons partent ensemble, le second en fondu de 0,8 s (retenu).** La partie forte du premier dure un peu plus d'une demi-seconde : le second prend le relais à mesure qu'elle retombe. C'est ce qui est déjà fait pour la Fée (son de démarrage, puis son de l'envol en fondu).
+  2. Attendre la fin du premier son pour lancer le second. Il dure 3,1 s et l'hypnose 3 s par défaut : le second ne s'entendrait jamais.
+  3. Lancer le second après un délai fixe (une demi-seconde). Même effet à l'oreille que le fondu, avec une minuterie de plus et une durée à recalculer.
+- **L'Hypnotiseur** retrouve le son de démarrage ordinaire, comme avant la 0.13.0 : l'utilisateur donne ce son à l'hypnotisé, pas aux deux. À rouvrir s'il veut que l'Hypnotiseur l'entende aussi.
+- **Détail :** le premier son joue sur le lecteur des sons venus du geste d'un autre. Un hypnotisé qui appuie sur sa touche de pouvoir entend le son d'échec : il ne coupe ni l'un ni l'autre.
+- **Contrôles :** syntaxe, noms du jeu, pages, bandeaux, essais de la mise à jour ; la coupe avec un fondu d'entrée de 0,8 s recalculée sur le vrai fichier (1, 3 et 10 s). **Jamais lancé en jeu ; pas de relecture indépendante.**
+- **Version :** 0.13.1. Installée (jeu fermé), archive complète refaite, celle de la 0.13.0 supprimée. Pas publiée.

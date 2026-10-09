@@ -61,6 +61,7 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.11.5** : bandeaux qui ne se coupent plus mal (un « % » seul sur le bandeau suivant), portée du Voleur à 6 m par défaut, groupe RÔLE FORCÉ dans l'onglet. **Jamais lancée en jeu.** Jamais installée seule : comprise dans la 0.12.0.
 - **0.12.0** : un rôle de plus, proposé par l'utilisateur, le Médecin. **Jamais lancé en jeu.** Installée le 8 octobre, pas publiée.
 - **0.13.0** : dix sons de plus et deux sons refaits, tous de la même amie (Clandestin, Métamorphe, hypnose, Nettoyeur, recrutement, Revenant, Ange gardien, Martyr ; envol et échange). **Jamais lancée en jeu.** Installée le 9 octobre, pas publiée.
+- **0.13.1** : correction demandée par l'utilisateur : le son « Hypnose Proc » est pour l'hypnotisé, au moment où ses yeux se ferment, et le son de l'hypnose s'enchaîne. **Jamais lancée en jeu.** Installée le 9 octobre, pas publiée.
 
 ## Ce qui est installé
 
@@ -344,8 +345,7 @@ Dix sons composés par la même amie (9 octobre 2026). Un joueur les coupe tous 
 | Nettoyeur | `clean.wav` | le corps disparaît | lui, et **les joueurs proches de lui** |
 | Revenant | `revenant.wav` | il se manifeste | lui, et **les joueurs proches de son fantôme** |
 | Ange gardien | `angel.wav` | son protégé se relève | l'Ange et le protégé, et **les joueurs proches du protégé** |
-| Hypnotiseur | `hypnosis.wav` | l'hypnose part | lui seul |
-| Sa cible | `hypnotized.wav` | tant que ses yeux sont fermés de force | la cible seule |
+| Hypnotiseur | `hypnosis.wav`, puis `hypnotized.wav` | les yeux de sa cible se ferment, puis tant qu'ils restent fermés | la cible seule |
 | Recruteur | `recruit.wav` | le recruté devient dissident | le recruté seul |
 | Martyr | `martyr.wav` | l'annonce de son tueur | tous les joueurs, où qu'ils soient |
 
@@ -354,10 +354,10 @@ Dix sons composés par la même amie (9 octobre 2026). Un joueur les coupe tous 
 - **Clandestin :** le son est posé à l'endroit de la bouche, pas sur son personnage (envoyé 40 m plus bas pendant la cachette). Pas de son autour quand la cachette finit avec la partie.
 - **Métamorphe :** pas de son autour de lui quand il reprend sa peau en mourant, ni à la fin de la partie.
 - **Nettoyeur :** le son est autour de lui, qui se tient à 2,5 m au plus du corps.
-- **Hypnotisé :** le son (18 s) est coupé à la durée de l'hypnose réglée par l'hôte, avec un fondu d'entrée de 0,3 s et de sortie de 0,4 s, comme l'envol de la Fée.
+- **Hypnose :** les deux sons sont pour la cible. Le premier (3 s : un coup, puis une résonance) part quand ses yeux se ferment ; le second (18 s) monte en fondu par-dessous, en 0,8 s, et dure autant que l'hypnose réglée par l'hôte, avec un fondu de sortie de 0,4 s. L'Hypnotiseur, lui, garde le son de démarrage ordinaire.
 - **Martyr :** rien n'est joué quand rien n'est annoncé (explosion, poison, chute).
 - **Recruteur :** lui-même garde le son de démarrage ordinaire quand son geste réussit ; le son est pour le recruté, avec le bandeau « RECRUTÉ : TU ES DISSIDENT ».
-- Les sons qui viennent du geste de quelqu'un d'autre (Martyr, recrutement, sauvetage par l'Ange) et le son de l'hypnotisé ne sont pas coupés par le son d'un pouvoir lancé pendant ce temps.
+- Les sons qui viennent du geste de quelqu'un d'autre (Martyr, recrutement, sauvetage par l'Ange, hypnose) ne sont pas coupés par le son d'un pouvoir lancé pendant ce temps.
 - **Jamais lancés en jeu.** Deux nouveautés à surveiller : quatre des sons placés autour d'un joueur sont maintenant en stéréo (échange, envol, Revenant, Ange gardien), ce qui n'avait pas encore été essayé ; et le son posé à un endroit fixe (Clandestin) est une première.
 - Pour en changer un : remplacer le fichier du même nom dans `sounds` (WAV 16 bits, ou un MP3 du même nom, prioritaire).
 

@@ -1,5 +1,5 @@
-version 0.13.0
-93029 Scripts/lpr_client.lua
+version 0.13.1
+93265 Scripts/lpr_client.lua
 34093 Scripts/lpr_config.lua
 23662 Scripts/lpr_game.lua
 3836 Scripts/lpr_lobby.lua
