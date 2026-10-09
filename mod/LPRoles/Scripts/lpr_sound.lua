@@ -6,9 +6,9 @@
 -- end, written in the mod's folder (a path the media player is known to accept, whatever the
 -- Windows user name). WAV and MP3 are handled; a file that is not understood, or too large,
 -- is played as it is.
--- A WAV sound can also be made to last a given time (the Fée's flight, whose length the host
--- sets): the copy then comes in with a fade and is cut at that length with a short fade-out,
--- the sound being repeated first if it is shorter.
+-- A WAV sound can also be made to last a given time (the Fée's flight, the sound of a
+-- hypnosis, whose lengths the host sets): the copy then comes in with a fade and is cut at
+-- that length with a short fade-out, the sound being repeated first if it is shorter.
 local U = require("lpr_util")
 
 local SND = {}
@@ -63,8 +63,9 @@ end
 -- Samples made to last `seconds`: repeated first when the sound is shorter, cut at that
 -- length, faded in over the first moments and out over the last (16-bit whole-number
 -- samples; the other kinds are cut without fades). On a very short length the fade-in takes
--- half of it at most, the fade-out the rest.
-local function fit(fmt, samples, seconds)
+-- half of it at most, the fade-out the rest. fade_in (optional): seconds of fade-in, when
+-- not the usual one.
+local function fit(fmt, samples, seconds, fade_in)
     local frames = #samples // fmt.align
     local want = math.floor(fmt.sr * seconds + 0.5)
     if frames <= 0 or want <= 0 then return samples end
@@ -72,7 +73,7 @@ local function fit(fmt, samples, seconds)
     if frames < want then samples = string.rep(samples, math.ceil(want / frames)) end
     samples = samples:sub(1, want * fmt.align)
     if fmt.bits ~= 16 or fmt.tag == 3 then return samples end
-    local n_in = math.min(want // 2, math.floor(fmt.sr * FADE_IN_SECONDS))
+    local n_in = math.min(want // 2, math.floor(fmt.sr * (fade_in or FADE_IN_SECONDS)))
     local n_out = math.min(want - n_in, math.floor(fmt.sr * FADE_SECONDS))
     return scaled(fmt, samples, 0, n_in, function(i) return i / n_in end)
         .. samples:sub(n_in * fmt.align + 1, (want - n_out) * fmt.align)
@@ -170,9 +171,28 @@ local function exists(path)
     return false
 end
 
+-- How long a sound lasts, in seconds; nil when that cannot be told (an MP3, a file that is
+-- not understood).
+local lengths = {}           -- sound file -> { size, seconds }
+function SND.seconds(path)
+    local f = io.open(path, "rb")
+    if not f then return nil end
+    local size = f:seek("end")
+    local known = lengths[path]
+    if known and known.size == size then f:close() return known.seconds end
+    f:seek("set", 0)
+    local d = (size and size <= MAX_BYTES and path:lower():match("%.wav$")) and f:read("a") or nil
+    f:close()
+    local ok, w = pcall(function() return d and read_wav(d) or nil end)
+    local seconds = (ok and w) and (#w.samples // w.fmt.align) / w.fmt.sr or nil
+    lengths[path] = { size = size, seconds = seconds }
+    return seconds
+end
+
 -- The file to hand to the media player for this sound. seconds (optional): the sound must
--- last that long (WAV only; an MP3 is played whole, the caller stops it).
-function SND.playable(path, seconds)
+-- last that long (WAV only; an MP3 is played whole, the caller stops it); fade_in (optional):
+-- seconds of fade-in at the start of a sound cut to a length, when not the usual one.
+function SND.playable(path, seconds, fade_in)
     local f = io.open(path, "rb")
     if not f then return path end
     local size = f:seek("end")
@@ -184,14 +204,15 @@ function SND.playable(path, seconds)
     local key = fingerprint(d)
     local is_wav = path:lower():match("%.wav$") ~= nil
     local tenths = (seconds and is_wav) and math.floor(seconds * 10 + 0.5) or nil
-    local slot = tenths and (path .. "|" .. tenths) or path
+    local fade = (tenths and fade_in) and math.floor(fade_in * 100 + 0.5) or nil     -- hundredths of a second
+    local slot = tenths and (path .. "|" .. tenths .. "|" .. (fade or "")) or path
     local c = cache[slot]
     if c and c.key == key and (c.path == path or exists(c.path)) then return c.path end
     local ok, out = pcall(function()
         if not is_wav then return pad_mp3(d) end
         local w = read_wav(d)
         if not w then return nil end
-        return write_wav(w, tenths and fit(w.fmt, w.samples, tenths / 10) or w.samples)
+        return write_wav(w, tenths and fit(w.fmt, w.samples, tenths / 10, fade and fade / 100) or w.samples)
     end)
     if not ok or not out then
         U.log("Son %s lu tel quel (%s)", path, ok and "format non reconnu" or tostring(out))
@@ -199,9 +220,10 @@ function SND.playable(path, seconds)
         return path
     end
     -- one copy per length asked for ("b": with the fade-in; copies of older versions, which
-    -- had none, have another name and are not taken for these)
+    -- had none, have another name and are not taken for these), and per fade-in when it is not
+    -- the usual one (its hundredths of a second follow the "b")
     local copy = string.format("%s\\LPRoles-son-%08x%s%s", (U.MOD_DIR:gsub("/", "\\")), key,
-        tenths and ("-" .. tenths .. "b") or "", path:match("(%.%w+)$") or ".wav")
+        tenths and ("-" .. tenths .. "b" .. (fade or "")) or "", path:match("(%.%w+)$") or ".wav")
     local done = false
     local r = io.open(copy, "rb")
     if r then                                             -- already made (earlier session, reload)

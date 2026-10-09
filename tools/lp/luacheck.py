@@ -269,11 +269,25 @@ class Parser:
             op = self.next()[1]
             self.exp(BINOPS[op][1])
 
+MAX_LOCALS = 200     # Lua refuses a function with more local variables, a file's main body included
+
+def top_level_locals(src):
+    """How many names `local` declares in the file's main body (written at the start of a line)."""
+    n = 0
+    for line in src.splitlines():
+        m = re.match(r"local\s+(function\s+)?([^=]*)", line)
+        if not m: continue
+        n += 1 if m.group(1) else len([x for x in re.sub(r"--.*", "", m.group(2)).split(",") if x.strip()])
+    return n
+
 def check_file(path, extra_globals=()):
     src = open(path, encoding="utf-8").read()
     try:
         p = Parser(tokenize(src), path, extra_globals)
         p.chunk()
+        n = top_level_locals(src)
+        if n > MAX_LOCALS:
+            p.problems.append(f"{n} local names in the main body: Lua's limit is {MAX_LOCALS}, the file would not load")
         return p.problems
     except LuaError as e:
         return [f"SYNTAX: {e}"]

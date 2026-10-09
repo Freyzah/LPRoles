@@ -30,6 +30,7 @@ local cleaned = {}           -- Nettoyeur: player index -> { mec, hidden = { com
 local end_hiding, restore_bodies   -- defined below (used at the end of a game)
 local play_sound, stop_sound       -- defined below (custom sounds)
 local power_sfx                    -- defined below: the short sound of a power that starts ("ok") or does not ("fail")
+local role_sound                   -- defined below: a role's own sound; true when it plays
 local sound_around_on, sound_around_off
 local is_local                     -- defined below: true for the local player's character
 local skin_backup = nil      -- Métamorphe: this player's own appearance
@@ -448,12 +449,17 @@ local function hold_eyes_shut(mec)
     U.tcall(mec, "Check Eyes State")
 end
 
+local HYPNO_FADE_IN = 0.3    -- seconds: the sound of a hypnosis comes in fast, the hypnosis is short
+
 local function on_hypno(tenths)
     local mec = G.local_mec()
     if not mec or ghost then return end
-    hypno = { ends = U.now() + (tonumber(tenths) or 30) / 10 }
+    local secs = (tonumber(tenths) or 30) / 10
+    hypno = { ends = U.now() + secs }
     say("HYPNO_YOU", "bad")
     hold_eyes_shut(mec)
+    -- heard for as long as the eyes are held shut, on a player of its own
+    U.try("son de l'hypnose", play_sound, "hypnotized", "role_sounds", secs, "hypno", HYPNO_FADE_IN)
 end
 
 local function tick_hypno(now)
@@ -461,6 +467,8 @@ local function tick_hypno(now)
     local mec = G.local_mec()
     if not mec then hypno = nil return end
     if now >= hypno.ends or not G.is_alive(mec) then
+        -- over before its time (a death): the sound with it; otherwise it ends by itself
+        if now < hypno.ends then U.try("son de l'hypnose", stop_sound, "hypno") end
         hypno = nil
         open_eyes(mec)
         return
@@ -1052,6 +1060,7 @@ local function on_end()
     end)
     if hypno then
         hypno = nil
+        U.try("son de l'hypnose", stop_sound, "hypno")
         local mec = G.local_mec()
         if mec then open_eyes(mec) end
     end
@@ -1224,7 +1233,9 @@ end
 
 -- Message id -> { colour, kind of argument ("item": a recharge item's number, "num", "name": a
 -- player index, or "pkey": nothing sent, this player's own power key), sfx = the short sound
--- that goes with it: "ok" for a power that has just started, "fail" for one that has not }.
+-- that goes with it: "ok" for a power that has just started, "fail" for one that has not,
+-- own = the role's own sound (a file of the "sounds" folder), which takes the place of sfx;
+-- a player who switched the roles' sounds off still gets sfx }.
 -- (Médium, Clandestin, Rêveur and Fée start with a command of their own, not a message:
 -- their sound is played there.)
 local OK, FAIL = "ok", "fail"
@@ -1234,19 +1245,22 @@ local MSG = {
     CHARGE_FULL = { "warn" }, USES_FULL = { "warn" }, NO_RECHARGE_LEFT = { "warn" },
     TARGET = { "info", "name" }, NO_TARGET = { "warn", sfx = FAIL }, TARGET_LOST = { "warn", sfx = FAIL },
     NO_ONE_NEAR = { "warn", sfx = FAIL }, NO_BODY = { "warn", sfx = FAIL },
-    INFECT_DONE = { "good", "num", sfx = OK }, INFECT_CONVERTED = { "good", "name" }, YOU_ARE_INFECTED = { "bad" },
+    INFECT_DONE = { "good", "num", sfx = OK }, INFECT_CONVERTED = { "good", "name" },
+    YOU_ARE_INFECTED = { "bad", own = "recruit" },
     INFECT_PROGRESS = { "info" }, INFECT_FAILED = { "bad", sfx = FAIL }, INFECT_NO_CHARGE = { "warn", sfx = FAIL },
     INFECT_TOO_EARLY = { "warn", sfx = FAIL }, ANGEL_TOO_LATE = { "bad" },
-    ANGEL_SET = { "good", "name", sfx = OK }, ANGEL_SAVED = { "good" }, ANGEL_SAVED_YOU = { "good" },
+    ANGEL_SET = { "good", "name", sfx = OK }, ANGEL_SAVED = { "good", own = "angel" },
+    ANGEL_SAVED_YOU = { "good", own = "angel" },
     TRACK_START = { "good", "name", sfx = OK }, TRACK_END = { "info" }, TRACK_BUSY = { "warn", sfx = FAIL },
-    HYPNO_DONE = { "good", "name", sfx = OK }, HYPNO_IMMUNE = { "warn", sfx = FAIL },
+    HYPNO_DONE = { "good", "name", sfx = OK, own = "hypnosis" }, HYPNO_IMMUNE = { "warn", sfx = FAIL },
     LINKED_TO = { "role", "name" }, LINK_DEAD = { "bad" },
     SWAP_DONE = { "good", "name" }, SWAP_FAILED = { "warn", sfx = FAIL }, SWAP_YOU = { "bad" },   -- the swap has a sound of its own
-    MIMIC_START = { "good", "name", sfx = OK }, MIMIC_END = { "info" }, MIMIC_FAILED = { "warn", sfx = FAIL },
-    MIMIC_BUSY = { "warn", sfx = FAIL },
-    NO_VENT = { "warn", sfx = FAIL }, CLEAN_DONE = { "good", "name", sfx = OK },
-    MARTYR_NAME = { "bad", "name" }, MARTYR_CAMP_DISSIDENT = { "bad" }, MARTYR_CAMP_EMPLOYEE = { "bad" },
-    SPIRIT_READY = { "role", "pkey" }, SPIRIT_START = { "good", sfx = OK },
+    MIMIC_START = { "good", "name", sfx = OK, own = "shapeshift" }, MIMIC_END = { "info", own = "shapeshift" },
+    MIMIC_FAILED = { "warn", sfx = FAIL }, MIMIC_BUSY = { "warn", sfx = FAIL },
+    NO_VENT = { "warn", sfx = FAIL }, CLEAN_DONE = { "good", "name", sfx = OK, own = "clean" },
+    MARTYR_NAME = { "bad", "name", own = "martyr" }, MARTYR_CAMP_DISSIDENT = { "bad", own = "martyr" },
+    MARTYR_CAMP_EMPLOYEE = { "bad", own = "martyr" },
+    SPIRIT_READY = { "role", "pkey" }, SPIRIT_START = { "good", sfx = OK, own = "revenant" },
     HOST_SHORT = { "warn", "num" }, HOST_NO_MOD = { "warn", "num" },
     CARD_SHOWN = { "role" }, CARD_TAKEN = { "info" }, CARD_NONE = { "warn" },
     POISON_DONE = { "good", "name", sfx = OK }, POISON_ALREADY = { "warn", sfx = FAIL },
@@ -1270,7 +1284,7 @@ local function on_msg(id, a)
         U.after(0.1, "rappel de la touche", function() say("USE_HINT", "info", C.format("use_key")) end)
     end
     local spec = MSG[id] or { "warn" }
-    if spec.sfx then power_sfx(spec.sfx) end
+    if not (spec.own and role_sound(spec.own)) and spec.sfx then power_sfx(spec.sfx) end
     local arg = nil
     if spec[2] == "item" then
         arg = S.ITEM_SHORT[tonumber(a) or 0] or "?"
@@ -1384,10 +1398,11 @@ local function on_hide(on, secs)
         U.set(mec, "Lock Movements", true)
         U.set(mec, "Local Can Interact", false)
         say("HIDE_START", "role", d)
-        power_sfx("ok")
+        if not role_sound("vent_in") then power_sfx("ok") end
     elseif hiding then
         end_hiding()
         say("HIDE_END", "info")
+        role_sound("vent_out")
     end
 end
 
@@ -1511,7 +1526,9 @@ end
 -- Sounds are files in the mod's "sounds" folder (WAV or MP3), played by the engine's own media
 -- player (Windows Media Foundation, the one the tablet videos use), on this machine only.
 -- A player serves one sound at a time, a new sound replacing the one it plays: the short
--- sounds share one ("sfx"), the Fée's flight has its own ("flight") so that both are heard.
+-- sounds share one ("sfx"), the Fée's flight has its own ("flight") so that both are heard;
+-- so have the sound of a hypnosis ("hypno") and the sounds that come from somebody else's
+-- deed ("event"), which a power used meanwhile must not cut.
 local medias = {}            -- channel -> { owner, comp, player }
 
 -- The player's own volume for the mod's sounds, given to a sound component (and to the
@@ -1537,13 +1554,14 @@ end
 
 -- name: the file in "sounds"; setting: the personal setting that switches this sound on;
 -- seconds (optional): how long it must last (see lpr_sound.lua); channel (optional): the
--- player that plays it, "sfx" when not given.
-play_sound = function(name, setting, seconds, channel)
-    if not C.get(setting) then return end
+-- player that plays it, "sfx" when not given; fade_in (optional): seconds of fade-in of a
+-- sound made to last `seconds`, when not the usual one. Returns true when the sound plays.
+play_sound = function(name, setting, seconds, channel, fade_in)
+    if not C.get(setting) then return false end
     channel = channel or "sfx"
     local path = sound_file(name)
     local mec = G.local_mec()
-    if not path or not mec then return end
+    if not path or not mec then return false end
     -- a player and a sound component on the local character (new character: new ones)
     local media = medias[channel]
     if not media or media.owner ~= mec:GetAddress() or not U.valid(media.comp) or not U.valid(media.player) then
@@ -1569,11 +1587,13 @@ play_sound = function(name, setting, seconds, channel)
     local source_class = StaticFindObject("/Script/MediaAssets.FileMediaSource")
     if not U.valid(source_class) then return end
     local source = StaticConstructObject(source_class, media.comp)
-    source:SetFilePath(SND.playable(path, seconds))    -- a copy with silence at the end: nothing cut
+    source:SetFilePath(SND.playable(path, seconds, fade_in))    -- a copy with silence at the end: nothing cut
     set_volume(media.comp)
     if media.player:OpenSource(source) == false then   -- plays as soon as it is open
         U.log("Son %s : le fichier n'a pas pu être ouvert (%s)", name, path)
+        return false
     end
+    return true
 end
 
 -- Stops the sound a player is playing.
@@ -1592,12 +1612,23 @@ power_sfx = function(kind)
     end
 end
 
+-- A role's own sound (a file of the "sounds" folder), heard as it is by the player it is
+-- about. Those that come from somebody else's deed play on a player of their own. Returns
+-- whether it plays: not when the player switched the roles' sounds off, or without the file.
+local OWN_CHANNEL = { martyr = "event", recruit = "event", angel = "event" }
+
+role_sound = function(name)
+    return U.try("son de rôle", play_sound, name, "role_sounds", nil, OWN_CHANNEL[name]) == true
+end
+
 -- A sound heard around another player (the flying Fée): a sound component of its own on that
 -- player's character, which it follows. It is heard from where the character is and fades
 -- with the distance: full within "inner" cm, silent beyond "inner + falloff". The engine
 -- takes these settings when the component starts, and the component starts by itself when it
 -- is added: it is stopped, set, then started again. The settings are written on the
 -- component and on the engine's own sound source inside it, whichever one the engine reads.
+-- A sound can also be placed at a spot of the building instead (`spot`): the component is
+-- then left unattached, at that spot, and belongs to the local character.
 local SOUND_AROUND = { inner = 300.0, falloff = 1800.0 }
 
 -- Raises an error if the two switches cannot be set. Returns whether the distances were set
@@ -1612,17 +1643,20 @@ local function fades_with_distance(c)
     end))
 end
 
--- Returns what sound_around_off needs, or nil when nothing plays.
-sound_around_on = function(mec, name, setting, seconds)
+-- Returns what sound_around_off needs, or nil when nothing plays. mec: the character the
+-- sound is hung on; with `spot` (a place of the building), the character it belongs to.
+sound_around_on = function(mec, name, setting, seconds, spot)
     if not C.get(setting) then return nil end
     local path = sound_file(name)
     local player_class = StaticFindObject("/Script/MediaAssets.MediaPlayer")
     local comp_class = StaticFindObject("/Script/MediaAssets.MediaSoundComponent")
     local source_class = StaticFindObject("/Script/MediaAssets.FileMediaSource")
     if not path or not (U.valid(player_class) and U.valid(comp_class) and U.valid(source_class)) then return nil end
-    local t = { Rotation = { X = 0.0, Y = 0.0, Z = 0.0, W = 1.0 }, Translation = { X = 0.0, Y = 0.0, Z = 100.0 },
+    local at = spot and { X = spot.X + 0.0, Y = spot.Y + 0.0, Z = spot.Z + 0.0 } or { X = 0.0, Y = 0.0, Z = 100.0 }
+    local t = { Rotation = { X = 0.0, Y = 0.0, Z = 0.0, W = 1.0 }, Translation = at,
                 Scale3D = { X = 1.0, Y = 1.0, Z = 1.0 } }
-    local comp = mec:AddComponentByClass(comp_class, false, t, false)
+    -- not attached (second argument) when it is placed at a spot: it then stays there
+    local comp = mec:AddComponentByClass(comp_class, spot ~= nil, t, false)
     if not U.valid(comp) then return nil end
     local rec = { mec = mec, comp = comp }
     local set, tuned = { false, false }, { false, false }   -- for the component, for its sound source
@@ -1642,15 +1676,16 @@ sound_around_on = function(mec, name, setting, seconds)
         return player:OpenSource(source) ~= false
     end)
     -- never a sound heard everywhere: without the distance settings, no sound at all
+    local where = spot and "un endroit" or G.player_name(mec)
     if not playing or not (set[1] or set[2]) then
         sound_around_off(rec)
-        U.log("Son %s autour de %s : non joué (%s)", name, G.player_name(mec),
+        U.log("Son %s autour de %s : non joué (%s)", name, where,
             playing and "réglages de distance refusés" or "lecture impossible")
         return nil
     end
     local function word(i) return set[i] and (tuned[i] == true and "réglé" or "portée du moteur") or "refusé" end
     U.log("Son %s autour de %s : s'éteint avec la distance, jusqu'à %d m (composant : %s ; source : %s)", name,
-        G.player_name(mec), math.floor((SOUND_AROUND.inner + SOUND_AROUND.falloff) / 100), word(1), word(2))
+        where, math.floor((SOUND_AROUND.inner + SOUND_AROUND.falloff) / 100), word(1), word(2))
     return rec
 end
 
@@ -1682,6 +1717,28 @@ local function on_swap_fx(a, b)
     end
     around(first)
     around(second)
+end
+
+-- A role's sound for the players around (the host's "SND" message, sent to all). The players
+-- it is about (a, and b when there is one) hear it as it is, with their own message; the
+-- others hear it around player a, fading with the distance. With a spot (x, y, z), it is
+-- heard around that spot instead: the Clandestin's character is sent far away while it hides.
+-- What was placed is removed once the sound is over.
+local AROUND_SECONDS = 10    -- when the length of the sound cannot be told
+
+local function on_sound(name, a, b, x, y, z)
+    if type(name) ~= "string" or not name:match("^[%w_]+$") then return end
+    local mine = G.local_mec()
+    local who = G.mec_by_index(tonumber(a) or -1)
+    if not mine or is_local(who) or is_local(G.mec_by_index(tonumber(b) or -1)) then return end
+    local spot = (tonumber(x) and tonumber(y) and tonumber(z)) and U.vec(tonumber(x), tonumber(y), tonumber(z)) or nil
+    local on = spot and mine or who
+    if not on then return end
+    local rec = U.try("son de rôle", sound_around_on, on, name, "role_sounds", nil, spot)
+    if not rec then return end
+    local path = sound_file(name)
+    local secs = (path and SND.seconds(path) or AROUND_SECONDS) + 2      -- the silence added at the end, and a margin
+    U.after(secs, "son de rôle", function() sound_around_off(rec) end)
 end
 
 -- The plant was consumed: the jar is left dirty, as the game's centrifuge leaves it after
@@ -1864,6 +1921,7 @@ function Cl.install()
     N.on("CARD", on_card)
     N.on("SFX", function(kind) power_sfx(kind) end)
     N.on("SWAPFX", on_swap_fx)
+    N.on("SND", on_sound)
     N.on("GAG", on_gag)
     N.on("POISON", on_poison)
     N.on("VAMP", on_vamp)

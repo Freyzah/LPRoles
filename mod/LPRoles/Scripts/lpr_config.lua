@@ -39,6 +39,8 @@ C.DEFS = {
     { key = "start_sound",             group = "MES RÉGLAGES", default = true, kind = "bool", label = "Son d'un pouvoir qui démarre" },
     { key = "fail_sound",              group = "MES RÉGLAGES", default = true, kind = "bool", label = "Son d'un pouvoir qui échoue" },
     { key = "swap_sound",              group = "MES RÉGLAGES", default = true, kind = "bool", label = "Son des échanges de place" },
+    -- Clandestin, Métamorphe, Hypnotiseur, Nettoyeur, Recruteur, Revenant, Ange gardien, Martyr
+    { key = "role_sounds",             group = "MES RÉGLAGES", default = true, kind = "bool", label = "Sons des autres rôles" },
 
     { key = "enabled",                 group = "GÉNÉRAL", default = true,  kind = "bool",  label = "Mod actif" },
     { key = "max_roles",               group = "GÉNÉRAL", default = 4,     kind = "int",   min = 1, max = 16, step = 1, label = "Rôles spéciaux par partie (max)" },

@@ -60,6 +60,7 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **Retour de l'utilisateur après l'essai à deux (8 octobre)** : « J'ai pu un peu tout tester et tout a l'air de fonctionner ». Le Loup-garou qui dévore deux fois un joueur réanimé puis retué est voulu.
 - **0.11.5** : bandeaux qui ne se coupent plus mal (un « % » seul sur le bandeau suivant), portée du Voleur à 6 m par défaut, groupe RÔLE FORCÉ dans l'onglet. **Jamais lancée en jeu.** Jamais installée seule : comprise dans la 0.12.0.
 - **0.12.0** : un rôle de plus, proposé par l'utilisateur, le Médecin. **Jamais lancé en jeu.** Installée le 8 octobre, pas publiée.
+- **0.13.0** : dix sons de plus et deux sons refaits, tous de la même amie (Clandestin, Métamorphe, hypnose, Nettoyeur, recrutement, Revenant, Ange gardien, Martyr ; envol et échange). **Jamais lancée en jeu.** Installée le 9 octobre, pas publiée.
 
 ## Ce qui est installé
 
@@ -307,8 +308,9 @@ Un rôle dont les utilisations sont comptées peut en récupérer une en consomm
 
 ## Volume des sons du mod
 
-- Les cinq sons (`consume`, `fail`, `success`, `swap`, `fairy`) sont réglés au **même niveau d'écoute**, -23 LUFS, mesuré comme le fait la radiodiffusion (ITU-R BS.1770) sur les 0,4 s les plus fortes de chaque son. C'est le niveau qu'avaient déjà le son de l'envol et le son de consommation, ceux que l'utilisateur avait entendus en jeu sans les trouver déplacés.
+- Les quinze sons du mod sont réglés au **même niveau d'écoute**, -23 LUFS, mesuré comme le fait la radiodiffusion (ITU-R BS.1770) sur les 0,4 s les plus fortes de chaque son. C'est le niveau qu'avaient déjà le son de l'envol et le son de consommation, ceux que l'utilisateur avait entendus en jeu sans les trouver déplacés.
 - Exception : le son de l'envol de la Fée est 3 dB plus bas (-26 LUFS), l'utilisateur le trouvant un peu fort à l'écoute en jeu.
+- Deux sons restent un peu en dessous, `shapeshift` (-25,6) et `clean` (-24,1) : les monter davantage les ferait saturer.
 - Chaque joueur règle le tout dans MES RÉGLAGES, « Volume des sons du mod (%) », de 10 à 200 % (100 par défaut). Essayé en jeu : il fonctionne.
 - Les sons du mod suivent le curseur de volume du jeu (vérifié en jeu par l'utilisateur le 7 octobre) : le réglage ci-dessus s'y ajoute.
 - Les sons du jeu lui-même n'ont pas pu être mesurés (ils sont dans un format que rien ici ne sait lire) : le niveau par rapport au jeu se juge à l'oreille, avec ce réglage.
@@ -325,22 +327,50 @@ Un rôle dont les utilisations sont comptées peut en récupérer une en consomm
 
 ## Son de l'échange (Échangeur)
 
-- Quand un Échangeur échange sa place, `sounds\swap.wav` (1,0 s) est joué à la place du son de démarrage habituel.
+- Quand un Échangeur échange sa place, `sounds\swap.wav` (0,5 s) est joué à la place du son de démarrage habituel.
 - L'Échangeur et le joueur échangé l'entendent tel quel. Les autres l'entendent **autour de chacun des deux**, de moins en moins fort avec la distance (même portée que l'envol de la Fée : plein volume à moins de 3 m, plus rien au-delà de 21 m).
 - Il se coupe dans MES RÉGLAGES, « Son des échanges de place », pour ses propres échanges comme pour ceux des autres.
 - Un échange raté garde le son d'échec ordinaire.
 - Chez les autres joueurs, le son placé dans l'espace repose sur le même mécanisme que l'envol de la Fée, **jamais essayé en jeu**.
+
+## Sons des rôles
+
+Dix sons composés par la même amie (9 octobre 2026). Un joueur les coupe tous d'un coup dans MES RÉGLAGES, « Sons des autres rôles » : il n'entend alors plus ni les siens ni ceux des autres, et retrouve le son de démarrage ordinaire pour ses propres pouvoirs.
+
+| Rôle | Fichier (`sounds\`) | Quand | Qui l'entend |
+|---|---|---|---|
+| Clandestin | `vent_in.wav`, `vent_out.wav` | il entre dans la bouche, il en sort | lui, et **les joueurs proches de la bouche** |
+| Métamorphe | `shapeshift.wav` | il prend une apparence, puis quand il reprend la sienne | lui, et **les joueurs proches de lui** |
+| Nettoyeur | `clean.wav` | le corps disparaît | lui, et **les joueurs proches de lui** |
+| Revenant | `revenant.wav` | il se manifeste | lui, et **les joueurs proches de son fantôme** |
+| Ange gardien | `angel.wav` | son protégé se relève | l'Ange et le protégé, et **les joueurs proches du protégé** |
+| Hypnotiseur | `hypnosis.wav` | l'hypnose part | lui seul |
+| Sa cible | `hypnotized.wav` | tant que ses yeux sont fermés de force | la cible seule |
+| Recruteur | `recruit.wav` | le recruté devient dissident | le recruté seul |
+| Martyr | `martyr.wav` | l'annonce de son tueur | tous les joueurs, où qu'ils soient |
+
+- **« Les joueurs proches » :** même portée que l'envol de la Fée, plein volume à moins de 3 m, plus rien au-delà de 21 m, à travers les murs. Les pages du Clandestin, du Métamorphe et du Nettoyeur le disent : leur pouvoir s'entend.
+- Pour celui qui lance le pouvoir, le son du rôle **remplace** le son de démarrage ordinaire.
+- **Clandestin :** le son est posé à l'endroit de la bouche, pas sur son personnage (envoyé 40 m plus bas pendant la cachette). Pas de son autour quand la cachette finit avec la partie.
+- **Métamorphe :** pas de son autour de lui quand il reprend sa peau en mourant, ni à la fin de la partie.
+- **Nettoyeur :** le son est autour de lui, qui se tient à 2,5 m au plus du corps.
+- **Hypnotisé :** le son (18 s) est coupé à la durée de l'hypnose réglée par l'hôte, avec un fondu d'entrée de 0,3 s et de sortie de 0,4 s, comme l'envol de la Fée.
+- **Martyr :** rien n'est joué quand rien n'est annoncé (explosion, poison, chute).
+- **Recruteur :** lui-même garde le son de démarrage ordinaire quand son geste réussit ; le son est pour le recruté, avec le bandeau « RECRUTÉ : TU ES DISSIDENT ».
+- Les sons qui viennent du geste de quelqu'un d'autre (Martyr, recrutement, sauvetage par l'Ange) et le son de l'hypnotisé ne sont pas coupés par le son d'un pouvoir lancé pendant ce temps.
+- **Jamais lancés en jeu.** Deux nouveautés à surveiller : quatre des sons placés autour d'un joueur sont maintenant en stéréo (échange, envol, Revenant, Ange gardien), ce qui n'avait pas encore été essayé ; et le son posé à un endroit fixe (Clandestin) est une première.
+- Pour en changer un : remplacer le fichier du même nom dans `sounds` (WAV 16 bits, ou un MP3 du même nom, prioritaire).
 
 ## Son de l'envol de la Fée
 
 - Quand une Fée s'envole, le fichier `ue4ss\Mods\LPRoles\sounds\fairy.wav` est joué sur sa machine, et sur celle de chaque autre joueur **à l'endroit où elle se trouve** : on l'entend à plein volume à moins de 3 m d'elle, de moins en moins fort ensuite, plus du tout au-delà de 21 m. Le son la suit pendant son vol et traverse les murs.
 - Chaque machine joue son propre exemplaire du fichier : un joueur qui a remplacé `fairy.wav` entend le sien.
 - **Le son suit la durée de l'envol** réglée par l'hôte : le mod en joue une copie coupée à cette durée, qui arrive en fondu (1 s) et se termine en fondu (0,4 s). Pour un envol très court, le fondu d'entrée ne prend pas plus de la moitié de la durée. Si le son est plus court que l'envol, il est répété. Une copie est écrite par durée utilisée (`LPRoles-son-…-50b.wav` pour 5 s) ; elles se refont toutes seules.
-- Le son fourni dure 12,3 s : c'est celui qu'une amie a composé, converti de l'OGG au WAV (le lecteur du jeu ne lit pas l'OGG), en mono (ses deux canaux étaient identiques) et monté en volume. Rien d'autre n'a été changé.
+- Le son fourni dure 12,2 s : c'est la seconde version composée par une amie (9 octobre), convertie de l'OGG au WAV (le lecteur du jeu ne lit pas l'OGG), en stéréo comme l'original, et mise au niveau des autres. Rien d'autre n'a été changé.
 - Pour le remplacer : un autre `fairy.wav` en **WAV 16 bits**, ou convertir un fichier avec `python tools\lp\sound.py entrée.ogg fairy.wav`. Un `fairy.mp3` est prioritaire mais n'est pas coupé en fondu : il est simplement arrêté à la fin de l'envol.
 - Si l'envol s'arrête plus tôt que prévu (fin de partie), le son est coupé net.
 - Il se coupe dans MES RÉGLAGES (« Son de l'envol des Fées ») : pour soi-même et pour les envols des autres.
-- **Chez les autres joueurs, jamais essayé en jeu.** Si le moteur refuse les réglages de distance, le mod ne joue pas le son chez eux plutôt que de le faire entendre partout ; le journal de chaque joueur dit ce qui a été fait (ligne « Son fairy autour de … »).
+- **Chez les autres joueurs :** le 7 octobre, la machine de l'utilisateur a placé le son autour d'une Fée et le moteur a accepté les réglages de distance (son journal le dit) ; ce qu'on entend vraiment n'a pas été rapporté. Si le moteur refuse les réglages de distance, le mod ne joue pas le son chez eux plutôt que de le faire entendre partout ; le journal de chaque joueur dit ce qui a été fait (ligne « Son fairy autour de … »).
 
 ## Son de consommation
 
@@ -348,7 +378,7 @@ Un rôle dont les utilisations sont comptées peut en récupérer une en consomm
 - Pour mettre votre propre son, remplacez ce fichier par un autre `consume.wav`, ou ajoutez un `consume.mp3` (prioritaire).
 - Le son fourni est provisoire (deux « glouglous » et un carillon), généré pour l'occasion.
 - Le lecteur du jeu coupait la fin des sons. Le mod joue donc une copie du fichier suivie d'une seconde de silence, écrite dans le dossier du mod (`LPRoles-son-….wav`). Elle est refaite toute seule si vous changez le fichier ; vous pouvez la supprimer sans risque.
-- Les mises à jour du mod ne remplacent ni ne suppriment rien dans le dossier `sounds` du jeu : votre son reste. L'archive pour les joueurs reprend les sons de votre dossier du jeu.
+- Une mise à jour ne remplace un son que s'il est encore celui du mod : un son que vous avez remplacé par le vôtre reste.
 - Il se coupe dans MES RÉGLAGES (« Son à la consommation »).
 
 ## Page du rôle sur la tablette

@@ -1,21 +1,31 @@
-version 0.12.0
-89239 Scripts/lpr_client.lua
-33864 Scripts/lpr_config.lua
+version 0.13.0
+93029 Scripts/lpr_client.lua
+34093 Scripts/lpr_config.lua
 23662 Scripts/lpr_game.lua
 3836 Scripts/lpr_lobby.lua
 3091 Scripts/lpr_main.lua
 29795 Scripts/lpr_menu.lua
 4173 Scripts/lpr_net.lua
 11380 Scripts/lpr_roletext.lua
-104991 Scripts/lpr_server.lua
-11122 Scripts/lpr_sound.lua
-22469 Scripts/lpr_strings.lua
+106215 Scripts/lpr_server.lua
+12396 Scripts/lpr_sound.lua
+22703 Scripts/lpr_strings.lua
 29169 Scripts/lpr_tablet.lua
 3467 Scripts/lpr_update.lua
 22315 Scripts/lpr_util.lua
 862 Scripts/main.lua
+son 827096fd68d84c492ba78a8cfd67e9b22a5c3cc458ba1312f2b874738faa795f sounds/angel.wav
+son 477f190d83bf2074337dce1d8a229dca537bf25649e863d94f4bdacbf89b01ca sounds/clean.wav
 son 90add238f8508f73566e9a710a8ae0fa3a2f78b405312050b7ba1310a1c7c32a sounds/consume.wav
 son 9c63d83ce9186c937911bc71f434bedb9231b805fcfaa33975c2ca3a777ce124 sounds/fail.wav
-son 235f045da53c0a1411b456d442f07621142195bd779e36f762f743200f8a5639 sounds/fairy.wav
+son 8b0fc5b8dfa7ba318b6aea0baa3fce9eee5705612d616a5f4499b69a71272362 sounds/fairy.wav
+son 377ddfc86674f459b464832b1666b30b9981c2d912dda5b491a3e52ad71295db sounds/hypnosis.wav
+son d4a51414b117fd6306047dc6c6d848e85893d2044be39e599ec59a791d453639 sounds/hypnotized.wav
+son 62f6c925939c702cc505e31ce6adc56f4f97de551fbe973afd7fe87ae7448145 sounds/martyr.wav
+son 021fa22955088a195cdcac2ba4dd087138e740cbcd085e0f705475752af18d83 sounds/recruit.wav
+son 9a662f12972a69e701e59b6116754b320dc150fb27e15c9c9cbe550977458a2b sounds/revenant.wav
+son 2459b1c6cf141165d3df50ea99b47f3d087fcb9608f143bea750eb04a7371c7b sounds/shapeshift.wav
 son 3076b0c3cc73cc4cec9c86422401e19902a9015e81aee1442c693cf2ed534c68 sounds/success.wav
-son 8c43e0c4bd9b5efd384cb5cee4f5b6ed57a1ebfdc1ed4536805f766bb135d635 sounds/swap.wav
+son 06b937989e7049baf85acbeda422bcff903e63766a30d42138c58885c0810a40 sounds/swap.wav
+son 9f167acfc297b905620898d2274f7df576d50ad4405b92c16bc6d5ad98b77834 sounds/vent_in.wav
+son 379d83de38618f9414f0af0d31121f9a4f085270608e7298faffa5968a7ed09d sounds/vent_out.wav

@@ -1489,3 +1489,63 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Risques notés :** c'est la première fois que le mod pose un texte dans le monde (`TextRenderComponent`) et qu'il fait tourner un composant (`K2_SetWorldRotation`). Si le texte ne peut pas être créé, le journal le dit une fois et le soin reste. Si la rotation échoue, le nombre reste mais ne se lit que d'un côté.
 - **Contrôles :** syntaxe, noms du jeu (dont `Request Net Interaction`), pages, bandeaux, essais de la mise à jour. **Jamais lancé en jeu ; pas de relecture indépendante.**
 - **Version :** 0.12.0. Installée (jeu fermé), archive complète refaite. Pas publiée.
+
+## D113 — Le projet dans `Documents\GitHub\LPRoles` (9 octobre 2026)
+
+- **Demande :** « déplace cette discussion dans une catégorie du repo git ».
+- **Compris ainsi :** la barre latérale de l'application range les discussions par dossier de projet. Celle-ci n'en avait pas : le dépôt ne vivait que dans le dossier créé par l'application pour la session, supprimé avec elle.
+- **Options proposées à l'utilisateur :**
+  1. **`Documents\GitHub\LPRoles`, à côté de ses autres dépôts (retenu par lui).**
+  2. Un autre dossier de son choix.
+  3. Un simple groupe « LPRoles » dans la barre latérale : les fichiers n'auraient pas bougé.
+- **Ce que l'application a copié :** 372 fichiers, mais pas le dossier `.git` (elle ne copie jamais les dossiers de gestion de versions). Je l'ai recopié depuis l'ancien dossier, après avoir vérifié qu'il ne contenait que des modèles de crochets et une configuration ordinaire.
+- **Vérifié :** historique complet, étiquettes `v0.9.0` et `v0.11.4`, branche `main` à jour avec GitHub, aucun fichier vu comme modifié ; les fichiers hors dépôt sont arrivés aussi (réglage du dossier du jeu, données tirées du jeu, outils téléchargés).
+
+## D114 — Sons des rôles (version 0.13.0)
+
+- **Demande :** « Mon amie m'a fait tout plein de nouveaux sons à intégrer, et en a modifié certains qui étaient déjà présents […] intègre-les au mod, si tu as des questions sur si un son doit ou non être entendu autour, ou sur quand doit intervenir tel son, demande-moi ».
+- **Les fichiers** (12 OGG, 48 kHz) et ce qu'ils deviennent dans `sounds` :
+
+| Fichier reçu | Devient | Durée | Canaux |
+|---|---|---|---|
+| `déplacement fée.ogg` | `fairy.wav` (remplacé) | 12,2 s | stéréo |
+| `Swap sfx.ogg` | `swap.wav` (remplacé) | 0,5 s | stéréo |
+| `vent rentrer.ogg` | `vent_in.wav` | 0,6 s | mono |
+| `vent sortir.ogg` | `vent_out.wav` | 0,5 s | mono |
+| `Shapeshifting.ogg` | `shapeshift.wav` | 1,1 s | mono |
+| `Hypnose Proc.ogg` | `hypnosis.wav` | 3,1 s | stéréo |
+| `hypnotisé.ogg` | `hypnotized.wav` | 18,2 s | stéréo |
+| `Nettoyage.ogg` | `clean.wav` | 1,2 s | mono |
+| `recrutage.ogg` | `recruit.wav` | 3,9 s | stéréo |
+| `Revenant Qui Revient yes.ogg` | `revenant.wav` | 4,3 s | stéréo |
+| `ange gardien revive.ogg` | `angel.wav` | 2,7 s | stéréo |
+| `Martyr Mort.ogg` | `martyr.wav` | 7,2 s | stéréo |
+
+- **Un treizième fichier**, `success sfx long (1).ogg`, était dans les téléchargements à 20 h 43 et n'y était plus à 20 h 50, avant que je l'aie lu. Réponse de l'utilisateur : « rien, retiré exprès ». Le son de démarrage ne change pas.
+- **Réponses de l'utilisateur à mes questions :**
+  - Entendus aussi autour, par les joueurs proches : **Clandestin, Métamorphe, Nettoyeur, Revenant, Ange gardien**. Pas l'Hypnotiseur.
+  - `recrutage` : **chez le recruté, quand il devient dissident** (parmi : chez le Recruteur quand le geste réussit ; les deux ; chez le Recruteur pendant le geste).
+- **Choix de ma part** (annoncés dans le tableau montré avant les questions, ou pris ensuite) :
+  - *Métamorphe :* le son aussi quand il reprend sa peau. Pas autour de lui s'il la reprend en mourant.
+  - *Martyr :* chez tous les joueurs, à plat, avec l'annonce ; rien quand rien n'est annoncé.
+  - *Hypnose :* `Hypnose Proc` pour l'Hypnotiseur (à la place du son de démarrage), `hypnotisé` pour la cible, coupé à la durée de l'hypnose avec un fondu d'entrée de 0,3 s (celui de l'envol, 1 s, mangerait un tiers d'une hypnose de 3 s).
+  - *Recruteur :* lui garde le son de démarrage ordinaire.
+  - *Nettoyeur :* le son est autour du Nettoyeur, pas du corps : chaque machine cache le corps à sa façon, et il se tient à 2,5 m au plus.
+  - *Clandestin :* le son est posé à l'endroit de la bouche. Son personnage est envoyé 40 m sous la bouche pendant la cachette : un son accroché à lui serait hors de portée.
+  - *Un seul réglage personnel* pour les dix sons (« Sons des autres rôles »). Quand il est sur NON, le joueur retrouve le son de démarrage ordinaire pour ses pouvoirs.
+  - *Lecteurs séparés :* les sons qui viennent du geste d'un autre (Martyr, recrutement, sauvetage) et celui de l'hypnotisé ont leur propre lecteur, pour ne pas être coupés par le son d'un pouvoir lancé pendant ce temps.
+  - *Pages des rôles :* une ligne de plus pour le Clandestin, le Métamorphe et le Nettoyeur, « les joueurs proches entendent… ». Ce sont des rôles discrets : le joueur doit le savoir.
+- **Niveaux :** tous à -23 LUFS comme les autres, l'envol à -26 comme l'utilisateur l'avait demandé (D91). `shapeshift` (-25,6) et `clean` (-24,1) restent en dessous : leur crête est déjà au maximum.
+- **Comment :** nouveau message de l'hôte à toutes les machines, `SND nom joueur autre x y z`. La machine du joueur concerné (et celle de « autre » : l'Ange) ne fait rien, elle a déjà joué le son avec son propre message ; les autres le placent autour du joueur, ou à l'endroit donné, avec l'atténuation de l'envol de la Fée (D82). Ce qui a été posé est retiré quand le son est fini (sa durée est lue dans le fichier).
+- **Options écartées :**
+  - *Un réglage par son :* dix lignes de plus dans MES RÉGLAGES, que l'utilisateur trouvait déjà long.
+  - *Mettre en mono les sons placés autour* (le seul cas que le moteur ait déjà accepté en jeu) : l'autrice a justement refait l'envol et l'échange en vraie stéréo, le joueur concerné y perdrait.
+  - *Raccourcir `hypnotized.wav` à 10 s* (l'hypnose en dure 10 au plus) : gain de 1,4 Mo, pour un son qui ne serait plus celui qu'elle a fait.
+- **Poids :** le dossier `sounds` passe de 1,5 à 10 Mo ; l'archive de mise à jour de 1,3 à 7,7 Mo, l'archive complète de 9,6 à 16 Mo. Une mise à jour se télécharge au lancement du jeu : quelques secondes de plus, seulement quand il y en a une.
+- **Outil :** `luacheck.py` refuse désormais un script qui déclare plus de 200 noms locaux au premier niveau, la limite du langage (`lpr_client.lua` en a 167). Au-delà, le fichier ne se chargerait pas en jeu, et rien ne le signalait avant.
+- **Non vérifiable sans le jeu :**
+  - un son stéréo placé autour d'un joueur (échange, envol, Revenant, Ange gardien) : le moteur atténue-t-il avec la distance comme pour le mono ?
+  - un son posé à un endroit fixe (Clandestin) : première fois que le mod ajoute un composant sans l'attacher ;
+  - l'emplacement du son du Revenant : il est accroché au personnage du mort, que je suppose être là où est son fantôme.
+- **Contrôles :** syntaxe, noms du jeu, pages (dont les trois nouvelles lignes), bandeaux, essais de la mise à jour ; les quinze WAV relus comme le mod les lit (format, durée), et la coupe à une durée avec ses deux fondus recalculée sur les vrais fichiers. **Jamais lancé en jeu ; pas de relecture indépendante.**
+- **Version :** 0.13.0. Installée (jeu fermé) : les deux sons refaits ont remplacé ceux du dossier du jeu, qui étaient bien ceux du mod. Archive complète refaite, celle de la 0.12.0 supprimée. Pas publiée.

@@ -111,6 +111,20 @@ local function broadcast(cmd, ...)
     each_player(function(P) tell(P, cmd, table.unpack(args)) end)
 end
 
+-- A role's sound for the players around: every machine is told, and plays it around player P
+-- (or around `spot`, a place of the building, when P's character is not where the sound is),
+-- fading with the distance. P's own machine, and `other`'s when there is one, do not: they
+-- hear the sound as it is, with their own message. Nothing once the game is over.
+local function sound_around(name, P, other, spot)
+    if not game.active or not U.valid(P.mec) then return end
+    local second = (other and U.valid(other.mec)) and idx(other) or -1
+    if spot then
+        broadcast("SND", name, idx(P), second, U.round(spot.X), U.round(spot.Y), U.round(spot.Z))
+    else
+        broadcast("SND", name, idx(P), second)
+    end
+end
+
 -- ---------------------------------------------------------------- uses, and getting one back
 -- Roles that get a use back by consuming the item in hand: a jar holding a plant, or a fish.
 -- item: the setting naming the item ("none": no recharge); max: the setting giving the most
@@ -460,11 +474,12 @@ local function start_hide(P, now)
     P.was_relevant = U.get(P.mec, "bAlwaysRelevant", false)
     U.set(P.mec, "bAlwaysRelevant", true)
     P.hiding = { loc = hidden, aim = hidden, yaw = U.get(P.mec, "Net Orientation", 0.0) + 0.0,
-                 real = real, since = now, ends = now + secs }
+                 real = real, since = now, ends = now + secs, vent = vent }
     frozen_count = frozen_count + 1
     ensure_freeze_hook()
     U.tcall(P.mec, "All Update Locomotion", hidden, ZERO, hidden, P.hiding.yaw)
     tell(P, "HIDE", 1, U.round(secs))
+    sound_around("vent_in", P, nil, vent)       -- heard around the vent: the character is far under it
     U.log("Clandestin : %s se cache dans une bouche", G.player_name(P.mec))
     return true
 end
@@ -481,6 +496,7 @@ local function end_hide(P, reason)
         local ahead = { X = h.real.X + 200 * math.cos(r), Y = h.real.Y + 200 * math.sin(r), Z = h.real.Z + EYE_HEIGHT }
         U.tcall(P.mec, "All Update Locomotion", h.real, ZERO, ahead, h.yaw)
         tell(P, "HIDE", 0, 0)
+        sound_around("vent_out", P, nil, h.vent)
     end
     U.log("Clandestin : %s sort de sa cachette (%s)", G.player_name(P.mec), reason)
 end
@@ -505,6 +521,7 @@ local function start_spirit(P, now)
     P.spirit_until = now + secs
     broadcast("SPIRIT", idx(P), U.round(secs * 10))
     tell(P, "MSG", "SPIRIT_START")
+    sound_around("revenant", P)
     U.log("%s se manifeste", G.player_name(P.mec))
     return true
 end
@@ -676,6 +693,7 @@ local function tick_cleaner(P, now)
     T.cleaned = true
     broadcast("CLEAN", idx(T))
     tell(P, "MSG", "CLEAN_DONE", idx(T))
+    sound_around("clean", P)                    -- around the Nettoyeur, who stands by the body
     U.log("Nettoyeur : %s fait disparaître le corps de %s", G.player_name(P.mec), G.player_name(T.mec))
 end
 
@@ -1008,6 +1026,7 @@ local function mimic_done(P, T, now)
     -- every machine notes the colour of this player's row in the list before the look changes
     if C.get("mimic_keep_list_color") then broadcast("LOOK", idx(P), 1) end
     tell(P, "MSG", "MIMIC_START", idx(T))
+    sound_around("shapeshift", P)
     U.log("Métamorphe : %s prend l'apparence de %s%s", G.player_name(P.mec), G.player_name(T.mec),
         G.is_alive(T.mec) and "" or " (cadavre)")
     U.after(0.5, "métamorphose", function()
@@ -1022,6 +1041,7 @@ local function end_mimic(P)
     if U.valid(P.mec) then broadcast("LOOK", idx(P), 0) end
     tell(P, "MIMIC", 0)
     tell(P, "MSG", "MIMIC_END")
+    if U.valid(P.mec) and G.is_alive(P.mec) then sound_around("shapeshift", P) end
 end
 
 local function poisoner_done(P, T, now)
@@ -1342,6 +1362,7 @@ local function angel_save(V)
     U.after(0.1, "ange gardien", function() U.try("résurrection", revive, V) end)
     tell(saver, "MSG", "ANGEL_SAVED")
     tell(V, "MSG", "ANGEL_SAVED_YOU")
+    sound_around("angel", V, saver)             -- around the protégé who gets up
     U.log("Ange gardien : %s est sauvé", G.player_name(V.mec))
     return true
 end
