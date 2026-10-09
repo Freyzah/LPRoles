@@ -61,7 +61,8 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.11.5** : bandeaux qui ne se coupent plus mal (un « % » seul sur le bandeau suivant), portée du Voleur à 6 m par défaut, groupe RÔLE FORCÉ dans l'onglet. **Jamais lancée en jeu.** Jamais installée seule : comprise dans la 0.12.0.
 - **0.12.0** : un rôle de plus, proposé par l'utilisateur, le Médecin. **Jamais lancé en jeu.** Installée le 8 octobre, pas publiée.
 - **0.13.0** : dix sons de plus et deux sons refaits, tous de la même amie (Clandestin, Métamorphe, hypnose, Nettoyeur, recrutement, Revenant, Ange gardien, Martyr ; envol et échange). **Jamais lancée en jeu.** Installée le 9 octobre, pas publiée.
-- **0.13.1** : correction demandée par l'utilisateur : le son « Hypnose Proc » est pour l'hypnotisé, au moment où ses yeux se ferment, et le son de l'hypnose s'enchaîne. **Jamais lancée en jeu.** Installée le 9 octobre, pas publiée.
+- **0.13.1** : correction demandée par l'utilisateur : le son « Hypnose Proc » est pour l'hypnotisé, au moment où ses yeux se ferment, et le son de l'hypnose s'enchaîne. **Jamais lancée en jeu.** Installée le 9 octobre.
+- **Publication de la 0.13.1** (10 octobre, à la demande de l'utilisateur), avec tout ce qui s'était accumulé depuis la 0.11.4 : bandeaux, portée du Voleur, groupe RÔLE FORCÉ, Médecin, sons des rôles. Mise à jour vérifiée contre la vraie page depuis une copie exacte de la 0.11.4. **Rien de tout cela n'a encore tourné en jeu.**
 
 ## Ce qui est installé
 

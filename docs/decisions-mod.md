@@ -1563,3 +1563,15 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Détail :** le premier son joue sur le lecteur des sons venus du geste d'un autre. Un hypnotisé qui appuie sur sa touche de pouvoir entend le son d'échec : il ne coupe ni l'un ni l'autre.
 - **Contrôles :** syntaxe, noms du jeu, pages, bandeaux, essais de la mise à jour ; la coupe avec un fondu d'entrée de 0,8 s recalculée sur le vrai fichier (1, 3 et 10 s). **Jamais lancé en jeu ; pas de relecture indépendante.**
 - **Version :** 0.13.1. Installée (jeu fermé), archive complète refaite, celle de la 0.13.0 supprimée. Pas publiée.
+
+## D116 — Publication de la 0.13.1 (10 octobre 2026)
+
+- **Demande :** « publie ».
+- **Ce qui part :** tout ce qui s'était accumulé depuis la 0.11.4, la dernière version publiée : 0.11.5 (bandeaux, portée du Voleur, groupe RÔLE FORCÉ), 0.12.0 (Médecin), 0.13.0 et 0.13.1 (sons des rôles). La page de la version reprend les quatre sections.
+- **Fait :** étiquette `v0.13.1` poussée ; GitHub a construit et publié la version en 10 secondes.
+- **Vérifié contre la vraie page :**
+  - `version.txt` annonce la 0.13.1 ; `LPRoles.zip` (7,7 Mo) a la somme de contrôle annoncée et contient les 34 fichiers des sources, identiques octet pour octet.
+  - Une copie exacte de la 0.11.4, mise à jour par **son propre** programme de mise à jour (celui qu'a l'amie de l'utilisateur) : « MAJ 0.11.4 0.13.1 » en 3,3 s, fichiers identiques aux sources, réglages gardés. Les deux sons refaits ont bien remplacé les anciens.
+  - Une seconde copie où `swap.wav` avait été remplacé par un son personnel : mise à jour faite, son personnel gardé et signalé.
+- **Non vérifié :** rien de ce qui est publié depuis la 0.11.4 n'a tourné en jeu. Le premier lancement à deux sera le premier essai du Médecin et des sons des rôles.
+- **Chez l'utilisateur :** sa copie était déjà en 0.13.1 (installée à la main le 9 octobre) : son prochain lancement ne télécharge rien.
