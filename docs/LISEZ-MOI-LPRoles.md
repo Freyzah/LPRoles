@@ -64,7 +64,9 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.13.1** : correction demandée par l'utilisateur : le son « Hypnose Proc » est pour l'hypnotisé, au moment où ses yeux se ferment, et le son de l'hypnose s'enchaîne. **Jamais lancée en jeu.** Installée le 9 octobre.
 - **Publication de la 0.13.1** (10 octobre, à la demande de l'utilisateur), avec tout ce qui s'était accumulé depuis la 0.11.4 : bandeaux, portée du Voleur, groupe RÔLE FORCÉ, Médecin, sons des rôles. Mise à jour vérifiée contre la vraie page depuis une copie exacte de la 0.11.4. **Rien de tout cela n'a encore tourné en jeu.**
 - **0.14.0** : le rôle sur l'écran de début de partie, l'écran de fin du Bouffon, le récapitulatif de la dernière partie dans l'onglet LPROLES ; le plus gros script découpé en plusieurs fichiers. **Jamais lancée en jeu.** Installée le 22 octobre, pas publiée.
-- **0.14.1** : groupe TEST, « Simuler la victoire du Bouffon », pour voir sa fin de partie sans personne pour le tuer. **Jamais lancée en jeu.** Installée le 22 octobre, pas publiée.
+- **0.14.1** : groupe TEST, « Simuler la victoire du Bouffon », pour voir sa fin de partie sans personne pour le tuer. Installée le 22 octobre.
+- **Essai seul de l'utilisateur (22 octobre, 0.14.0 et 0.14.1)** : le rôle s'écrit sur l'écran de début (Rêveur, Bouffon, Amnésique), l'écran de fin affiche « LE BOUFFON GAGNE », le récapitulatif arrive à chaque fin de partie où son réglage est sur OUI. « Ça marche nickel. »
+- **0.14.2** : plus de bandeaux avec les rôles à la fin de la partie (le retour au lobby les effaçait), le récapitulatif les remplace. **Jamais lancée en jeu.** Installée le 22 octobre, pas publiée.
 
 ## Ce qui est installé
 
@@ -453,7 +455,7 @@ Si l'onglet n'apparaît pas (le journal contient alors « Onglet LPROLES incompl
 - pour chaque joueur : son rôle (« AMNÉSIQUE puis MÉDECIN » s'il en a hérité), son camp à la fin (« neutre » pour le Bouffon et l'Amnésique sans héritage) et son sort : « survit », « meurt (son tueur) », « meurt (poison) », « meurt (lié à …) » ;
 - puis, minute par minute : morts et tueurs, recrutements (au moment où le recruté devient dissident), sauvetages de l'Ange gardien, corps nettoyés, échanges, empoisonnements et antidotes, bâillons, vols, héritages de l'Amnésique, victoire du Bouffon, Vampire et Loup-garou, soins, métamorphoses, hypnoses, traques, apparitions du Revenant.
 
-Les pouvoirs qui ne touchent que celui qui les lance (Fée, Médium, Rêveur, Écho, Clandestin) n'y figurent pas, pour que la liste reste lisible. Le récapitulatif reste affiché dans le lobby et disparaît quand la partie suivante commence. Il dit le rôle de chacun : il n'est envoyé que si le réglage « Révéler les rôles à la fin » (groupe GÉNÉRAL) est sur OUI.
+Les pouvoirs qui ne touchent que celui qui les lance (Fée, Médium, Rêveur, Écho, Clandestin) n'y figurent pas, pour que la liste reste lisible. Le récapitulatif reste affiché dans le lobby et disparaît quand la partie suivante commence. Il dit le rôle de chacun : il n'est envoyé que si le réglage « Récapitulatif de fin de partie » (groupe GÉNÉRAL, « Révéler les rôles à la fin » avant la 0.14.2) est sur OUI. Les rôles ne sont plus annoncés en bandeaux à la fin de la partie : le retour au lobby les effaçait avant qu'on puisse les lire.
 
 **Jamais essayé en jeu.** À vérifier : que l'écran de début est encore là quand le rôle arrive, que la phrase tient sur deux lignes, que les noms sont bien lus à la fin de la partie.
 

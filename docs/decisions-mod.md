@@ -1633,3 +1633,13 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Code :** la suite de la victoire, jusque-là au milieu de la fonction de mort du Bouffon, en est sortie (`jester_win`) : la vraie victoire et l'essai passent par le même code.
 - **Contrôles :** syntaxe, noms du jeu, pages, bandeaux, essais de la mise à jour. **Jamais lancé en jeu ; pas de relecture indépendante.**
 - **Version :** 0.14.1. Installée (jeu fermé), archive complète refaite, celle de la 0.14.0 supprimée. Pas publiée.
+
+## D123 — Plus de bandeaux de rôles à la fin de la partie (version 0.14.2)
+
+- **Demande :** « maintenant qu'on a le résumé de la partie dans l'onglet LPROLES, plus besoin d'afficher le bandeau avec les rôles à la fin de partie », puis : « ils n'étaient pas bugués, c'est juste qu'ils se faisaient effacer par le retour au lobby donc pas le temps de les lire ».
+- **Premier essai en jeu (journal du 22 octobre, l'utilisateur seul) :** le rôle s'écrit sur l'écran de début pour le Rêveur, le Bouffon et l'Amnésique ; l'essai de la 0.14.1 déclenche la victoire, l'écran de fin affiche « LE BOUFFON GAGNE », et le récapitulatif arrive à chaque fin de partie où son réglage est sur OUI (l'utilisateur l'avait sur NON pour la première). L'utilisateur : « ça marche nickel ».
+- **Fait :** l'hôte n'envoie plus la liste des rôles à la fin ; le code des bandeaux est retiré des deux côtés. Le réglage « Révéler les rôles à la fin » ne commandait plus que le récapitulatif : même réglage (clé `reveal_roles_at_end`, la valeur de chacun est gardée), nouveau nom « Récapitulatif de fin de partie ».
+- **Gardé :** l'annonce « LE BOUFFON … GAGNE » répétée au retour au lobby, que l'utilisateur n'a pas citée. Envoyée au même moment que les bandeaux retirés, elle est probablement effacée de la même façon ; l'écran de fin et le récapitulatif disent la même chose. À retirer aussi s'il le confirme.
+- **Vu dans le même journal :** l'utilisateur a cliqué deux fois sur « Simuler la victoire du Bouffon » à une seconde d'écart. Le second clic, refusé puisque la victoire était en cours, affichait « TEST : IL FAUT ÊTRE LE BOUFFON » avec le son d'échec : faux, il l'était. Ce cas ne dit plus rien (le journal le note toujours).
+- **Contrôles :** syntaxe, noms du jeu, pages, bandeaux, essais de la mise à jour. Pas de relecture indépendante.
+- **Version :** 0.14.2. Installée (jeu fermé), archive complète refaite. Pas publiée.

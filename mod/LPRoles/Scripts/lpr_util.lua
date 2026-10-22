@@ -1,7 +1,7 @@
 -- LPRoles - shared helpers (logging, safe calls, scheduler)
 local U = {}
 
-U.VERSION = "0.14.1"
+U.VERSION = "0.14.2"
 
 -- Mod folder as a path that file functions can really open. Relative paths depend on the
 -- game's working directory, so every candidate is tested by opening the mod's own main.lua.

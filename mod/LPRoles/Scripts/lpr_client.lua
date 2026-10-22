@@ -1205,23 +1205,6 @@ local function on_eaten()
     U.try("son de consommation", A.play, "consume", "consume_sound")
 end
 
-local function on_reveal(list)
-    local function name(idx)
-        local mec = G.mec_by_index(tonumber(idx) or -1)
-        return mec and G.player_name(mec) or "?"
-    end
-    for _, item in ipairs(U.split(list or "", ",")) do
-        local a, b = item:match("^pair:(-?%d+):(-?%d+)$")
-        local role, idx = item:match("^(%w+):(-?%d+)$")
-        if a then
-            say("REVEAL_LINK", "info", name(a), name(b))             -- a bond: once, both names
-        elseif role then
-            say("REVEAL", "info", S.ROLE_NAME[role] or role, name(idx))
-        end
-    end
-    set_role(nil)
-end
-
 local acked_for = nil        -- character for which the host has answered
 local function send_hello()
     local mec = G.local_mec()
@@ -1337,7 +1320,6 @@ function Cl.install()
     N.on("EMPTYJAR", on_empty_jar)
     N.on("EATEN", on_eaten)
     N.on("OPENEYES", on_open_eyes)
-    N.on("REVEAL", on_reveal)
     N.on("MEDIUM", on_medium)
     N.on("HYPNO", on_hypno)
     N.on("SPIRIT", on_spirit)

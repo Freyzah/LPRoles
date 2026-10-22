@@ -2008,25 +2008,6 @@ local function on_game_start()
     U.after(C.get("announce_delay"), "annonce des rôles", function() U.try("annonce", announce_roles) end)
 end
 
-local function reveal_roles()
-    local parts = {}
-    each_player(function(P)
-        if P.role then parts[#parts + 1] = P.role .. ":" .. tostring(idx(P)) end
-    end)
-    -- a bond is told once, with both players
-    each_player(function(P)
-        local Q = by_key(P.link)
-        if Q then
-            if idx(P) < idx(Q) then
-                parts[#parts + 1] = "pair:" .. tostring(idx(P)) .. ":" .. tostring(idx(Q))
-            end
-        elseif P.link then
-            parts[#parts + 1] = "linked:" .. tostring(idx(P))      -- the other one has left the game
-        end
-    end)
-    if #parts > 0 then broadcast("REVEAL", table.concat(parts, ",")) end
-end
-
 -- The players of the game, for its summary.
 local function recap_players()
     local list = {}
@@ -2059,9 +2040,9 @@ local function on_game_end(win, force)
     broadcast("END")                            -- stops visions, hypnosis and everything still running
     -- no sphere left over anybody's head in the lobby (markers, recruits made dissidents)
     each_player(function(P) U.tcall(P.mec, "Clear Hacker Sphere") end)
-    if C.get("reveal_roles_at_end") then U.try("révélation", reveal_roles) end
-    -- the summary of the game, for the LPROLES tab of every machine (it tells every role: only
-    -- when the host lets the roles be revealed at the end)
+    -- the summary of the game, for the LPROLES tab of every machine: it tells every role, so it
+    -- is sent only when the host wants the roles revealed at the end (the banners that did so
+    -- before 0.14.2 were wiped by the return to the lobby before they could be read)
     U.try("récapitulatif", function()
         if not C.get("reveal_roles_at_end") then return end
         local ending = "unknown"
@@ -2371,7 +2352,8 @@ local function test_jester_win()
     local mine = G.local_mec()
     local me = mine and player(mine, false)
     if not (game.active and me and me.role == "jester" and not game.jester) then
-        if me then tell(me, "MSG", "TEST_JESTER_NO") end
+        -- a second click while the victory is under way: nothing to say, it is coming
+        if me and not game.jester then tell(me, "MSG", "TEST_JESTER_NO") end
         U.log("Test : victoire du Bouffon refusée (%s)", not game.active and "pas de partie en cours"
             or game.jester and "déjà gagnée" or "l'hôte n'est pas le Bouffon")
         return

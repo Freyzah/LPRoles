@@ -27,7 +27,7 @@ LONG = {'HOST_SHORT', 'MENU_TAB_OFF', 'TABLET_OFF', 'VERSION_DIFF', 'INSTALL_BRO
 # the host sends; the others are listed here.
 KINDS = dict(re.findall(r'(\w+) = \{ "\w+", "(\w+)"', re.search(r'local MSG = \{(.*?)\n\}', client, re.S).group(1)))
 KINDS.update(SAFE_PERSON='name', USE_HINT='pkey', MOD_ACK='version', VERSION_DIFF='version', UPDATED='version',
-             DIAG_OK='version', DIAG_BACK='version', REVEAL='role+name', REVEAL_LINK='name')
+             DIAG_OK='version', DIAG_BACK='version')
 ITEMS = re.findall(r'"([^"]+)"', re.search(r'S\.ITEM_SHORT = \{(.*?)\n\}', strings, re.S).group(1))
 ROLES = re.findall(r'=\s*"([^"]+)"', re.search(r'S\.ROLE_NAME = \{(.*?)\n\}', strings, re.S).group(1))
 SAMPLES = {'name': ['Lea', 'NomDeJoueur1', 'UnPseudoVraimentLong'], 'item': [max(ITEMS, key=len)], 'num': ['5', '60'],

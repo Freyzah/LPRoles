@@ -46,7 +46,7 @@ C.DEFS = {
     { key = "max_roles",               group = "GÉNÉRAL", default = 4,     kind = "int",   min = 1, max = 16, step = 1, label = "Rôles spéciaux par partie (max)" },
     { key = "announce_delay",          group = "GÉNÉRAL", default = 7,     kind = "num",   min = 2, max = 20, step = 1, label = "Annonce des rôles après (s)" },
     { key = "recharge_limit",          group = "GÉNÉRAL", default = 0,     kind = "int",   min = 0, max = 10, step = 1, label = "Recharges par partie (0 = illimité)" },
-    { key = "reveal_roles_at_end",     group = "GÉNÉRAL", default = true,  kind = "bool",  label = "Révéler les rôles à la fin" },
+    { key = "reveal_roles_at_end",     group = "GÉNÉRAL", default = true,  kind = "bool",  label = "Récapitulatif de fin de partie" },
     { key = "menu_tab",                group = "GÉNÉRAL", default = true,  kind = "bool",  label = "Onglet dans le menu Échap" },
 
     { key = "sheriff_enabled",         group = "SHÉRIF", default = true,  kind = "bool",  label = "Shérif" },

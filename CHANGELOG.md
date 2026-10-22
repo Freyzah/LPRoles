@@ -2,7 +2,12 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.14.1
+## 0.14.2
+
+- **Plus de bandeaux avec les rôles à la fin de la partie :** le retour au lobby les effaçait avant qu'on puisse les lire. Le récapitulatif de l'onglet LPROLES les remplace ; son réglage s'appelle maintenant « Récapitulatif de fin de partie » (groupe GÉNÉRAL).
+- **Essai de la victoire du Bouffon :** un second clic pendant que la victoire est en cours n'affiche plus « TEST : IL FAUT ÊTRE LE BOUFFON ».
+
+## 0.14.1 (non publiée)
 
 - **Essai sans partenaire :** dans l'onglet LPROLES, groupe TEST, « Simuler la victoire du Bouffon » déclenche sa victoire comme si un employé l'avait tué : bandeau, puis écran de fin et récapitulatif. Il faut être le Bouffon (rôle forcé) dans une partie en cours.
 
