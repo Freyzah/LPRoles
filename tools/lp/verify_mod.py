@@ -161,7 +161,7 @@ PROPERTIES = [
 PROPERTIES += [
     ("GM", "Game Time"),
     ("Mec", "Net Location"), ("Mec", "Net Can Interact"), ("Mec", "Exhausted"), ("Mec", "Vignette Color"),
-    ("Mec", "Camera Shake Intensity"), ("Mec", "Bag State"),
+    ("Mec", "Camera Shake Intensity"), ("Mec", "Bag State"), ("Mec", "Bag Item"),
     ("ItemSlot", "Locked"), ("ItemSlot", "Item In"), ("ItemSlot", "Item Data"), ("ItemSlot", "Item State"),
     ("AlarmButton", "Sector"), ("AlarmButton", "State"), ("AlarmButton", "Speakers"), ("AlarmButton", "Cube"),
     ("AlarmButton", "Button"), ("AlarmButton", "Fuse"), ("AlarmSpeaker", "Cube"), ("AlarmSpeaker", "Sound Path"),

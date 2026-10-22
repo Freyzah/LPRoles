@@ -66,6 +66,11 @@ end
 -- a hook (lpr_server.lua). For what only a player's machine knows: its character's life.
 N.REPORT = 1296000000
 N.REPORT_MAX = 999
+-- Right above them, the random events' answers (the same RPC, an item's state along: the
+-- weapons check's hand and bag, lpr_evm_weapons.lua), from N.EV_REPLY to N.EV_REPLY +
+-- N.EV_REPLY_MAX. lpr_server.lua's hook leaves them alone; the running event's own hook reads them.
+N.EV_REPLY = N.REPORT + N.REPORT_MAX + 1
+N.EV_REPLY_MAX = 99
 
 function N.report(value)
     local mec = G.local_mec()

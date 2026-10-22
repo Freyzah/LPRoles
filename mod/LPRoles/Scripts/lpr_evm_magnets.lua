@@ -91,7 +91,7 @@ end
 
 -- What a discharge does to P besides the push; three within OVER_WINDOW: overload, exhausted (the
 -- item drops, the player staggers and cannot act for a moment; without the mod, the frame drops
--- the item and stops the player).
+-- the item and stops the player, and the push sent right after still carries it away: M.tick).
 local function discharge(ctx, P, now)
     local r = ctx.run
     ctx.flash(P, "blue", FLASH)
@@ -176,11 +176,18 @@ function M.tick(ctx, now)
         end
     end
     r.close = close
-    -- one push per player and per tick, away from all the others that discharged it at once
+    -- one push per player and per tick, away from all the others that discharged it at once.
+    -- The discharge first, the push last: on an overload, the frame exhausts a player without the
+    -- mod with "Loose Item" then a sudden stop ("Hit Health" with a positive stun, which takes 80 %
+    -- of the speed away, Mec 0x39567). These and the push are reliable client calls on the same
+    -- character, run in order on its machine: a stop sent after the push would cancel it and leave
+    -- the player against the other magnet. Sent before, it only takes away the run that brought the
+    -- player in, and the push carries it off. With the mod the exhaustion is the machine's own "Set
+    -- Exhausted", which does not touch the speed: the order changes nothing there.
     for P, v in pairs(push) do
         local yaw = (v.x * v.x + v.y * v.y > 1e-4) and math.deg(math.atan(v.y, v.x)) or (math.random() * 360 - 180)
-        ctx.push(P, yaw, strength)
         discharge(ctx, P, now)
+        ctx.push(P, yaw, strength)
     end
 end
 

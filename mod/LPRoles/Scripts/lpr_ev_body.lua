@@ -74,7 +74,9 @@ end
 
 -- What the host keeps on each player, emptied at each new game (B.reset_holds).
 local freezes = {}           -- player key -> list of { ends, move, act } (B.freeze)
-local causes = {}            -- player key -> { cause, ends, before }: the cause of death B wrote (B.cause, B.kill)
+-- player key -> { cause, ends, before, at, kill }: the cause of death B wrote (B.cause, B.kill); at:
+-- when the event last dealt the blow that cause stands for (B.cause_at); kill: B.kill's death
+local causes = {}
 
 -- "Net Can Interact": the game's half of "may act" that the host can hold (the other half,
 -- "Local Can Interact", is the player's machine's). Held by a truce and by a freeze of the
@@ -181,25 +183,82 @@ function B.tire(P, n, hold)
     if P.modded then tell(P, "EVBODY", "tire", U.round(n or 0), U.round((hold or 0) * 10)) end
 end
 
+-- The bag's item dropped at the player's feet. With the mod, by the player's own machine, with
+-- the state that machine knows (EVBODY "dropbag": the game's "Net Drop Item" carries it, as at a
+-- death, Mec 0x7da7). The host's record is not to be trusted for it: a bag filled from the hand
+-- copies the host's record of the hand (0xed0b), which keeps what the item was when picked up
+-- (a gun's ammunition before its shots: a shot lowers only the shooter's machine's, 0x3329d).
+-- That machine has not done it 1.5 s later (dead or a ghost of its own there), or no mod: the
+-- host's record, the only state the host knows (W.drop_bag).
+function B.drop_bag(P)
+    local data = G.bag_item_data(P.mec)
+    if not data then return end
+    if not P.modded then
+        W.drop_bag(P.mec, true)
+        return
+    end
+    tell(P, "EVBODY", "dropbag")
+    local want = data:GetAddress()
+    -- The fallback must know whether the player's machine did drop it: a bag item of the same
+    -- kind (every knife is DA_Knife) may be back in the bag by then, once the search lets the
+    -- player act again. A new item of that kind on the ground means it was dropped.
+    local before = {}
+    for _, w in ipairs(FindAllOf("WorldItem_C") or {}) do
+        if U.valid(w) then before[w:GetAddress()] = true end
+    end
+    local game = env and env.game
+    local started = game and game.started_at
+    U.after(1.5, "sac vidé (évènement)", function()
+        if not (game and game.active and game.started_at == started and U.valid(P.mec) and G.is_alive(P.mec)) then return end
+        for _, w in ipairs(FindAllOf("WorldItem_C") or {}) do
+            if U.valid(w) and not before[w:GetAddress()] then
+                local d = U.get(w, "Data", nil)
+                if U.valid(d) and d:GetAddress() == want then return end
+            end
+        end
+        local d = G.bag_item_data(P.mec)
+        if d and d:GetAddress() == want then W.drop_bag(P.mec, true) end
+    end)
+end
+
 -- A search: what the player holds (weapon codes, W.weapon_code: 0 for any other item, nil for
--- nothing), then the item in hand thrown down and the bag's dropped at the feet.
+-- nothing), then the item in hand thrown down ("Loose Item": the player's machine throws it with
+-- its own state) and the bag's dropped at the feet (B.drop_bag).
 function B.search(P)
     local hand = G.hand_item_data(P.mec)
     local bag = G.bag_item_data(P.mec)
     local out = { hand = hand and W.weapon_code(hand) or nil, bag = bag and W.weapon_code(bag) or nil }
-    if bag then W.drop_bag(P.mec, true) end
+    if bag then B.drop_bag(P) end
     if hand then B.drop(P) end
     return out
 end
 
 -- ---------------------------------------------------------------- [H] blast and blows
+-- Whether something stands between a blast and a body: the engine's line trace as the game's
+-- "Get Explosion" makes it (channel 6, Mec 0x36f51), the world's actor `world` left out, and the
+-- characters of `ignore` (the bomb's carrier, whose body the blast starts in). Should the trace
+-- fail: nothing in between (the blast as before the check).
+local trace_lib = nil
+local NO_COLOR = { R = 0.0, G = 0.0, B = 0.0, A = 0.0 }
+
+local function wall_between(world, from, to, ignore)
+    trace_lib = (U.valid(trace_lib) and trace_lib) or StaticFindObject("/Script/Engine.Default__KismetSystemLibrary")
+    local ok, hit = pcall(function()
+        return trace_lib:LineTraceSingle(world, from, to, 6, false, ignore or {}, 0, {}, true, NO_COLOR, NO_COLOR, 0.0)
+    end)
+    return ok and hit == true
+end
+
 -- victims: { { P, d (cm from the blast to the body + 140), at (the body) } } (lpr_ev.lua picks
 -- them: present players within reach). opts: lethal (the game's own "Get Explosion": walls
 -- protect, damage down to 0 at `range`, may kill), floor (life always left otherwise, 10),
 -- push (strongest push otherwise, 0 to 1), fx ("gas" or "c4": the effects for all).
 -- Not lethal: the player's machine works out the same blast, with its life kept above floor
--- (EVBODY "hurt"); without the mod, the push alone (the host does not know that player's life).
-function B.blast(at, range, hp, opts, victims)
+-- (EVBODY "hurt"); without the mod, the push alone (the host does not know that player's life),
+-- only if no wall stands in between: the host traces it itself, as the player's machine would
+-- (a player in the next room is not thrown through the wall). ignore: characters the host's
+-- trace goes through (lpr_ev.lua: the players the blast leaves out, the bomb's carrier).
+function B.blast(at, range, hp, opts, victims, ignore)
     opts = opts or {}
     local push = opts.push or 1
     for _, v in ipairs(victims or {}) do
@@ -210,8 +269,12 @@ function B.blast(at, range, hp, opts, victims)
             tell(P, "EVBODY", "hurt", U.round(at.X), U.round(at.Y), U.round(at.Z), U.round(range), math.floor(hp),
                 math.floor(opts.floor or 10), pct(push))
         else
-            local share = math.max(0, 1 - (math.min(v.d, range) / range) ^ 2)
-            B.push(P, math.deg(math.atan(v.at.Y - at.Y, v.at.X - at.X)), push * share)
+            local from = { X = at.X + 0.0, Y = at.Y + 0.0, Z = at.Z + 0.0 }
+            local body = { X = v.at.X + 0.0, Y = v.at.Y + 0.0, Z = v.at.Z + 140.0 }
+            if not wall_between(P.mec, from, body, ignore) then
+                local share = math.max(0, 1 - (math.min(v.d, range) / range) ^ 2)
+                B.push(P, math.deg(math.atan(v.at.Y - at.Y, v.at.X - at.X)), push * share)
+            end
         end
     end
     if opts.fx and env then env.broadcast("EVFX", opts.fx, U.round(at.X), U.round(at.Y), U.round(at.Z)) end
@@ -285,9 +348,12 @@ end
 
 -- ---------------------------------------------------------------- [H] deaths
 -- The cause of a death an event brings about, for the summary ("meurt (fuite de gaz)") and so
--- that no blow just before counts as a kill (lpr_server.lua reads EV.CAUSES). B holds the cause
--- it wrote until a time (causes[key].ends); each timer looks, and the one that finds that time
--- passed takes the cause back (what was there before it, if the player is still alive).
+-- that no blow just before counts as a kill (lpr_server.lua reads EV.CAUSES). It is written
+-- only where the event's own blow may kill (lpr_ev.lua: a lethal blast or blow, ctx.kill), and
+-- with the time of that blow (B.cause_at): a player's blow that lands after it is the last one
+-- before the death, and keeps its killer (lpr_server.lua). B holds the cause it wrote until a
+-- time (causes[key].ends); each timer looks, and the one that finds that time passed takes the
+-- cause back (what was there before it, if the player is still alive).
 local function cause_over(P)
     local c = causes[P.key]
     if not c or U.now() + 0.05 < c.ends then return end          -- held longer by a later call
@@ -302,17 +368,20 @@ local function cause_held(P)
     return nil
 end
 
--- Written when the player has no cause, or already this one (its time is then made longer: a gas
--- cloud renews it every second without a gap); not over another (a poison, a bond, another
--- event's). Taken back secs after the last call if the player did not die meanwhile.
+-- Written when the player has no cause, or already this one (its time is then made longer, and
+-- its blow's time brought to now: a cloud that may kill renews it at each of its blows without a
+-- gap); not over another (a poison, a bond, another event's). Each call is a blow of the event
+-- that may kill. Taken back secs after the last call if the player did not die meanwhile.
 function B.cause(P, cause, secs)
     if not U.valid(P.mec) then return false end
-    local ends = U.now() + (secs or 3)
+    local now = U.now()
+    local ends = now + (secs or 3)
     local held = cause_held(P)
     if held and held.cause == cause then
         held.ends = math.max(held.ends, ends)
+        held.at = math.max(held.at or now, now)          -- a death B.kill asked stays at math.huge
     elseif P.death_cause == nil or P.death_cause == cause then
-        causes[P.key] = { cause = cause, ends = ends, before = nil }
+        causes[P.key] = { cause = cause, ends = ends, before = nil, at = now }
         P.death_cause = cause
     else
         return false
@@ -321,13 +390,29 @@ function B.cause(P, cause, secs)
     return true
 end
 
+-- When the event last dealt P the blow its cause stands for (the cause B holds on P now), or nil.
+-- math.huge for a death B.kill asked: nobody's blow, before or after, makes that one a kill.
+function B.cause_at(P)
+    local c = cause_held(P)
+    return c and (c.at or math.huge) or nil
+end
+
+-- Whether a death B.kill asked is under way on P (asked, not come yet): P dies of that event,
+-- whatever else would take it (lpr_server.lua: the bond of the Liés).
+function B.killing(P)
+    local c = cause_held(P)
+    return c ~= nil and c.kill == true
+end
+
 -- Kills a player, with a cause. opts: no_save (the Ange gardien does not raise this one),
 -- body (false: no body left where the player was, the game puts it far away: Mec 0x64f5).
 -- The player is woken first (a dreaming Rêveur, a flying Fée, a hidden Clandestin: the game
 -- ignores a death asked while the player is a ghost on its machine), then the death is asked at
 -- 0.6 s and again at 1.8 s (as for the Liés). The cause is written whatever the player had: a
--- poisoned or Lié passenger who leaves by the shuttle has no killer either. Still alive at 3 s:
--- no_save goes, and the cause the player had before (a poison, a bond, or none) is put back.
+-- poisoned or Lié passenger who leaves by the shuttle has no killer either, nor one whose blow
+-- lands meanwhile (B.cause_at: math.huge), and a Lié's partner who dies meanwhile does not take
+-- it along with the bond's cause (B.killing). Still alive at 3 s: no_save goes, and the cause the
+-- player had before (a poison, a bond, or none) is put back.
 function B.kill(P, cause, opts)
     opts = opts or {}
     if not (env and U.valid(P.mec) and G.is_alive(P.mec)) then return false end
@@ -338,7 +423,7 @@ function B.kill(P, cause, opts)
     if before == cause then before = nil end
     local ends = U.now() + 3
     if held and held.cause == cause then ends = math.max(ends, held.ends) end
-    causes[P.key] = { cause = cause, ends = ends, before = before }
+    causes[P.key] = { cause = cause, ends = ends, before = before, at = math.huge, kill = true }
     P.death_cause = cause
     if env.wake then U.try("réveil avant la mort", env.wake, P, "event") end
     local asked = U.now()
@@ -364,8 +449,6 @@ end
 local is_ghost = function() return false end      -- the local player is a ghost of its own for a while
 local frozen = nil           -- { ends, move, act, applied }
 local veil = nil             -- { r, g, b, pulse, next }
-local trace_lib = nil
-local NO_COLOR = { R = 0.0, G = 0.0, B = 0.0, A = 0.0 }
 
 function B.client_setup(ghost_fn)
     is_ghost = ghost_fn or is_ghost
@@ -420,11 +503,7 @@ local function hurt(mec, at, range, hp, floor, push)
     local body = { X = p.X, Y = p.Y, Z = p.Z + 140 }
     local d = U.dist(at, body)
     if d >= range then return end
-    trace_lib = (U.valid(trace_lib) and trace_lib) or StaticFindObject("/Script/Engine.Default__KismetSystemLibrary")
-    local ok, hit = pcall(function()
-        return trace_lib:LineTraceSingle(mec, at, body, 6, false, {}, 0, {}, true, NO_COLOR, NO_COLOR, 0.0)
-    end)
-    if ok and hit == true then return end
+    if wall_between(mec, at, body) then return end
     local k = 1 - d / range
     local dmg = math.floor(hp * k ^ 3)
     local health = U.get(mec, "Health", 100) or 100
@@ -438,6 +517,24 @@ local function harm(mec, hp, floor, stun)
     local health = U.get(mec, "Health", 100) or 100
     local dmg = math.max(0, math.min(hp, health - floor))
     U.tcall(mec, "Take Damage", 0, dmg, 0, stun + 0.0, 1000.0)
+end
+
+-- The bag's item dropped at the feet as the game drops it at a death (Mec 0x7da7-0x7e43): the
+-- game's "Net Drop Item" with this machine's own Bag State (the host spawns the item with that
+-- state and empties its record of the bag, 0x24d3f, 0xaf7b), then the bag emptied here ("Clear
+-- Bag": Set Bag Item with nothing). A state that cannot be read: nothing done, the host drops
+-- the bag itself a moment later (B.drop_bag).
+local function drop_bag(mec)
+    local data = U.get(mec, "Bag Item", nil)
+    if not U.valid(data) then return end
+    local st = U.get(mec, "Bag State", nil)
+    local ok, value, time = pcall(function() return st[G.F_STATE_VALUE], st[G.F_STATE_TIME] end)
+    if not ok or type(value) ~= "number" then return end
+    local feet = G.location(mec)
+    if not feet then return end
+    U.tcall(mec, "Net Drop Item", data, W.item_state(value, time), { X = feet.X, Y = feet.Y, Z = feet.Z + 50 },
+        { Pitch = 0.0, Yaw = 0.0, Roll = 0.0 }, U.vec(0, 0, 1), U.vec(), true)
+    U.tcall(mec, "Clear Bag")
 end
 
 local function num(v, default)
@@ -476,6 +573,8 @@ function B.on_body(what, a, b, c, d, e, f, g)
         hurt(mec, U.vec(num(a), num(b), num(c)), num(d), num(e), num(f, 10), num(g, 100) / 100)
     elseif what == "harm" then
         harm(mec, num(a), num(b, 10), num(c, 80) / 100)
+    elseif what == "dropbag" then
+        drop_bag(mec)
     elseif what == "flash" then
         U.tcall(mec, "Color Effect", num(d, 100) / 10, { R = num(a) / 100, G = num(b) / 100, B = num(c) / 100, A = 0.0 })
     end

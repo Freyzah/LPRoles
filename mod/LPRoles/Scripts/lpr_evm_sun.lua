@@ -4,7 +4,8 @@
 -- seconds, a player who moves (beyond the tolerance), hits someone or fires is caught: exhausted
 -- on the spot (the item drops, the player staggers). Four rounds by default.
 --   - Host: the radios (their song, played and cut through the game's own multicasts, put back
---     exactly as they were at the end), the rounds, who is judged and who is caught, the summary.
+--     at the end as their players left them), the rounds, who is judged and who is caught, the
+--     summary.
 --   - Every machine: a quiet copy of the song heard as it is, for whoever is far from a radio
 --     (the radios carry it only so far), stopped at each cut.
 -- Judged: living players with the mod, in their body (not dreaming, flying, hidden nor getting
@@ -24,6 +25,12 @@ local MUSIC = { min = 6.0, max = 15.0 } -- s of music per round, drawn at random
 -- pushed, not moving of its own (excused that long); cm from one tick to the next: moved by a
 -- power (Échangeur, Écho, out of hiding), noted again rather than caught
 local HIT_LAG, EXCUSE, JUMP = 0.3, 1.5, 250
+-- s: a player the game teleported (Net Request TP) is noted again that long where it lands. The
+-- host has the new place in the hook itself (All TP runs there inside it); the player's machine
+-- sends Net Request TP first and moves there right after (Mec 0x3a64f), so its next positions are
+-- the new place too: a short while is enough, and a longer one would let the swapped player walk
+-- away unpunished.
+local TP_EXCUSE = 0.5
 local VOLUME = 10                       -- the radios' loudest
 -- each machine's own copy of the song: softer than a radio; a moment after the "go" (the radios'
 -- song comes by the game's multicast, in no set order with the event's message); the radio it is
@@ -161,6 +168,8 @@ local function watch(ctx, now)
                 local last, o = r.last[key], r.pos[key]
                 r.last[key] = p and { X = p.X, Y = p.Y } or nil
                 if p then
+                    -- a teleport of any length is excused by the Net Request TP hook below; the
+                    -- JUMP stays for one that does not go through it
                     if (last and W.dist2d(p, last) > JUMP) or (r.excused[key] or 0) > now or not o then
                         note(ctx, P)             -- moved by a power, pushed by a blow, not noted yet (in the air)
                     elseif W.dist2d(p, o) > r.tol then
@@ -201,12 +210,18 @@ function M.start(ctx, now, test)
     if #list == 0 or songs == 0 then return false end
     r.radios = {}
     for _, a in ipairs(list) do
-        local rd = { actor = a, saved = W.radio_state(a) }
+        local rd = { actor = a }
         r.radios[#r.radios + 1] = rd
-        -- put back as it was, whatever stops the event (the end of the game included: it stops the
-        -- song, it starts nothing); not a radio given back to a player meanwhile
+        -- put back whatever stops the event (the end of the game included: it stops the song, it
+        -- starts nothing); not a radio given back to a player meanwhile. Its state is read at that
+        -- moment, not kept from now: the reader is never locked, so a cassette may have been put
+        -- in, swapped or taken out during the event (and the volume changed), and a snapshot would
+        -- put the old cassette's song, or none, on the screen and in the sound the Play button
+        -- starts. The event itself never writes the reader, "Time Elapsed" nor "Volume" (its
+        -- multicasts set only the sound, the screen and the loudness heard), so what they say at
+        -- the end is the radio's own state, which the restore makes the sound and screen match.
         ctx.defer(function()
-            if not rd.released and U.valid(a) then W.radio_restore(a, rd.saved) end
+            if not rd.released and U.valid(a) then W.radio_restore(a, W.radio_state(a)) end
         end)
     end
     r.track = math.random(0, songs - 1)
@@ -317,18 +332,35 @@ local function give_back(a)
     U.tcall(a, "Start Song")                     -- from its own time, with a timer for its own song
 end
 
-M.hooks = { { path = W.PATH_RADIO .. ":Start Song", fn = function(ctx, hc)
-    local a = hc:get()
-    if not U.valid(a) then return end
-    for _, rd in ipairs(ctx.run.radios or {}) do
-        local b = rd.actor
-        if not rd.released and U.valid(b) and b:GetAddress() == a:GetAddress() then
-            rd.released = true                   -- first: the Start Song below comes back here
-            U.try("soleil : radio rendue", give_back, a)
-            return
+-- A player teleported by the game during a freeze: "Net Request TP" is the host's half of the
+-- game's own "Request TP", which the host sends for an Échangeur's swap (to both players), an
+-- Écho's return or a Rêveur's waking. The jump can be shorter than JUMP (a swap with someone
+-- 1.5 m away, an Écho that walked slowly), and then neither of the two swapped players, the
+-- target least of all, must be caught for it. The hook runs after the function, whose All TP has
+-- already put the player at its new place on the host: noted again there for a moment.
+local function teleported(ctx, hc)
+    local r = ctx.run
+    if r.phase ~= "grace" and r.phase ~= "watch" then return end
+    local P = ctx.by_key(U.key(hc:get()))
+    if not P then return end
+    r.excused[P.key] = math.max(r.excused[P.key] or 0, ctx.now() + TP_EXCUSE)   -- a blow's longer excuse kept
+end
+
+M.hooks = {
+    { path = W.PATH_RADIO .. ":Start Song", fn = function(ctx, hc)
+        local a = hc:get()
+        if not U.valid(a) then return end
+        for _, rd in ipairs(ctx.run.radios or {}) do
+            local b = rd.actor
+            if not rd.released and U.valid(b) and b:GetAddress() == a:GetAddress() then
+                rd.released = true               -- first: the Start Song below comes back here
+                U.try("soleil : radio rendue", give_back, a)
+                return
+            end
         end
-    end
-end } }
+    end },
+    { path = G.PATH_MEC .. ":Net Request TP", fn = teleported },
+}
 
 -- ---------------------------------------------------------------- every machine
 local function stop_copy(run)

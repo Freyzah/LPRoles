@@ -27,7 +27,10 @@ local EV = {}
 EV.IDS = { "meeting", "tape", "weapons", "blackout", "mic", "parcel", "deadknow", "potato", "sun", "gas",
            "shuttle", "magnets" }
 -- Causes of death an event brings about (ctx.cause, ctx.kill): such a death has no killer, whatever
--- blow came just before (lpr_server.lua: no Martyr's reveal, no Bouffon's win, no Vampire's meal).
+-- blow came just before the event's own (lpr_server.lua: no Martyr's reveal, no Bouffon's win, no
+-- Vampire's meal). The cause covers only the deaths the event may bring about: written where its
+-- blow may kill (a lethal blast or blow, ctx.kill), and a player's blow that lands after the
+-- event's keeps its killer (EV.cause_at); a passenger the shuttle takes away never has one.
 EV.CAUSES = { gas = true, bomb = true, shuttle = true }
 -- What the values of a banner, a notice, a tablet line or a summary line may be (lpr_recap.lua,
 -- R.arg). "room" is the older name of "sector_low".
@@ -90,6 +93,8 @@ local function refused(M, id)
     end
     if M.only_last and not C.def(M.only_last) then return "réglage absent : " .. tostring(M.only_last) end
     if type(M.start) ~= "function" then return "pas de M.start" end
+    if M.possible ~= nil and type(M.possible) ~= "function" then return "M.possible : une fonction attendue" end
+    if M.holds_powers ~= nil and type(M.holds_powers) ~= "function" then return "M.holds_powers : une fonction attendue" end
     for field, list in pairs({ TEXT = M.TEXT or {}, LINES = M.LINES or {}, RECAP = M.RECAP or {} }) do
         for key, spec in pairs(list) do
             local why = bad_spec(spec, field == "RECAP")
@@ -638,8 +643,10 @@ local function new_ctx(M, now, test)
     -- machines, radios, clock (the game's state, on the host)
     function ctx.lock_slots(set, keep)
         if ctx.over then return nil end
-        local hold = W.lock_slots(set, keep)
-        return handle(ctx, function() W.unlock_slots(hold) end, false, "locks")
+        local hold, classes = W.lock_slots(set, keep)
+        local h = handle(ctx, function() W.unlock_slots(hold) end, false, "locks")
+        h.classes = classes                 -- the machines held (EV.centrifuge_locked)
+        return h
     end
     function ctx.unlock_slots()
         for _, h in ipairs(priv.locks) do undo(ctx, h) end
@@ -708,6 +715,7 @@ local function new_ctx(M, now, test)
     function ctx.push(P, yaw, strength) if not ctx.over and valid(P) and G.is_alive(P.mec) then B.push(P, yaw, strength) end end
     function ctx.halt(P) if not ctx.over and valid(P) and G.is_alive(P.mec) then B.halt(P) end end
     function ctx.drop(P) if not ctx.over and valid(P) and G.is_alive(P.mec) then B.drop(P) end end
+    function ctx.drop_bag(P) if not ctx.over and valid(P) and G.is_alive(P.mec) then B.drop_bag(P) end end
     function ctx.search(P)
         if ctx.over or not valid(P) then return {} end
         return B.search(P)
@@ -725,11 +733,20 @@ local function new_ctx(M, now, test)
         end
         return out
     end
+    -- The cause (opts.cause) goes only with a blast or blow that may kill (lethal, some damage):
+    -- one that keeps everyone above its floor, or deals nothing, kills nobody, and a cause there
+    -- would only take its killer from a player's blow that lands meanwhile (lpr_server.lua). Its
+    -- rare indirect deaths (a fall after the push) are the game's ordinary ones, as with any push
+    -- (the magnets).
     function ctx.blast(at, range, hp, opts)
         if ctx.over or not at then return {} end
         opts = opts or {}
-        local skip = {}
-        for _, Q in ipairs(opts.skip or {}) do skip[Q.key] = true end
+        local cause = opts.lethal and (hp or 0) > 0 and opts.cause or nil
+        local skip, ignore = {}, {}
+        for _, Q in ipairs(opts.skip or {}) do
+            skip[Q.key] = true
+            if valid(Q) then ignore[#ignore + 1] = Q.mec end
+        end
         local victims, hit = {}, {}
         local reach = opts.lethal and (range + 200) or range
         env.each_player(function(P)
@@ -740,16 +757,16 @@ local function new_ctx(M, now, test)
             if d <= reach then
                 victims[#victims + 1] = { P = P, d = d, at = p }
                 hit[#hit + 1] = P
-                if opts.cause then B.cause(P, opts.cause, 3) end
+                if cause then B.cause(P, cause, 3) end
             end
         end)
-        B.blast(at, range, hp, opts, victims)
+        B.blast(at, range, hp, opts, victims, ignore)
         return hit
     end
     function ctx.hurt(P, hp, opts)
         if ctx.over or not valid(P) or not G.is_alive(P.mec) then return end
         opts = opts or {}
-        if opts.cause then B.cause(P, opts.cause, 3) end
+        if opts.cause and opts.lethal and (hp or 0) > 0 then B.cause(P, opts.cause, 3) end
         B.hurt(P, hp, opts)
     end
     function ctx.tint(P, color, opts)
@@ -795,8 +812,11 @@ local function new_ctx(M, now, test)
     -- the end of the game, with a winner ("employees", "dissidents", or "none": the end the host's
     -- own stop gives, with no winner) and the title each player reads on the end screen: a kind of
     -- S.END_TITLE for all, or { won = kind, lost = kind } (the winners: the winning side; for
-    -- "employees", every player who is not a dissident, neutral ones included). The event stops
-    -- at once (reason "end"); the game ends `delay` seconds later (3), if it is still on.
+    -- "employees", every player who is not a dissident, an Amnésique with no role included). A
+    -- Bouffon never wins with a side: it wins alone, killed by an employee, as lpr_server.lua's
+    -- statistics and summary count it; the one that did so earlier in this game (the game went
+    -- on) reads its own title ("jester"), any other the losers'. The event stops at once (reason
+    -- "end"); the game ends `delay` seconds later (3), if it is still on.
     function ctx.end_game(winner, titles, delay)
         local game = env.game
         if game.ending then return false end
@@ -808,7 +828,9 @@ local function new_ctx(M, now, test)
             if titles then
                 for _, P in ipairs(game_players()) do
                     local kind = titles
-                    if type(titles) == "table" then
+                    if type(titles) == "table" and P.role == "jester" then
+                        kind = (game.jester ~= nil and game.jester == env.idx(P)) and "jester" or titles.lost
+                    elseif type(titles) == "table" then
                         local won = winner ~= "none" and ((winner == "employees") == (camp_of(P) ~= "dissident"))
                         kind = won and titles.won or titles.lost
                     end
@@ -953,6 +975,21 @@ local function draw_order(list)
     return out
 end
 
+-- Whether an event kept for the last moments can come at all in this game, whatever the moment
+-- (M.possible, optional: the shuttle cannot in a training game, nor with a window too short for
+-- its wait). One that cannot holds nothing back. An error in it counts as no (said once a game:
+-- the scheduler asks at every tick).
+local function possible(M)
+    if M.possible == nil then return true end
+    local ok, res = pcall(M.possible)
+    if ok then return res == true end
+    if not sched.warned then
+        sched.warned = true
+        U.log("ERREUR dans évènement %s : possible : %s", M.id, tostring(res))
+    end
+    return false
+end
+
 local function schedule(now)
     sched.next_at = sched.next_at or (sched.started + C.get("event_first_delay"))
     local clock = W.clock()
@@ -967,7 +1004,7 @@ local function schedule(now)
         for _, id in ipairs(EV.IDS) do
             local M = EV.mods[id]
             if not reserved and M and M.only_last and C.get(M.switch) and eligible(M, c, now, clock, true)
-                    and clock <= (C.get(M.only_last) or 0) + EV.RESERVE then
+                    and clock <= (C.get(M.only_last) or 0) + EV.RESERVE and possible(M) then
                 reserved = M
             end
         end
@@ -1068,6 +1105,44 @@ end
 -- The id of the running event, or nil.
 function EV.running()
     return run and run.id or nil
+end
+
+-- For lpr_server.lua's deaths. When the event behind P's cause of death (EV.CAUSES) last dealt
+-- P its blow: a player's blow that landed after it is the last one before the death and keeps
+-- its killer; math.huge for the shuttle's passengers (ctx.kill), who never have one. nil when
+-- no event's cause is held on P.
+function EV.cause_at(P)
+    return B.cause_at(P)
+end
+
+-- Whether an event's ctx.kill is taking P away (its death asked, not come yet): P dies of that
+-- event, not of a Lié's bond.
+function EV.dying(P)
+    return B.killing(P)
+end
+
+-- Whether the running event holds P's role powers (M.holds_powers, optional: the meeting's truce
+-- and its consigne), for what lpr_server.lua does without the power key the event routes: the
+-- Rêveur's dream, started with the eyes, and a gesture opened before the event took the key
+-- (P.act: a Recruteur's, a Nettoyeur's, a meal, an aim), carried on by the host's ticks.
+function EV.powers_held(P)
+    local ctx = run
+    if not ctx or ctx.over or not P or not ctx.M.holds_powers then return false end
+    return U.try("évènement " .. ctx.id .. " : pouvoirs", ctx.M.holds_powers, ctx, P) == true
+end
+
+-- Whether the running event keeps the centrifuge's slots locked (ctx.lock_slots: the meeting from
+-- its call to its result, the blackout while the power is down): no antidote can be made
+-- meanwhile, so lpr_server.lua's poison waits. Its two slots are child actors of their own
+-- classes, which other machines use too: a lock of either counts (the sets lock them all).
+function EV.centrifuge_locked()
+    local ctx = run
+    if not ctx or ctx.over then return false end
+    for _, h in ipairs(ctx._.locks) do
+        local cls = h.classes
+        if not h.done and cls and (cls.ContainerSlot_C or cls.SampleSlot_C) then return true end
+    end
+    return false
 end
 
 -- Deaths and raises (lpr_server.lua): the dead's freeze is let go, lines and marks of the dead

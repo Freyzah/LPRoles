@@ -229,14 +229,16 @@ function M.on_death(ctx, P)
 end
 
 -- Raised (Ange gardien, defibrillator): no more beeps. The column and the dead's line go with the
--- frame's audience; a Revenant's own line gives way to the living's.
+-- frame's audience; a Revenant's own line gives way to the living's. A body the Nettoyeur cleaned
+-- is not told it lives: lpr_server undoes that raise at once (0.3 s), and the death that follows
+-- welcomes it back (M.on_death).
 function M.on_rez(ctx, P)
     local r = ctx.run
     r.pending[P.key] = nil
     if r.route[P.key] then
         r.route[P.key] = nil
         ctx.key(P, false, false)
-        if not r.done then ctx.say(P, "ALIVE") end
+        if not r.done and not P.cleaned then ctx.say(P, "ALIVE") end
     end
     ctx.line(P, nil)
 end

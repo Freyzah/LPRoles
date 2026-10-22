@@ -537,12 +537,13 @@ function W.slot_machine(slot)
 end
 
 -- Locks the slots of the machines of a set ("task", "power", or a table class -> true);
--- keep(slot, class): false leaves a slot alone. Returns the hold, for W.unlock_slots. A slot
--- held twice is given back once both are let go, with the value it had (or the value its
--- machine set meanwhile: see W.on_slot_lock).
+-- keep(slot, class): false leaves a slot alone. Returns the hold, for W.unlock_slots, and the
+-- machines' classes it holds (class -> true: lpr_ev.lua tells lpr_server.lua when the
+-- centrifuge's are). A slot held twice is given back once both are let go, with the value it had
+-- (or the value its machine set meanwhile: see W.on_slot_lock).
 function W.lock_slots(set, keep)
     local wanted = W.SLOT_SETS[set] or set or {}
-    local hold = {}
+    local hold, classes = {}, {}
     for _, slot in ipairs(all_of("ItemSlot_C")) do
         local cls = W.slot_machine(slot)
         if wanted[cls] and (not keep or keep(slot, cls) ~= false) then
@@ -555,9 +556,10 @@ function W.lock_slots(set, keep)
             end
             h.n = h.n + 1
             hold[#hold + 1] = a
+            classes[cls] = true
         end
     end
-    return hold
+    return hold, classes
 end
 
 function W.unlock_slots(hold)

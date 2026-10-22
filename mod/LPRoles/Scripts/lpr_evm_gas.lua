@@ -4,7 +4,8 @@
 --     around the leak, a green ball and a green light mark it (not through the walls), a light
 --     green veil warns whoever comes near; the last five seconds are counted down at the top of
 --     the screen. The siren wakes a dreaming Rêveur whose body is near enough: on its machine the
---     game would measure the blast from its ghost, not from its body.
+--     game would measure the blast from its ghost, not from its body. One woken at the very last
+--     moment takes the softened blast as soon as it is back in its body.
 --   - Explosion at the leak: by default the game's own blast ("Get Explosion" on each player's
 --     machine, players without the mod included: walls protect, damage down to nothing at 15 m,
 --     may kill a player already low), with the game's gas explosion effects. Option: the game's
@@ -35,6 +36,7 @@ local PACE = {
     hurt = 1.5,              -- s after the blast: a player's machine reporting damage is the blast's
     cough = 3,               -- a cough every 3 s around a player in the cloud
     told = 10,               -- "GAZ : TU T'ÉPUISES" at most this often to one player (s)
+    late = 2.5,              -- s after the blast: a Rêveur woken at the last moment and still not back in its body is let go
 }
 local LEAK_Z = 100           -- the leak, above a spawn point (on the floor, clear: its blast is not walled in)
 local VEIL_NEAR, VEIL_CLOUD = { 0.85, 1.0, 0.75 }, { 0.6, 1.0, 0.45 }
@@ -153,9 +155,9 @@ local function cough_off(ctx, key)
     end
 end
 
--- The siren wakes a dreaming Rêveur whose body is in reach (at the start, and during the notice
--- for one who falls asleep there). Only a dreaming player: ctx.wake would also bring a hidden
--- Clandestin out, which the gas must never do.
+-- The siren wakes a dreaming Rêveur whose body is in reach (at the start, and at every tick of the
+-- notice for one who falls asleep there: see M.tick). Only a dreaming player: ctx.wake would also
+-- bring a hidden Clandestin out, which the gas must never do.
 local function wake_sleepers(ctx)
     local r = ctx.run
     for _, P in ipairs(ctx.living(function(Q) return Q.dreaming ~= nil and not Q.hiding end)) do
@@ -167,7 +169,7 @@ local function wake_sleepers(ctx)
     end
 end
 
--- Every second of the notice: the light veil near the leak, the sleepers.
+-- Every second of the notice: the light veil near the leak (the sleepers are woken every tick).
 local function notice_tick(ctx)
     local r = ctx.run
     local seen = {}
@@ -181,7 +183,6 @@ local function notice_tick(ctx)
     for key, e in pairs(r.veiled) do
         if not seen[key] then veil(ctx, e.P, nil) end
     end
-    wake_sleepers(ctx)
 end
 
 -- Every second of the cloud: whoever is present near the leak tires (the game's recovery held
@@ -216,7 +217,7 @@ local function cloud_tick(ctx, now)
     end
 end
 
--- One line of the summary per player the blast hurt who lives on (written once, 2 s after it).
+-- One line of the summary per player the blast hurt who lives on (written once, by settle).
 local function report_hurt(ctx)
     local r = ctx.run
     if r.reported or not r.boomed_at then return end
@@ -225,6 +226,58 @@ local function report_hurt(ctx)
         local P = ctx.by_key(key)
         if P and ctx.valid(P) and G.is_alive(P.mec) and i >= 0 then ctx.recap("ev_gas_hurt", i) end
     end
+end
+
+-- A Rêveur the siren woke only at the last moment (at the explosion's own tick, or a round-trip
+-- before) is not back in its body yet: the host holds the body in place until its machine's
+-- teleport back arrives (lpr_server's P.tail, 1.5 s at most). ctx.blast leaves it out (not
+-- present), and a "Get Explosion" sent now would be measured on its machine from its ghost. Its
+-- blast waits until it is back (late_tick). Only one near enough for the siren: one woken far
+-- away by anything else is not the gas's.
+local function late_sleepers(ctx, now)
+    local r, late = ctx.run, nil
+    for _, P in ipairs(ctx.living(function(Q) return not Q.hiding and Q.tail ~= nil and now < (Q.tail.ends or 0) end)) do
+        local p = ctx.where(P)
+        if p and U.dist(p, r.at) <= r.wake_range then
+            late = late or {}
+            late[P.key] = P
+        end
+    end
+    return late
+end
+
+-- Every tick after the explosion: a late Rêveur back in its body takes the blast alone (the others
+-- had theirs at the explosion), from where its body is, as the game measures it on its machine; one
+-- dead, gone or still out of its body after PACE.late is let go.
+local function late_tick(ctx, now)
+    local r = ctx.run
+    for key, P in pairs(r.late) do
+        if now > r.boomed_at + PACE.late or not (ctx.valid(P) and G.is_alive(P.mec)) then
+            r.late[key] = nil
+        elseif ctx.present(P) then
+            r.late[key] = nil
+            local others = ctx.living(function(Q) return Q ~= P end)
+            local hit = ctx.blast(r.at, REACH.blast, C.get("event_gas_damage"), { lethal = true, cause = "gas", skip = others })
+            if #hit > 0 then
+                r.in_range[key] = true
+                -- its machine reports the damage a round-trip after this blast, not after the first
+                r.hurt_until = math.max(r.hurt_until or 0, now + PACE.hurt)
+                ctx.log("souffle pour le joueur %d, revenu dans son corps", ctx.idx(P))
+            end
+        end
+    end
+    if next(r.late) == nil then r.late = nil end
+end
+
+-- 2 s after the blast, later while a late Rêveur's blast or its machine's report is awaited: the
+-- summary's lines of the hurt; without a cloud, the end.
+local function settle(ctx)
+    local r = ctx.run
+    if r.late or ctx.now() < (r.hurt_until or 0) then
+        return ctx.at(0.5, function() settle(ctx) end)
+    end
+    report_hurt(ctx)
+    if r.cloud <= 0 then ctx.finish("done") end
 end
 
 local function boom(ctx, now)
@@ -236,7 +289,9 @@ local function boom(ctx, now)
     local real = r.real
     if real then
         -- the game's own actor deals its damage to every character within 35 m: the living there
-        -- get the cause first (no killer, "meurt (fuite de gaz)"); it makes its own effects
+        -- get the cause first (no killer, "meurt (fuite de gaz)"); it makes its own effects. It
+        -- cannot wait for one player: a Rêveur woken at the last moment is measured on its machine
+        -- from its ghost, which the wake at every tick (M.tick) leaves no time to go far from its body.
         r.in_range = {}
         for _, P in ipairs(ctx.living()) do
             local p = ctx.where(P)
@@ -254,15 +309,13 @@ local function boom(ctx, now)
         r.in_range = {}
         local hit = ctx.blast(r.at, REACH.blast, C.get("event_gas_damage"), { lethal = true, fx = "gas", cause = "gas" })
         for _, P in ipairs(hit) do r.in_range[P.key] = true end
+        r.late = late_sleepers(ctx, now)
     end
     r.hurt_until = now + PACE.hurt
     local cloud = r.cloud
-    ctx.at(2, function()
-        report_hurt(ctx)
-        if cloud <= 0 then ctx.finish("done") end
-    end)
+    ctx.at(2, function() settle(ctx) end)
     if cloud <= 0 then
-        ctx.line(nil, nil)                    -- no cloud: over 2 s after the blast, nothing said
+        ctx.line(nil, nil)                    -- no cloud: over at settle (2 s after the blast, nothing said)
         return
     end
     r.phase, r.end_at = "cloud", now + cloud
@@ -315,7 +368,15 @@ end
 
 function M.tick(ctx, now)
     local r = ctx.run
-    if r.phase == "notice" and now >= r.boom_at then return boom(ctx, now) end
+    if r.phase == "notice" then
+        -- the siren wakes a Rêveur who falls asleep near the leak at the next tick, not the next
+        -- second, and before the explosion's own tick: a dream begun in the last second would keep
+        -- its body out of the blast (ctx.blast skips a dreaming body). Woken, it no longer dreams:
+        -- each tick costs a look at the living, nothing more.
+        wake_sleepers(ctx)
+        if now >= r.boom_at then return boom(ctx, now) end
+    end
+    if r.late then late_tick(ctx, now) end
     if r.phase == "cloud" and now >= r.end_at then
         r.phase = "over"
         ctx.say(nil, "CLEAR", r.s)

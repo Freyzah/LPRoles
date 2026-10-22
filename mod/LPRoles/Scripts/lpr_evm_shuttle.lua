@@ -203,10 +203,23 @@ local function depart(ctx, now)
     end
 end
 
+-- Whether the shuttle can come at all in this game (TEST aside), for M.can_start and for the
+-- scheduler, which asks it before holding every other event back for the 30 s before the
+-- window: a shuttle that cannot come must not hold anything back.
+--   - Never in a training game: every player is an employee, there is nothing to decide.
+--   - Only when the window leaves room for the wait: the scheduler draws the shuttle once the
+--     clock reads event_shuttle_window or less, and M.can_start wants it at
+--     event_shuttle_seconds + MARGIN or more. The menu allows window 60 with seconds 60 (or 90
+--     with 80...), where both never hold. Read each time: the host may change them during a game.
+-- The settings come first: the game mode is looked for in the whole world.
+function M.possible()
+    if C.get("event_shuttle_window") < C.get("event_shuttle_seconds") + MARGIN then return false end
+    return U.get(G.gm(), "Difficulty", 1) ~= 0
+end
+
 function M.can_start(ctx, now, test)
     if not test then
-        local gm = G.gm()
-        if U.get(gm, "Difficulty", 1) == 0 then return false end      -- training: no dissident
+        if not M.possible() then return false end
         -- the departure and the 3 s before the end screen must come before the clock runs out
         if ctx.clock() < C.get("event_shuttle_seconds") + MARGIN then return false end
     end

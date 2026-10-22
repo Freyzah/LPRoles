@@ -65,7 +65,7 @@ local function fresh_game_fields(P)
     P.jar_wait = nil               -- a jar was asked to be emptied: { role, code, ends }
     P.safe, P.marker_secs = nil, nil   -- Shérif: the safe person's key, and how long it was marked
     P.card = nil                   -- Shérif: the access card shown to this player: "shown", "taken", nil if none
-    P.poison = nil                 -- poisoned by an Empoisonneur: { by, at, warn_at, warned }
+    P.poison = nil                 -- poisoned by an Empoisonneur: { by, at, warn_at, warned, cure, held_at }
     P.poison_told = nil            -- the page of this player showed the poison at the last status sent
     P.gag_until = nil              -- Bâillonneur: this player's microphone is held off until then
     P.trail = nil                  -- Écho: where this player was lately: { { at, loc, yaw }, ... }
@@ -542,6 +542,9 @@ end
 -- them again.
 local function on_eyes_held(P)
     if not game.active or P.role ~= "dreamer" or P.dreaming or not G.is_alive(P.mec) then return end
+    -- a random event that holds the role powers (the meeting's truce, its consigne) routes the
+    -- power key, which the eyes go round: neither a dream nor a recharge then
+    if EV.powers_held(P) then return tell(P, "SFX", "fail") end
     local started = false
     if P.charges >= 1 then
         started = start_dream(P)
@@ -623,6 +626,17 @@ local function tick_poison(T, now)
     local p = T.poison
     if not p then return end
     if not G.is_alive(T.mec) then return end_poison(T) end
+    -- a random event that keeps the centrifuge locked (the meeting, which holds the clock too; the
+    -- blackout) keeps any antidote from being made: the poison waits as long, its warning and its
+    -- death pushed back at each tick (the pages show the time left standing still)
+    if EV.centrifuge_locked() then
+        local d = now - (p.held_at or now)
+        p.at = p.at + d
+        if p.warn_at then p.warn_at = p.warn_at + d end
+        p.held_at = now
+        return
+    end
+    p.held_at = nil
     if p.warn_at and not p.warned and now >= p.warn_at then
         p.warned = true
         T.status_sent = nil                    -- its page says so at once, and counts down
@@ -654,6 +668,8 @@ end
 local function on_use(P)
     if not game.active or not G.is_alive(P.mec) or P.dreaming or P.fairy or P.hiding then return end
     if try_cure(P) then return end
+    -- an event holding the powers (the meeting's truce) lets the antidote through, not a recharge
+    if EV.powers_held(P) then return tell(P, "SFX", "fail") end
     try_recharge(P, "NEED_ITEM")
 end
 
@@ -1488,6 +1504,10 @@ local function link_death(P)
     P.link_done, Q.link_done = true, true
     P.status_sent, Q.status_sent = nil, nil    -- their pages say so at once
     if not G.is_alive(Q.mec) then return end
+    -- already being taken away by a random event (two Liés leaving together by the shuttle: the
+    -- first one's death comes before the second's): it dies of that event, with its cause and
+    -- no killer, not of the bond
+    if EV.dying(Q) then return end
     if Q.dreaming then end_dream(Q, "link") end
     if Q.fairy then end_fairy(Q) end
     tell(Q, "MSG", "LINK_DEAD")
@@ -1550,8 +1570,13 @@ local function on_death(P)
     -- whose blow it was (as for the Martyr: the last one, if recent), for the Vampire
     local blow = P.last_hit
     P.killed_by = (blow and P.died_at - blow.at <= MARTYR_WINDOW) and blow.by or nil
-    -- a death a random event brought about (gas, bomb, shuttle) has no killer, whatever blow came before
-    if EV.CAUSES[P.death_cause] then P.killed_by = nil end
+    -- a death a random event brought about (gas, bomb, shuttle) has no killer: a blow that came
+    -- before the event's own does not count. One that landed after it is the last before the
+    -- death and keeps its killer (a survivor of the blast finished off within the cause's 3 s);
+    -- the shuttle's passengers never have one (EV.cause_at: math.huge)
+    if EV.CAUSES[P.death_cause] and not (blow and blow.at > (EV.cause_at(P) or math.huge)) then
+        P.killed_by = nil
+    end
     -- for the summary of the game: how this death came (a later one replaces it)
     local K = by_key(P.killed_by)
     local cause = P.death_cause
@@ -1588,6 +1613,10 @@ local function on_death(P)
     end
     if P.undoing then                          -- a cleaned body's revival undone: nothing else
         P.undoing = nil
+        -- but the running event heard of the raise (Net Rez): it hears of the death too, or its
+        -- lines and marks of the dead and the living, and the module's own state (Les morts
+        -- savent: the capsule's column, the beep key), would stay those of a living player
+        U.try("évènements", EV.on_death, P)
         return
     end
     local st = P.end_state
@@ -2548,6 +2577,12 @@ local function tick(now)
             U.try("geste des yeux", on_eyes_held, P)
         end
         tick_timers(P, now)
+        -- a gesture opened before a random event took the role powers (the meeting's roll call,
+        -- its result) is not carried on under it; the routed key opens no other
+        if P.act and EV.powers_held(P) then
+            stop_act(P)
+            refuse(P)
+        end
         if P.role == "infector" then U.try("recruteur", tick_infector, P, now) end
         if P.role == "cleaner" then U.try("nettoyeur", tick_cleaner, P, now) end
         if AIM[P.role] then U.try("visée", tick_aim, P, now) end

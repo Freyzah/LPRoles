@@ -277,6 +277,13 @@ local function update(ctx, now)
         if H and not r.holder and (r.ground_told or H ~= r.last) then ctx.say(others(ctx, H), "TAKEN") end
         r.holder = H
         if H then
+            -- the column goes out now, and stays out until the ground is told (below). Left with
+            -- the frame, it would light again by itself as soon as the cassette touches the ground
+            -- (its check, twice a second), through the walls: where an anonymous holder dropped it
+            -- and picked it straight back up, or where a holder was just killed by whoever grabs
+            -- it, all of which the GRACE keeps quiet. Nothing is sent when it is out already (a
+            -- Voleur's theft, a quick pick-up again)
+            ctx.unmark("e1")
             r.last, r.last_idx = H, ctx.idx(H)
             -- a new holder hears it once: two readers may confirm or contradict each other; a
             -- holder raised by the Ange gardien who takes it back does not hear it again
@@ -301,6 +308,9 @@ local function update(ctx, now)
     -- lying there for a moment (dropped, thrown, fallen from a dead holder): everyone is told where
     if not H and not r.ground_told and now - (r.ground_since or now) >= GRACE then
         r.ground_told = true
+        -- the column comes back with the banner (the frame shows it at once: it lies on the
+        -- ground). Outside any sector too: the banner needs a sector's name, the column does not
+        ctx.mark_item("e1", r.rec, "violet", true)
         local s = t.at and W.sector_at(t.at)
         if s then
             ctx.say(nil, "GROUND_AT", s)

@@ -32,6 +32,7 @@ M.TEXT = {
     ABSENT_N = { "%s ABSENTS : VOIR TABLETTE", "num", c = "warn" },
     TRUCE    = { "DÉBAT : TRÊVE DE %s S", "num" },
     NOKEY    = { "TRÊVE : POUVOIR BLOQUÉ", c = "warn", n = true },
+    HELDKEY  = { "CONSIGNÉ : POUVOIR BLOQUÉ", c = "warn", n = true },
     VOTE     = { "POUR VOTER : VISE + %s", "key", n = true },
     MYVOTE   = { "TON VOTE : %s", "name", c = "good", n = true },
     NOVOTE   = { "TON VOTE : AUCUN", n = true },
@@ -143,14 +144,17 @@ local function member_line(ctx, r, P, now)
 end
 
 -- A living player in the circle becomes a member: in the truce until the result, its power key
--- the meeting's (decision 7: the truce holds the role powers too; during the vote the key votes).
--- A member stays one wherever it walks (a swap of places included).
+-- the meeting's (decision 7: the truce holds the role powers too; during the vote the key votes;
+-- what the key cannot stop is told to the host's roles by M.holds_powers). Its consume key too:
+-- the truce holds the hands (the game's own drink as well), but a poisoned player who knows it
+-- may still drink the antidote it holds (M.on_key). A member stays one wherever it walks (a swap
+-- of places included).
 local function join(ctx, r, P, now)
     r.member[P.key] = P
     r.list[#r.list + 1] = P
     r.since[P.key] = now
     ctx.truce(P, r.t_result - now + MARGIN)
-    ctx.key(P, true, false)
+    ctx.key(P, true, true)
 end
 
 local result               -- defined below (the roll call ends at once when nobody came)
@@ -242,8 +246,8 @@ local function tally(ctx, r)
 end
 
 -- The search: hand and bag read, then dropped at the player's feet (anybody may pick them up),
--- then the consigne: neither walking nor acting, still talking, looking, and open to blows. The
--- camp is never told.
+-- then the consigne: neither walking nor acting (its keys stay the meeting's, its powers held),
+-- still talking, looking, and open to blows. The camp is never told.
 local function search(ctx, r)
     local T = r.target
     if not (ctx.valid(T) and G.is_alive(T.mec)) then return ctx.finish("done") end
@@ -257,7 +261,10 @@ local function search(ctx, r)
     local now = ctx.now()
     if r.hold > 0 then
         -- the freeze first: it holds "Net Can Interact" too, so lifting the truce after it leaves
-        -- no moment when the player could pick its things up again (B counts the holds)
+        -- no moment when the player could pick its things up again (B counts the holds). Neither
+        -- holds the role powers (an aimed one is instant: a poisoning of whoever comes for the
+        -- things, a theft, a swap of places): its keys stay routed here (M.on_key refuses them)
+        -- until the end, which takes the route back.
         ctx.freeze(T, r.hold, { move = true, act = true })
         ctx.truce_off(T)
         ctx.notice(T, "HELD", r.hold)
@@ -265,6 +272,7 @@ local function search(ctx, r)
         r.t_free = now + r.hold
         r.phase = "held"
     else
+        ctx.key(T, false, false)
         ctx.truce_off(T)
         r.phase = "over"
         ctx.at(CHIME_TAIL, function() ctx.finish("done") end)
@@ -274,11 +282,15 @@ end
 -- The result: the ship comes back to life now (clock, machines, truce), whatever follows.
 result = function(ctx, r, now)
     r.phase = "result"
-    for _, P in ipairs(members(ctx, r)) do ctx.key(P, false, false) end
     local T = tally(ctx, r)
     r.target = T
+    -- the named one keeps its truce until searched, and its keys (its powers held) until the end
+    -- of its consigne: given back now, they would let a power through while it is being woken
     for _, P in ipairs(members(ctx, r)) do
-        if P ~= T then ctx.truce_off(P) end   -- the named one keeps it until searched
+        if P ~= T then
+            ctx.key(P, false, false)
+            ctx.truce_off(P)
+        end
     end
     ctx.unlock_slots()
     ctx.freeze_clock(false)
@@ -370,17 +382,31 @@ function M.tick(ctx, now)
     end
 end
 
--- The power key of a member (routed for the whole debate). During the debate it does nothing
--- (the truce holds the role powers, decision 7); during the vote it votes for the player aimed
--- at, or for nobody when nobody is aimed at. A hidden Clandestin's key keeps its meaning (out of
--- the vent). A sleeping Rêveur's key never comes here (it always means "my dream ended").
+-- The keys of a member (routed for the whole debate) and of the named player (until the end of
+-- its consigne). The power key: during the debate it does nothing (the truce holds the role
+-- powers, decision 7); during the vote it votes for the player aimed at, or for nobody when
+-- nobody is aimed at; the named player's does nothing ("ni marcher ni agir"). A hidden
+-- Clandestin's key keeps its meaning (out of the vent). A sleeping Rêveur's key never comes here
+-- (it always means "my dream ended"). The consume key does nothing either (the truce, the
+-- consigne), except for a member poisoned and told so: given back to lpr_server, it drinks the
+-- antidote held in hand, which the truce keeps the game's own drink from doing.
 function M.on_key(ctx, P, kind)
     local r = ctx.run
-    if kind ~= "act" or not is_member(r, P) then return false end
+    if not is_member(r, P) then return false end
+    if kind == "use" then
+        local poisoned = P.poison ~= nil and P.poison.warned == true
+        if poisoned and (r.phase == "debate" or r.phase == "vote") then return false end
+        ctx.sfx(P, "fail")
+        return true
+    end
     if P.hiding then return false end
     if r.phase ~= "vote" or P.fairy or not G.is_alive(P.mec) then
         ctx.sfx(P, "fail")
-        if r.phase == "debate" then ctx.notice(P, "NOKEY") end
+        if r.phase == "debate" then
+            ctx.notice(P, "NOKEY")
+        elseif r.phase == "held" and P == r.target then
+            ctx.notice(P, "HELDKEY")
+        end
         return true
     end
     local T = ctx.aimed(P, r.aim)
@@ -459,9 +485,20 @@ function M.on_rez(ctx, P)
     local now = ctx.now()
     ctx.truce_off(P)
     ctx.truce(P, r.t_result - now + MARGIN)
-    ctx.key(P, true, false)
+    ctx.key(P, true, true)
     if r.phase == "vote" then ctx.notice(P, "VOTE", "act") end
     member_line(ctx, r, P, now)
+end
+
+-- Whether the meeting holds P's role powers (decision 7), for the host's roles to ask
+-- (lpr_server, through the frame) about what a routed power key cannot stop: a gesture begun
+-- before the roll call and carried on by the host's ticks (a Recruteur's, a Nettoyeur's, a meal,
+-- an aim), and the Rêveur's dream, started with the eyes. The members during the debate and the
+-- vote; the named player from the result to the end of its consigne.
+function M.holds_powers(ctx, P)
+    local r = ctx.run
+    if r.phase == "debate" or r.phase == "vote" then return is_member(r, P) end
+    return P ~= nil and P == r.target and (r.phase == "search" or r.phase == "held")
 end
 
 -- Stopped before its result (TEST, a switch turned off, the hard stop): called off, no search.
