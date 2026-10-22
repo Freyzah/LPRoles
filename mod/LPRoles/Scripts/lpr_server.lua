@@ -1497,6 +1497,8 @@ end
 -- Bouffon: killed by an employee, it wins alone. The game knows two camps only: the win is
 -- announced by the mod, and the game is ended the way the host's own "stop" does, which shows
 -- neither a victory nor a defeat.
+local jester_win                -- defined below
+
 local function jester_death(P)
     if P.role ~= "jester" or game.jester then return end
     local hit = P.last_hit
@@ -1506,10 +1508,15 @@ local function jester_death(P)
         tell(P, "MSG", "JESTER_LOST")
         return
     end
+    U.log("Bouffon : %s tué par %s, un employé : il gagne", G.player_name(P.mec), G.player_name(K.mec))
+    jester_win(P)
+end
+
+-- The Bouffon's victory: told to all, then, if the host wants it so, the end of the game.
+jester_win = function(P)
     game.jester = idx(P)
     broadcast("MSG", "JESTER_WIN", game.jester)
     RC.add("jester", game.jester)
-    U.log("Bouffon : %s tué par %s, un employé : il gagne", G.player_name(P.mec), G.player_name(K.mec))
     if not C.get("jester_ends_game") then return end
     -- the game's end screen will say so, in place of "SESSION STOPPED" (lpr_screens.lua)
     broadcast("ENDTITLE", "jester")
@@ -2357,8 +2364,25 @@ local function tick_timers(P, now)
     end
 end
 
+-- Test aid (group TEST): the Bouffon's victory, for a host who plays it alone and has nobody
+-- to be killed by. The switch goes back to NON at once: it acts once per click.
+local function test_jester_win()
+    C.set("test_jester_win", false, true)
+    local mine = G.local_mec()
+    local me = mine and player(mine, false)
+    if not (game.active and me and me.role == "jester" and not game.jester) then
+        if me then tell(me, "MSG", "TEST_JESTER_NO") end
+        U.log("Test : victoire du Bouffon refusée (%s)", not game.active and "pas de partie en cours"
+            or game.jester and "déjà gagnée" or "l'hôte n'est pas le Bouffon")
+        return
+    end
+    U.log("Test : victoire du Bouffon déclenchée par l'hôte (groupe TEST)")
+    jester_win(me)
+end
+
 local function tick(now)
     if not G.is_host() then return end
+    if C.get("test_jester_win") then U.try("test du bouffon", test_jester_win) end
     if now - last_prune > 5 then last_prune = now prune() end
     if game.active and not G.in_game() and now - game.started_at > 3 then on_game_end() end
     if frozen_count > 0 then

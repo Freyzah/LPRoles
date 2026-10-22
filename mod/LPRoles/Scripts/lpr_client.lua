@@ -926,7 +926,7 @@ local MSG = {
     STEAL_HANDS_FULL = { "warn", sfx = FAIL }, STEAL_FAILED = { "warn", sfx = FAIL }, STEAL_YOU = { "bad" },
     ECHO_DONE = { "good", sfx = OK }, ECHO_NOTHING = { "warn", sfx = FAIL },
     AMNESIA_DONE = { "good", "name", sfx = OK }, AMNESIA_NO_ROLE = { "warn", sfx = FAIL }, AMNESIA_DISSIDENT = { "bad" },
-    JESTER_WIN = { "role", "name" }, JESTER_LOST = { "bad" },
+    JESTER_WIN = { "role", "name" }, JESTER_LOST = { "bad" }, TEST_JESTER_NO = { "warn", sfx = FAIL },
     VAMP_DONE = { "good", "num", sfx = OK }, VAMP_NOT_YOURS = { "warn", sfx = FAIL }, FEED_USED = { "warn", sfx = FAIL },
     WOLF_DONE = { "good", "num", sfx = OK },
     MEDIC_DONE = { "good", "name", sfx = OK }, MEDIC_FULL = { "warn", sfx = FAIL }, MEDIC_YOU = { "good" },

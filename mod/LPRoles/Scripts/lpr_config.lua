@@ -229,6 +229,8 @@ C.DEFS = {
       label = "Rôle forcé pour l'hôte" },
     { key = "ignore_min_players",      group = "TEST", default = false, kind = "bool",  label = "Ignorer les joueurs minimum" },
     { key = "debug",                   group = "TEST", default = false, kind = "bool",  label = "Journal détaillé" },
+    -- acts once, then goes back to NON (lpr_server.lua): the host must be the Bouffon, in a game
+    { key = "test_jester_win",         group = "TEST", default = false, kind = "bool",  label = "Simuler la victoire du Bouffon" },
 }
 
 C.GROUPS = {}

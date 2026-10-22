@@ -64,6 +64,7 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.13.1** : correction demandée par l'utilisateur : le son « Hypnose Proc » est pour l'hypnotisé, au moment où ses yeux se ferment, et le son de l'hypnose s'enchaîne. **Jamais lancée en jeu.** Installée le 9 octobre.
 - **Publication de la 0.13.1** (10 octobre, à la demande de l'utilisateur), avec tout ce qui s'était accumulé depuis la 0.11.4 : bandeaux, portée du Voleur, groupe RÔLE FORCÉ, Médecin, sons des rôles. Mise à jour vérifiée contre la vraie page depuis une copie exacte de la 0.11.4. **Rien de tout cela n'a encore tourné en jeu.**
 - **0.14.0** : le rôle sur l'écran de début de partie, l'écran de fin du Bouffon, le récapitulatif de la dernière partie dans l'onglet LPROLES ; le plus gros script découpé en plusieurs fichiers. **Jamais lancée en jeu.** Installée le 22 octobre, pas publiée.
+- **0.14.1** : groupe TEST, « Simuler la victoire du Bouffon », pour voir sa fin de partie sans personne pour le tuer. **Jamais lancée en jeu.** Installée le 22 octobre, pas publiée.
 
 ## Ce qui est installé
 
@@ -455,6 +456,14 @@ Si l'onglet n'apparaît pas (le journal contient alors « Onglet LPROLES incompl
 Les pouvoirs qui ne touchent que celui qui les lance (Fée, Médium, Rêveur, Écho, Clandestin) n'y figurent pas, pour que la liste reste lisible. Le récapitulatif reste affiché dans le lobby et disparaît quand la partie suivante commence. Il dit le rôle de chacun : il n'est envoyé que si le réglage « Révéler les rôles à la fin » (groupe GÉNÉRAL) est sur OUI.
 
 **Jamais essayé en jeu.** À vérifier : que l'écran de début est encore là quand le rôle arrive, que la phrase tient sur deux lignes, que les noms sont bien lus à la fin de la partie.
+
+**Essayer seul (depuis la 0.14.1).**
+
+1. Onglet LPROLES, groupe RÔLE FORCÉ : choisir Bouffon. Lancer une partie : l'écran de début doit dire « TU ES LE BOUFFON / FAIS-TOI TUER PAR UN EMPLOYÉ ».
+2. En partie, onglet LPROLES, groupe TEST : mettre « Simuler la victoire du Bouffon » sur OUI, puis **fermer le menu aussitôt**. Le bandeau « LE BOUFFON … GAGNE » s'affiche, et 3 s plus tard l'écran de fin, qui doit dire « LE BOUFFON GAGNE ».
+3. De retour dans le lobby, onglet LPROLES : le groupe « DERNIÈRE PARTIE » doit dire « Victoire du Bouffon … », votre ligne de joueur, et l'évènement de la victoire.
+
+La rangée revient seule sur NON : elle agit une fois par clic. Hors d'une partie, ou sans être le Bouffon, elle ne fait rien d'autre qu'afficher « TEST : IL FAUT ÊTRE LE BOUFFON ». Le réglage « Sa victoire termine la partie » (groupe BOUFFON) doit être sur OUI, comme par défaut.
 
 ## Tester les nouveaux rôles
 

@@ -2,7 +2,11 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.14.0
+## 0.14.1
+
+- **Essai sans partenaire :** dans l'onglet LPROLES, groupe TEST, « Simuler la victoire du Bouffon » déclenche sa victoire comme si un employé l'avait tué : bandeau, puis écran de fin et récapitulatif. Il faut être le Bouffon (rôle forcé) dans une partie en cours.
+
+## 0.14.0 (non publiée)
 
 - **Ton rôle sur l'écran de début de partie :** sous « EMPLOYEE » ou « DISSIDENT », l'écran d'ouverture du jeu affiche le rôle du mod (« TU ES MÉDECIN »). Les bandeaux habituels suivent comme avant.
 - **Écran de fin du Bouffon :** quand sa victoire termine la partie, l'écran de fin affiche « LE BOUFFON GAGNE » au lieu de « SESSION STOPPED ».

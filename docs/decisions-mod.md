@@ -1621,3 +1621,15 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Non vérifiable sans le jeu :** l'aspect des rangées, et que les noms se lisent encore au moment de la fin (la révélation des rôles s'y fie déjà).
 - **Contrôles :** syntaxe, noms du jeu (dont « Game Start », « Force End », `Black_Subtitle`, `End_Title`), pages, bandeaux, essais de la mise à jour. **Jamais lancé en jeu ; pas de relecture indépendante.**
 - **Version :** 0.14.0, avec D118 à D120. Installée (jeu fermé), archive complète refaite. Pas publiée.
+
+## D122 — Essayer la fin du Bouffon seul (version 0.14.1)
+
+- **Demande :** « je n'ai personne avec qui tester actuellement, donc personne ne peut me tuer pour tester l'écran de fin du bouffon, comment faire ».
+- **Options :**
+  1. **Une rangée du groupe TEST qui déclenche la victoire (retenu).** « Simuler la victoire du Bouffon » : mise sur OUI, elle lance exactement ce qui suit la mort du Bouffon tué par un employé (annonce, mot de l'hôte pour l'écran de fin, fin de partie 3 s plus tard, évènement du récapitulatif), puis revient sur NON.
+  2. Compter toute mort du Bouffon comme une victoire pendant les essais. Il faudrait encore réussir à mourir seul (chute, grenade), sans garantie.
+  3. Une touche du clavier. Les touches libres sont déjà prises par les réglages de secours ; une rangée de l'onglet ne demande rien de plus.
+- **Garde-fous :** elle n'agit que dans une partie en cours, si l'hôte est le Bouffon et qu'il n'a pas déjà gagné. Sinon : bandeau « TEST : IL FAUT ÊTRE LE BOUFFON », et rien d'autre. Une partie réelle n'est donc touchée que si l'hôte, Bouffon, va lui-même cliquer dans le groupe TEST.
+- **Code :** la suite de la victoire, jusque-là au milieu de la fonction de mort du Bouffon, en est sortie (`jester_win`) : la vraie victoire et l'essai passent par le même code.
+- **Contrôles :** syntaxe, noms du jeu, pages, bandeaux, essais de la mise à jour. **Jamais lancé en jeu ; pas de relecture indépendante.**
+- **Version :** 0.14.1. Installée (jeu fermé), archive complète refaite, celle de la 0.14.0 supprimée. Pas publiée.
