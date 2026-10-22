@@ -48,6 +48,17 @@ C.DEFS = {
     { key = "recharge_limit",          group = "GÉNÉRAL", default = 0,     kind = "int",   min = 0, max = 10, step = 1, label = "Recharges par partie (0 = illimité)" },
     { key = "reveal_roles_at_end",     group = "GÉNÉRAL", default = true,  kind = "bool",  label = "Récapitulatif de fin de partie" },
     { key = "menu_tab",                group = "GÉNÉRAL", default = true,  kind = "bool",  label = "Onglet dans le menu Échap" },
+    -- random events during a game (lpr_events.lua); no key ends in "_enabled": those are the roles' switches
+    { key = "events_on",               group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Évènements aléatoires" },
+    { key = "event_first_delay",       group = "ÉVÈNEMENTS", default = 120,   kind = "int",   min = 30, max = 600, step = 10, label = "Premier évènement après (s)" },
+    { key = "event_interval",          group = "ÉVÈNEMENTS", default = 150,   kind = "int",   min = 45, max = 900, step = 15, label = "Temps moyen entre deux (s)" },
+    { key = "event_radio",             group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Panne de radio" },
+    { key = "event_radio_seconds",     group = "ÉVÈNEMENTS", default = 15,    kind = "num",   min = 5, max = 60, step = 5, label = "Durée de la panne (s)" },
+    { key = "event_swap",              group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Grand échange" },
+    { key = "event_heal",              group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Soins pour tous" },
+    { key = "event_ghosts",            group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Les morts se montrent" },
+    { key = "event_ghosts_seconds",    group = "ÉVÈNEMENTS", default = 10,    kind = "num",   min = 3, max = 30, step = 1, label = "Durée de l'apparition (s)" },
+    { key = "event_leak",              group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Fuite d'informations" },
 
     { key = "sheriff_enabled",         group = "SHÉRIF", default = true,  kind = "bool",  label = "Shérif" },
     { key = "sheriff_min_players",     group = "SHÉRIF", default = 4,     kind = "int",   min = 2, max = 16, step = 1, label = "Joueurs minimum" },
@@ -231,6 +242,8 @@ C.DEFS = {
     { key = "debug",                   group = "TEST", default = false, kind = "bool",  label = "Journal détaillé" },
     -- acts once, then goes back to NON (lpr_server.lua): the host must be the Bouffon, in a game
     { key = "test_jester_win",         group = "TEST", default = false, kind = "bool",  label = "Simuler la victoire du Bouffon" },
+    -- acts once, then goes back to AUCUN (lpr_server.lua): in a game whose roles are announced
+    { key = "test_event",              group = "TEST", default = "none", kind = "choice", choices = { "none", "radio", "swap", "heal", "ghosts", "leak" }, label = "Déclencher un évènement" },
 }
 
 C.GROUPS = {}
@@ -255,6 +268,9 @@ C.CHOICE_LABEL = {
     poisoner = "EMPOISONNEUR", gagger = "BÂILLONNEUR", thief = "VOLEUR", echo = "ÉCHO", amnesiac = "AMNÉSIQUE", jester = "BOUFFON",
     vampire = "VAMPIRE", werewolf = "LOUP-GAROU",
     medic = "MÉDECIN",
+    -- the random events (test_event)
+    radio = "PANNE DE RADIO", swap = "GRAND ÉCHANGE", heal = "SOINS POUR TOUS", ghosts = "LES MORTS SE MONTRENT",
+    leak = "FUITE D'INFOS",
     -- plants by the code written on their jar, fish by the word the fish machine shows
     g3m = "PLANTE G3M", y8z = "PLANTE Y8Z", bo4 = "PLANTE BO4", wx2 = "PLANTE WX2", ru2 = "PLANTE RU2",
     salmon = "POISSON SALMON", tuna = "POISSON TUNA", cod = "POISSON COD", shrimp = "POISSON SHRIMP",

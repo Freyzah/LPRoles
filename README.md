@@ -8,7 +8,7 @@ Chaque joueur peut recevoir, en plus de son camp, un rôle avec un pouvoir : Sh�
 
 ## Mettre à jour
 
-Rien à faire : à chaque lancement du jeu, le mod regarde si une version plus récente est [publiée ici](../../releases/latest), la télécharge, la vérifie et l'installe avant de se charger. Un bandeau « LPROLES MIS À JOUR » le signale. Vos réglages, votre journal et les sons que vous avez remplacés par les vôtres sont gardés.
+Rien à faire : à chaque lancement du jeu, le mod regarde si une version plus récente est [publiée ici](../../releases/latest), la télécharge, la vérifie et l'installe avant de se charger. Un bandeau « LPROLES MIS À JOUR » le signale. Vos réglages, votre journal, les statistiques de l'hôte et les sons que vous avez remplacés par les vôtres sont gardés.
 
 - **À la main :** double-clic sur `mettre-a-jour.bat` dans le dossier du mod (`LockdownProtocol\Binaries\Win64\ue4ss\Mods\LPRoles\`), jeu fermé. Il remet aussi en état une installation abîmée.
 - **Pour couper la mise à jour automatique :** menu Échap, onglet LPROLES, MES RÉGLAGES, « Mise à jour automatique au lancement ».

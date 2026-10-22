@@ -64,6 +64,9 @@ local function name_of(i)
     return names[i] or "?"
 end
 
+-- (also used by the statistics, lpr_stats.lua)
+R.name_of = name_of
+
 local function role_name(id)
     if not id or id == "none" then return S.RECAP_NO_ROLE end
     return S.ROLE_NAME[id] or id
@@ -82,7 +85,9 @@ local function write_out(r)
     for _, e in ipairs(r.events) do
         local fmt = S.RECAP_EVENT[e.kind]
         if fmt then
-            out[#out + 1] = string.format("%d:%02d  ", e.t // 60, e.t % 60) .. string.format(fmt, name_of(e.a), name_of(e.b))
+            -- a number rather than a player for some events (how many dissidents are alive)
+            local first = S.RECAP_COUNT[e.kind] and tostring(e.a) or name_of(e.a)
+            out[#out + 1] = string.format("%d:%02d  ", e.t // 60, e.t % 60) .. string.format(fmt, first, name_of(e.b))
         end
     end
     return out

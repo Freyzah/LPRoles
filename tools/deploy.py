@@ -74,7 +74,7 @@ def install_ue4ss():
 # Files the mod writes itself in its folder: never replaced nor removed by an update.
 # (update.ps1 has the same list.)
 RUNTIME_FILES = {"config.txt", "menu_guard.txt", "tablet_guard.txt", "journal.txt", "journal-ancien.txt",
-                 "reprise-061.txt", "update-result.txt"}
+                 "reprise-061.txt", "update-result.txt", "statistiques.txt"}
 
 def sha256(path):
     with open(path, "rb") as f:

@@ -1643,3 +1643,56 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Vu dans le même journal :** l'utilisateur a cliqué deux fois sur « Simuler la victoire du Bouffon » à une seconde d'écart. Le second clic, refusé puisque la victoire était en cours, affichait « TEST : IL FAUT ÊTRE LE BOUFFON » avec le son d'échec : faux, il l'était. Ce cas ne dit plus rien (le journal le note toujours).
 - **Contrôles :** syntaxe, noms du jeu, pages, bandeaux, essais de la mise à jour. Pas de relecture indépendante.
 - **Version :** 0.14.2. Installée une fois le jeu fermé (22 octobre), copie identique aux sources ; archive complète refaite. Pas publiée.
+
+## D124 — Encyclopédie des rôles dans le lobby (version 0.15.0)
+
+- **Demande :** « j'aimerais bien l'encyclopédie des rôles, mais ça serait cool qu'il soit intégré au lobby, comme par exemple réutiliser l'écran dans le lobby qui permet d'afficher les tutos des tasks ».
+- **Ce que fait le jeu (étudié dans les Blueprints) :** un ordinateur (`PC_tuto`) aux boutons physiques fait défiler une liste de vidéos ; le numéro de la vidéo est commun à tous et piloté par l'hôte. Le grand écran (`Tutorial_Screen`, interface `W_TutoScreeWorld`) passe la vidéo ; au repos il montre un fond noir et un texte (« Show Video(false) »), pendant une vidéo il les cache. Le jeu n'écrit jamais lui-même ce texte, ni le titre de l'ordinateur.
+- **Options :**
+  1. **Feuilleter avec les touches du mod, chacun sur sa machine (retenu).** Dans le lobby, à 8 m de l'ordinateur ou de l'écran : touche de pouvoir = rôle suivant, touche « consommer » = précédent. Le texte du grand écran et le titre de l'ordinateur sont remplacés sur cette machine seulement, et remis en place en partant.
+  2. Ajouter les rôles à la liste du jeu, après ses vidéos. Il faudrait allonger cette liste sur toutes les machines, et la navigation est celle de l'hôte : tout le monde verrait la même page, et un joueur qui lit dérangerait celui qui regarde une vidéo.
+  3. Un texte posé dans le monde devant l'écran (comme les vies du Médecin) : rien du jeu n'est réutilisé.
+- **Les valeurs :** l'hôte calcule pour chaque rôle les valeurs de sa description comme pour un joueur de ce rôle, avec un joueur fictif qui ne joue aucune partie (aucune préparation de rôle n'est lancée pour lui), et les envoie à toutes les machines dans le lobby (message `BOOK`), puis de nouveau quand ses réglages changent (après une seconde sans changement) ou quand un joueur arrive. S'y ajoutent le camp, l'interrupteur et le minimum de joueurs du rôle. Le Shérif reçoit des valeurs tirées de ses réglages (carte, personne sûre), sans quoi sa page serait vide.
+- **Choix de ma part :** une page pour les Liés (avec leur réglage de camps) ; les rôles désactivés restent listés, marqués « Désactivé par l'hôte » ; les pages par ordre alphabétique des noms ; la limite de recharges dite « … fois par partie au plus » plutôt que « encore … fois » ; la vidéo cachée tant qu'une page est ouverte (sa piste son continue) ; la page se ferme quand une vidéo commence, à 10 m, ou au début d'une partie.
+- **Restauration :** le texte de l'écran et le titre de l'ordinateur sont lus à l'ouverture et remis à la fermeture, sur tous les chemins de sortie ; la visibilité aussi, sauf quand c'est le jeu qui vient de lancer une vidéo (son propre état reste).
+- **Non vérifiable sans le jeu :** la taille et la police du texte du grand écran (le mod coupe à 46 caractères et note la taille dans le journal), que le titre de l'ordinateur se redessine, que la lecture du texte du jeu fonctionne, que l'accroche « Show Video » se déclenche sur les machines des joueurs.
+
+## D125 — Évènements aléatoires (version 0.15.0)
+
+- **Demande :** retenu par l'utilisateur dans les pistes (« Évènements aléatoires »).
+- **Choix des évènements :** ceux qui réutilisent un pouvoir déjà écrit, donc déjà relu : panne de radio (bâillon du Bâillonneur), grand échange (Échangeur), soins pour tous (Médecin), les morts se montrent (Revenant), fuite d'informations (camps connus de l'hôte). Écartés pour l'instant : coupure de lumière, rayons X pour tous (le Traqueur ne sait suivre qu'un joueur).
+- **Règles :** tirés par l'hôte une fois les rôles annoncés ; premier à 2 min, puis toutes les 2 min 30 en moyenne (±25 %) ; jamais deux fois de suite le même ; pas pendant un évènement qui dure ; un évènement qui ne peut pas avoir lieu (personne de mort pour les fantômes) laisse sa place à un autre ; arrêt pendant les 3 s de la victoire du Bouffon ; rien quand le mod est désactivé.
+- **Garde-fous repris des études :** un bâillon ou une apparition déjà en cours n'est jamais raccourci (le bâillon du Bâillonneur suit maintenant la même règle) ; le bandeau « BÂILLONNÉ » n'est pas affiché pour une panne de radio (il trahirait un Bâillonneur) ; l'échange laisse de côté le Rêveur endormi, la Fée en vol, le Clandestin caché et le Rêveur qui vient de se réveiller, et se fait une seconde après le bandeau ; un Revenant qui a encore une apparition n'est pas marqué, pour garder son pouvoir libre.
+- **Actif par défaut :** l'utilisateur l'a demandé pour ses parties ; un interrupteur par évènement et un général.
+- **Aide d'essai :** groupe TEST, « Déclencher un évènement » (une fois, puis retour à AUCUN).
+- **Non vérifiable sans le jeu :** la panne de radio entendue de l'autre côté, deux téléports au hasard en même temps, plusieurs fantômes montrés à la fois, l'ordre bandeau puis effet.
+
+## D126 — Statistiques (version 0.15.0)
+
+- **Demande :** retenu par l'utilisateur dans les pistes (« Statistiques »).
+- **Où :** un fichier tenu par l'hôte, `statistiques.txt`, une ligne par partie et une par joueur (séparées par des tabulations, noms protégés). Lu une fois, au premier besoin.
+- **Piège trouvé par l'étude :** l'outil d'installation (`tools/deploy.py`) effaçait tout fichier du dossier du mod qu'il ne connaissait pas : le fichier aurait disparu chez l'utilisateur à chaque installation. Il est maintenant déclaré comme fichier du mod, pour l'installation comme pour la mise à jour ; un essai vérifie que les deux listes restent les mêmes, et qu'une mise à jour ne remplace pas ce fichier même si une archive en contenait un.
+- **Règles :** voir le manuel. Comptées au moment de la fin, avant la remise à zéro, et indépendamment du récapitulatif ; les éliminations comptées à chaque mort (une victime relevée compte quand même).
+- **Choix de ma part :** ne comptent pas les parties arrêtées ou de fin inconnue, d'entraînement, avec une aide d'essai (rôle forcé, joueurs minimum ignorés, groupe TEST), à moins de deux joueurs, ou jouées avec le récapitulatif sur NON (les nouveaux totaux trahiraient les camps de cette partie) ; joueurs reconnus par leur nom Steam ; statistiques affichées seulement quand le récapitulatif l'est ; « ce soir » = depuis le lancement du jeu de l'hôte ; envoyées dans le lobby à chaque changement et aux joueurs qui arrivent ; effacées chez un joueur qui change d'hôte ou quand il n'y a rien à montrer.
+- **Non vérifiable sans le jeu :** l'arrivée des messages chez les autres joueurs, la lecture des noms à la fin, le temps de construction de l'onglet avec les nouvelles rangées.
+
+## D127 — Étude et relecture par des agents (version 0.15.0)
+
+- **Mode « ultracode »** activé par l'utilisateur : le travail passe par des agents qui étudient, puis relisent de façon contradictoire.
+- **Étude** (4 agents) : un par chantier, plus un critique qui a croisé les trois plans. Pièges trouvés avant d'écrire : l'outil d'installation aurait effacé `statistiques.txt` ; les statistiques devaient être calculées avant la remise à zéro de fin de partie et hors du réglage du récapitulatif ; le jeu ne réécrit jamais les textes de l'écran des tutoriels (le mod doit les remettre) ; la page du Shérif aurait été vide ; aucune clé de réglage d'évènement ne doit finir par `_enabled` (elle irait dans RÔLES ACTIFS) ; un texte trop long casserait la vérification des bandeaux, qui bloque la publication.
+- **Relecture** (8 agents) : quatre angles (exactitude du Lua, échanges hôte-joueurs, intégration au jeu, règles), chacun contre-vérifié par un sceptique chargé de réfuter. 17 problèmes signalés, 12 confirmés (3 en double), 5 écartés. Corrigés :
+  1. la rangée d'essai des évènements ne pouvait atteindre que deux évènements sur cinq (elle se remettait à AUCUN au premier pas) : elle attend maintenant une seconde et demie sans changement ;
+  2. une victoire du Bouffon qui n'avait pas terminé la partie, suivie d'un arrêt par l'hôte, comptait comme une victoire du Bouffon ;
+  3. les statistiques d'un ancien hôte restaient affichées chez un joueur ;
+  4. une partie jouée avec le récapitulatif sur NON entrait dans les totaux, qui trahissaient ensuite les camps ;
+  5. « Ignorer les joueurs minimum » n'excluait pas la partie des statistiques ;
+  6. le tirage « jamais deux fois de suite » pouvait bloquer les évènements ;
+  7. la fuite d'informations aurait annoncé 0 dans une partie sans camps ;
+  8. une dernière ligne coupée du fichier aurait abîmé la partie suivante ;
+  9. l'hôte ne recevait plus son message d'accueil dans le lobby ;
+  10. un Revenant pouvait écourter sa propre apparition pendant l'évènement des fantômes (réglages modifiés seulement).
+- **Contre-vérification des corrections** (2 agents : une correction après l'autre, puis une chasse aux nouveaux défauts) : 8 corrections confirmées complètes, 2 complétées ensuite :
+  - un joueur qui rejoint un autre hôte, un hôte sans le mod ou une partie seule ne garde plus le récapitulatif, les statistiques ni les pages de l'hôte précédent (effacés à chaque nouvelle connexion ; un hôte avec le mod les renvoie) ;
+  - un mort relevé pendant l'évènement « Les morts se montrent » cesse d'être montré comme fantôme, comme un Revenant relevé pendant son apparition.
+- **Ce que les agents ne peuvent pas faire :** lancer le jeu. Tout ce qui est noté « non vérifiable sans le jeu » reste à essayer.
+- **Version :** 0.15.0, avec D124 à D126. Pas publiée.

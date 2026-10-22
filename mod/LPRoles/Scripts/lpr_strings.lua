@@ -184,6 +184,7 @@ S.RECHARGE = {
     one   = "*Recharge* : {item} en main, touche {key}",
     more  = "*+1 utilisation* : {item} en main, touche {key}",
     limit = " (encore {rleft} fois)",
+    limit_book = " ({rmax} fois par partie au plus)",   -- the encyclopedia: no game under way
     spent = "*Recharges* épuisées pour cette partie.",
     eyes  = "Ou objet en main, *les deux yeux* fermés {hold} s.",
 }
@@ -369,6 +370,16 @@ S.AMNESIA_DISSIDENT  = "TU DEVIENS DISSIDENT"
 S.JESTER_WIN         = "LE BOUFFON %s GAGNE"
 S.JESTER_LOST        = "TUÉ PAR UN DISSIDENT : PERDU"
 S.TEST_JESTER_NO     = "TEST : IL FAUT ÊTRE LE BOUFFON"
+S.TEST_EVENT_NO      = "TEST : PAS DE PARTIE EN COURS"
+S.TEST_EVENT_NONE    = "TEST : ÉVÈNEMENT IMPOSSIBLE"
+-- Random events (lpr_events.lua), announced to everyone
+S.EV_RADIO           = "PANNE DE RADIO (%d S)"
+S.EV_SWAP            = "GRAND ÉCHANGE DE PLACES"
+S.EV_SWAP_YOU        = "TU AS CHANGÉ DE PLACE"
+S.EV_HEAL            = "SOINS POUR TOUS"
+S.EV_GHOSTS          = "LES MORTS SE MONTRENT (%d S)"
+S.EV_LEAK_TITLE      = "FUITE D'INFORMATIONS"
+S.EV_LEAK            = "DISSIDENTS EN VIE : %d"
 S.VAMP_DONE          = "SANG BU : +%d PV MAX"
 S.VAMP_NOT_YOURS     = "CE N'EST PAS TA VICTIME"
 S.FEED_USED          = "CE CADAVRE A DÉJÀ SERVI"
@@ -440,6 +451,39 @@ S.RECAP_EVENT = {
     hypno       = "%s a hypnotisé %s",
     track       = "%s a traqué %s",
     spirit      = "Apparition du Revenant %s",
+    ev_radio    = "Évènement : panne de radio",
+    ev_swap     = "Évènement : %s et %s ont échangé leurs places",
+    ev_heal     = "Évènement : soins pour tous",
+    ev_ghosts   = "Évènement : les morts se montrent",
+    ev_leak     = "Évènement : fuite, %s dissident(s) en vie",
+}
+-- Events whose first value is a number, not a player.
+S.RECAP_COUNT = { ev_leak = true }
+
+-- Statistics kept by the host (lpr_stats.lua), in the LPROLES tab under the summary.
+S.STATS = {
+    title  = "STATISTIQUES",
+    head   = "%d parties enregistrées, dont %d ce soir",
+    player = "%s : %d victoires sur %d parties (%d %%), %d éliminations, survit %d fois ; ce soir : %d sur %d",
+    roles  = "Par rôle (victoires sur parties) : ",
+    role   = "%s %d/%d",
+}
+
+-- The encyclopedia of the roles, on the lobby's tutorial screen (lpr_book.lua). {pkey} and
+-- {key}: this player's own keys.
+S.BOOK = {
+    head = "RÔLES %d/%d",
+    camp = { [0] = "Camp : employé ou dissident, au hasard", [1] = "Camp : employé", [2] = "Camp : dissident",
+             [3] = "Camp : neutre", [4] = "Un lien entre deux joueurs, en plus de leur rôle" },
+    on = "Activé par l'hôte, à partir de %d joueurs",
+    off = "Désactivé par l'hôte",
+    mod_off = "Le mod est désactivé par l'hôte",
+    keys = "{pkey} : rôle suivant - {key} : rôle précédent",
+    linked_title = "LIÉS",
+    linked = { "Deux joueurs sont *liés*, quels que soient leurs rôles : chacun sait à qui.",
+               "Au premier des deux qui *meurt*, l'autre *meurt aussi*, une seule fois." },
+    linked_mode = { [0] = "Les deux sont tirés au hasard, dans n'importe quel camp.",
+                    [1] = "Les deux sont de *camps opposés*.", [2] = "Les deux sont du *même camp*." },
 }
 
 S.MENU_TAB           = "LPROLES"

@@ -2,8 +2,8 @@
 # Deux façons de le lancer :
 #   - double-clic sur "mettre-a-jour.bat", jeu fermé ;
 #   - par le mod lui-même à chaque lancement du jeu (-FromGame), avant qu'il charge ses scripts.
-# Il ne touche qu'au dossier du mod où il se trouve. Les réglages (config.txt), le journal et les
-# sons que le joueur a remplacés par les siens sont gardés.
+# Il ne touche qu'au dossier du mod où il se trouve. Les réglages (config.txt), le journal, les
+# statistiques (statistiques.txt) et les sons que le joueur a remplacés par les siens sont gardés.
 # Ce fichier est enregistré en UTF-8 avec BOM (Windows PowerShell 5.1 en a besoin pour les accents).
 param(
     [switch]$FromGame,
@@ -18,7 +18,7 @@ try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::
 
 # Fichiers que le mod écrit lui-même : jamais remplacés ni supprimés.
 $Runtime = @("config.txt", "menu_guard.txt", "tablet_guard.txt", "journal.txt", "journal-ancien.txt",
-             "reprise-061.txt", "update-result.txt")
+             "reprise-061.txt", "update-result.txt", "statistiques.txt")
 $Utf8 = New-Object System.Text.UTF8Encoding($false)
 
 # manifest.txt : "version X", "<taille> Scripts/nom.lua", "son <sha256> sounds/nom.wav"

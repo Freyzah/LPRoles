@@ -80,6 +80,9 @@ io.open(os.path.join(MOD, 'manifest.txt'), 'w', encoding='utf-8', newline='\n').
                                  for n in sorted(os.listdir(os.path.join(MOD, 'Scripts')))))
 io.open(os.path.join(MOD, 'config.txt'), 'w', encoding='utf-8').write('power_key = mouse4\n')
 io.open(os.path.join(MOD, 'journal.txt'), 'w', encoding='utf-8').write('hier\n')
+# the host's statistics (0.15.0): a file the mod writes itself, with an accented name
+STATS = 'P\t2026-10-22 21:00\temployees\t600\t2\nJ\tL\u00e9a\tmedic\tmedic\temployee\t1\t1\t0\n'.encode('utf-8')
+open(os.path.join(MOD, 'statistiques.txt'), 'wb').write(STATS)
 io.open(os.path.join(MOD, 'Scripts', 'lpr_ancien.lua'), 'w').write('-- old\n')
 open(os.path.join(MOD, 'sounds', 'LPRoles-son-abc-50b.wav'), 'wb').write(b'copie')
 open(os.path.join(MOD, 'sounds', 'consume.wav'), 'wb').write(b'RIFF le son du joueur')
@@ -90,6 +93,14 @@ ls = ['version 0.8.15'] + ['%d Scripts/%s' % (os.path.getsize(os.path.join(MOD, 
                            for n in sorted(os.listdir(os.path.join(MOD, 'Scripts'))) if n != 'lpr_ancien.lua']
 io.open(os.path.join(MOD, 'manifest.txt'), 'w', encoding='utf-8', newline='\n').write('\n'.join(ls) + '\n')
 
+print('0. les fichiers que le mod écrit lui-même : même liste pour l\'installation et la mise à jour')
+sys.path.insert(0, os.path.join(ROOT, 'tools'))
+import re, deploy
+ps = open(os.path.join(SRC, 'update.ps1'), encoding='utf-8-sig').read()
+ps_list = set(re.findall(r'"([^"]+)"', re.search(r'\$Runtime = @\((.*?)\)', ps, re.S).group(1)))
+check('deploy.py et update.ps1 d\'accord', ps_list == set(deploy.RUNTIME_FILES), repr(ps_list ^ set(deploy.RUNTIME_FILES)))
+check('statistiques.txt dans la liste', 'statistiques.txt' in ps_list)
+
 print('A. 0.8.15 -> 0.9.0 (lancé comme par le jeu)')
 want = publish('0.9.0')
 code, line, out, dt = run('-FromGame')
@@ -99,6 +110,7 @@ check('rien d\'affiché (mode jeu)', out == '', repr(out))
 check('scripts, outils et liste identiques à la version publiée',
       all(have.get(k) == v for k, v in want.items() if not k.startswith('sounds/')), [k for k, v in want.items() if have.get(k) != v])
 check('réglages et journal gardés', io.open(os.path.join(MOD, 'config.txt')).read() == 'power_key = mouse4\n' and 'journal.txt' in have)
+check('statistiques gardées', open(os.path.join(MOD, 'statistiques.txt'), 'rb').read() == STATS)
 check('son du joueur gardé', open(os.path.join(MOD, 'sounds', 'consume.wav'), 'rb').read() == b'RIFF le son du joueur')
 check('ancien script et copie de son supprimés', 'Scripts/lpr_ancien.lua' not in have and 'sounds/LPRoles-son-abc-50b.wav' not in have)
 print('   (%.1f s)' % dt)
@@ -112,9 +124,11 @@ check('aucun fichier changé', before == after)
 print('   message :', out, '(%.1f s)' % dt)
 
 print('C. 0.9.1 : un son du mod change, un script aussi')
-want = publish('0.9.1', {'sounds/fairy.wav': b'RIFF nouveau vol', 'Scripts/lpr_net.lua': b'-- neuf\n'})
+want = publish('0.9.1', {'sounds/fairy.wav': b'RIFF nouveau vol', 'Scripts/lpr_net.lua': b'-- neuf\n',
+                         'statistiques.txt': b'ARCHIVE'})       # never in a real archive: must not win
 code, line, out, dt = run()
 have = tree(MOD)
+check('statistiques de l\'hôte gardées malgré l\'archive', open(os.path.join(MOD, 'statistiques.txt'), 'rb').read() == STATS)
 check('« MAJ 0.9.0 0.9.1 »', line == 'MAJ 0.9.0 0.9.1', repr((code, line, out)))
 check('son du mod remplacé', have['sounds/fairy.wav'] == want['sounds/fairy.wav'])
 check('son du joueur encore gardé, et dit', open(os.path.join(MOD, 'sounds', 'consume.wav'), 'rb').read() == b'RIFF le son du joueur' and 'consume.wav' in out, out)

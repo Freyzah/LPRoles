@@ -14,6 +14,7 @@
 
 # Fichiers que le mod écrit lui-même quand il tourne
 /mod/LPRoles/config.txt
+/mod/LPRoles/statistiques.txt
 /mod/LPRoles/journal*.txt
 /mod/LPRoles/*_guard.txt
 /mod/LPRoles/reprise-061.txt

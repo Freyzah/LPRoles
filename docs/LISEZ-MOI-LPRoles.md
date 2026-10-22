@@ -67,6 +67,7 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.14.1** : groupe TEST, « Simuler la victoire du Bouffon », pour voir sa fin de partie sans personne pour le tuer. Installée le 22 octobre.
 - **Essai seul de l'utilisateur (22 octobre, 0.14.0 et 0.14.1)** : le rôle s'écrit sur l'écran de début (Rêveur, Bouffon, Amnésique), l'écran de fin affiche « LE BOUFFON GAGNE », le récapitulatif arrive à chaque fin de partie où son réglage est sur OUI. « Ça marche nickel. »
 - **0.14.2** : plus de bandeaux avec les rôles à la fin de la partie (le retour au lobby les effaçait), le récapitulatif les remplace. **Jamais lancée en jeu.** Installée le 22 octobre, une fois le jeu fermé ; pas publiée.
+- **0.15.0** : encyclopédie des rôles sur l'écran des tutoriels du lobby, évènements aléatoires (groupe ÉVÈNEMENTS), statistiques dans l'onglet LPROLES. **Jamais lancée en jeu.** Pas publiée.
 
 ## Ce qui est installé
 
@@ -78,6 +79,7 @@ Dans le dossier du jeu, sous `LockdownProtocol\Binaries\Win64\` :
 | `ue4ss\` | UE4SS et ses mods |
 | `ue4ss\Mods\LPRoles\` | Le mod |
 | `ue4ss\Mods\LPRoles\config.txt` | Réglages (créé au premier lancement) |
+| `ue4ss\Mods\LPRoles\statistiques.txt` | Statistiques des parties, sur la machine de l'hôte (créé à la première partie comptée) |
 | `ue4ss\UE4SS_Signatures\GUObjectArray.lua` | Signature nécessaire à UE4SS pour ce jeu |
 | `ue4ss\UE4SS.log` | Journal d'UE4SS, recommencé à chaque lancement du jeu |
 | `ue4ss\Mods\LPRoles\journal.txt` | Journal du mod, conservé d'un lancement à l'autre : c'est là qu'il faut regarder en cas de souci (chaque joueur a le sien) |
@@ -87,7 +89,7 @@ Le jeu doit être **relancé** pour charger une nouvelle version du mod.
 ## Mise à jour automatique
 
 - **À chaque lancement du jeu**, avant de charger ses scripts, le mod regarde sur sa page GitHub si une version plus récente est publiée. Si oui, il la télécharge, la vérifie et l'installe : elle sert dès ce lancement. Un bandeau « LPROLES MIS À JOUR : VERSION … » le signale.
-- **Ce qui est gardé :** `config.txt` (vos réglages), les journaux, et tout son que vous avez remplacé par le vôtre.
+- **Ce qui est gardé :** `config.txt` (vos réglages), les journaux, `statistiques.txt` (les statistiques de l'hôte), et tout son que vous avez remplacé par le vôtre.
 - **Sans réseau**, ou si GitHub ne répond pas : le lancement attend quelques secondes au plus, puis continue avec la version en place.
 - **À la main :** double-clic sur `mettre-a-jour.bat` dans `ue4ss\Mods\LPRoles\`, jeu fermé. Même mise à jour, avec un message qui dit ce qui a été fait. Il remet aussi en état une installation abîmée.
 - **Pour la couper :** MES RÉGLAGES, « Mise à jour automatique au lancement » sur NON (ou `auto_update = false` dans `config.txt`).
@@ -466,6 +468,47 @@ Les pouvoirs qui ne touchent que celui qui les lance (Fée, Médium, Rêveur, É
 3. De retour dans le lobby, onglet LPROLES : le groupe « DERNIÈRE PARTIE » doit dire « Victoire du Bouffon … », votre ligne de joueur, et l'évènement de la victoire.
 
 La rangée revient seule sur NON : elle agit une fois par clic. Hors d'une partie, ou sans être le Bouffon, elle ne fait rien d'autre qu'afficher « TEST : IL FAUT ÊTRE LE BOUFFON ». Le réglage « Sa victoire termine la partie » (groupe BOUFFON) doit être sur OUI, comme par défaut.
+
+## Encyclopédie des rôles (lobby)
+
+Dans le lobby, près de l'**ordinateur des tutoriels** ou de son **grand écran** (8 m au plus) :
+
+- **touche de pouvoir** (B par défaut) : rôle suivant ; **touche « consommer »** (G par défaut) : rôle précédent ;
+- le grand écran affiche le nom du rôle, son camp, s'il est activé par l'hôte (et à partir de combien de joueurs), puis son fonctionnement avec **les réglages de l'hôte** ; l'ordinateur affiche « RÔLES 3/25 » ;
+- 24 rôles plus les Liés, par ordre alphabétique.
+
+Chacun feuillette sur sa machine : les autres ne voient pas vos pages, et les vidéos du jeu, communes à tous, ne sont pas touchées. Le mod remet les textes du jeu en place quand vous vous éloignez (10 m), quand une vidéo commence ou quand une partie commence.
+
+- Les pages arrivent de l'hôte (message `BOOK`) dans le lobby, et de nouveau à chaque changement de ses réglages.
+- **Jamais essayé en jeu** : la taille du texte sur le grand écran (le mod coupe les lignes à 46 caractères, à ajuster), que le titre de l'ordinateur se redessine bien, que la vidéo derrière disparaît. Le journal dit ce que l'écran affichait avant (« Encyclopédie ouverte… ») et la taille du texte.
+
+## Évènements aléatoires
+
+Groupe **ÉVÈNEMENTS** de l'onglet LPROLES (juste après GÉNÉRAL), **actif par défaut**. Pendant une partie, une fois les rôles annoncés, l'hôte tire un évènement parmi ceux qui sont activés : le premier après 2 min (réglable), puis toutes les 2 min 30 environ (réglable, plus ou moins un quart au hasard), jamais deux fois de suite le même. Chacun est annoncé à tous par un bandeau violet et noté dans le récapitulatif.
+
+| Évènement | Effet |
+|---|---|
+| Panne de radio | Les micros de tous les vivants sont coupés 15 s (réglable). Un bâillon déjà en cours n'est jamais raccourci. |
+| Grand échange | Deux vivants tirés au hasard échangent leurs places, une seconde après le bandeau (le son de l'échange s'entend). Jamais un Rêveur endormi, une Fée en vol ou un Clandestin caché. |
+| Soins pour tous | Tous les vivants retrouvent toute leur vie. Le poison reste. |
+| Les morts se montrent | Les fantômes de tous les morts sont vus et entendus de tous 10 s (réglable), comme le Revenant. Un Revenant qui a encore une apparition garde son pouvoir libre. |
+| Fuite d'informations | Tout le monde apprend le nombre de dissidents en vie (la Taupe et le Vampire comptent ; un recruté compte une fois converti ; le Bouffon et l'Amnésique non). |
+
+- Pas d'évènement quand le mod est désactivé, ni pendant les 3 s qui suivent la victoire du Bouffon.
+- **Groupe TEST, « Déclencher un évènement »** : en partie, choisir l'évènement avec les flèches ; il part quand la rangée est restée **une seconde et demie** sur lui (les flèches passent sur les autres sans les déclencher), puis la rangée revient sur AUCUN. Une partie où il a servi ne compte pas dans les statistiques.
+- **Limites :** seuls les joueurs qui ont le mod peuvent être réduits au silence ou soignés (tous l'ont). **Jamais essayé en jeu** : la panne de radio vue de l'autre côté, deux téléports en même temps, plusieurs fantômes à la fois.
+
+## Statistiques
+
+Dans l'onglet LPROLES, sous le récapitulatif : le nombre de parties enregistrées (dont ce soir), puis pour chaque joueur présent ses victoires sur ses parties (et le pourcentage), ses éliminations, ses survies, et sa soirée ; enfin les victoires par rôle.
+
+- **Qui gagne :** les employés quand les employés gagnent, les dissidents (Taupe, Vampire, recrutés compris) quand les dissidents gagnent ; le Bouffon seulement s'il a été tué par un employé, même si sa victoire n'a pas terminé la partie ; l'Amnésique compte avec son camp à la fin (employé tant qu'il n'a rien pris).
+- **Éliminations :** chaque mort dont un joueur a porté le dernier coup (dans les 3 s), même si la victime a été relevée ensuite. Poison, chute et explosion ne comptent pour personne.
+- **Ne comptent pas :** une partie arrêtée par l'hôte ou dont la fin est inconnue, une partie d'entraînement, une partie jouée avec une aide du groupe TEST (rôle forcé, joueurs minimum ignorés, victoire simulée, évènement déclenché), une partie à moins de deux joueurs, une partie jouée avec « Récapitulatif de fin de partie » sur NON.
+- **Où :** dans `statistiques.txt`, dans le dossier du mod **de l'hôte** (une ligne par partie, une par joueur). Les mises à jour et `tools\deploy.py` ne le touchent pas. Pour repartir de zéro : le supprimer, jeu fermé. Un autre hôte a ses propres statistiques ; le fichier se copie d'une machine à l'autre.
+- Les joueurs sont reconnus par leur **nom Steam** : un changement de nom recommence ses statistiques.
+- Elles ne s'affichent que si « Récapitulatif de fin de partie » est sur OUI, et une partie jouée avec ce réglage sur NON n'est pas comptée : sinon, les nouveaux totaux diraient qui jouait dans quel camp.
+- **« Ce soir »** : depuis le lancement du jeu de l'hôte.
 
 ## Tester les nouveaux rôles
 

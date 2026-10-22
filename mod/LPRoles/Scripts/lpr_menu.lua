@@ -37,11 +37,10 @@ local state = { key = nil, page = nil, index = -1, tab = nil }   -- the menu the
 local rows = {}                           -- widget address -> { widget, def, values, labels }
 local role_row, help_rows = nil, {}
 local help_shown = {}                     -- how each help row is shown when it has something to say
--- The summary of the last game, for everyone, right under the role (nothing during a game).
-local RECAP_ROWS = 48
-local recap_title, recap_rows = nil, {}
-local recap_shown = {}                    -- as help_shown, for the title (index 0) and the rows
-local recap_source = nil                  -- function returning the summary's sentences
+-- Blocks of sentences for everyone, right under the role: the summary of the last game (nothing
+-- during a game), then the statistics. Each: { name, rows_n, source (function returning the
+-- sentences), title, rows, shown (as help_shown, the title at index 0) }.
+local blocks = {}
 local role_source = nil                   -- function returning the local player's current role
 local status_source = nil                 -- function returning the host's values about it
 local attempts = {}                       -- menu address -> failed attempts before anything was added
@@ -52,7 +51,7 @@ local sections = {}                       -- names of the groups, in the order o
 local members = {}                        -- group name -> { { w, vis }, ... }: its title and its rows
 local selector = nil                      -- that row (nil for a player who is not the host: all is shown)
 local shown = nil                         -- the group on screen; kept from one menu to the next
-local FIRST_GROUPS = { "TEST", "GÉNÉRAL" }    -- right after the personal settings, before the roles
+local FIRST_GROUPS = { "TEST", "GÉNÉRAL", "ÉVÈNEMENTS" }    -- right after the personal settings, before the roles
 local FORCED = "force_host_role"          -- the test aid changed between every trial: it has a group of its own
 
 -- ---------------------------------------------------------------- crash guard
@@ -300,23 +299,35 @@ local function refresh_role()
     end
 end
 
-local function refresh_recap()
+local function refresh_block(b)
     local pieces = {}
-    for _, l in ipairs(recap_source and recap_source() or {}) do
+    for _, l in ipairs(b.source and b.source() or {}) do
         for _, piece in ipairs(RT.wrap(l, HELP_WIDTH, "   ")) do pieces[#pieces + 1] = piece end
     end
-    if #pieces > RECAP_ROWS then
-        pieces[RECAP_ROWS] = "..."              -- the rest does not fit
+    if #pieces > b.rows_n then
+        pieces[b.rows_n] = "..."                -- the rest does not fit
     end
-    if U.valid(recap_title) then
-        pcall(function() recap_title:SetVisibility(#pieces > 0 and (recap_shown[0] or 0) or 1) end)     -- 1: collapsed
+    if U.valid(b.title) then
+        pcall(function() b.title:SetVisibility(#pieces > 0 and (b.shown[0] or 0) or 1) end)     -- 1: collapsed
     end
-    for i, w in ipairs(recap_rows) do
+    for i, w in ipairs(b.rows) do
         if U.valid(w) then
             set_row_value(w, pieces[i] or "")
-            pcall(function() w:SetVisibility(pieces[i] and (recap_shown[i] or 0) or 1) end)
+            pcall(function() w:SetVisibility(pieces[i] and (b.shown[i] or 0) or 1) end)
         end
     end
+end
+
+-- A block's title and rows, empty (and collapsed) until it has something to show.
+local function add_block(b, page, ctx, pc)
+    b.title, b.rows, b.shown = U.try("menu : " .. b.name, add_title, page, ctx, pc, b.name), {}, {}
+    if U.valid(b.title) then pcall(function() b.shown[0] = b.title:GetVisibility() end) end
+    for _ = 1, b.rows_n do
+        local w = U.try("menu : " .. b.name, add_text, page, ctx, pc, "", "")
+        b.rows[#b.rows + 1] = w
+        if U.valid(w) then pcall(function() b.shown[#b.rows] = w:GetVisibility() end) end
+    end
+    U.try("menu : " .. b.name, refresh_block, b)
 end
 
 -- ---------------------------------------------------------------- building the tab
@@ -443,7 +454,6 @@ local function build(menu, mec)
     local page_index = switcher:GetChildrenCount() - 1
     state = { key = U.key(menu), page = page, index = -1, tab = nil }
     rows, role_row, help_rows, help_shown = {}, nil, {}, {}
-    recap_title, recap_rows, recap_shown = nil, {}, {}
 
     -- Role and help, for everyone. One bad row must not prevent the rest.
     role_row = U.try("menu : rôle", add_text, page, mec, pc, S.MENU_ROLE, S.MENU_NO_ROLE)
@@ -454,15 +464,8 @@ local function build(menu, mec)
     end
     U.try("menu : rôle", refresh_role)
 
-    -- The summary of the last game (empty, and collapsed, until one has ended).
-    recap_title = U.try("menu : récapitulatif", add_title, page, mec, pc, S.RECAP_TITLE)
-    if U.valid(recap_title) then pcall(function() recap_shown[0] = recap_title:GetVisibility() end) end
-    for _ = 1, RECAP_ROWS do
-        local w = U.try("menu : récapitulatif", add_text, page, mec, pc, "", "")
-        recap_rows[#recap_rows + 1] = w
-        if U.valid(w) then pcall(function() recap_shown[#recap_rows] = w:GetVisibility() end) end
-    end
-    U.try("menu : récapitulatif", refresh_recap)
+    -- The summary of the last game, then the statistics.
+    for _, b in ipairs(blocks) do add_block(b, page, mec, pc) end
 
     -- Settings: each player's own (keys), then the game's, for the host only. The host's are
     -- many: a first row chooses the group shown. After the personal settings come the test
@@ -645,11 +648,22 @@ local function on_value(ctx, value)
     U.log("Réglage %s = %s (onglet LPROLES, saisie)", row.def.key, C.format(row.def.key))
 end
 
--- get_lines(): the summary of the last game, one sentence per item; on_change(fn): fn is
--- called whenever it changes.
+-- get_lines(): the sentences to show, one per item; on_change(fn): fn is called whenever they
+-- change. The blocks come in the order they are given.
+local function show_block(name, rows_n, get_lines, on_change)
+    local b = { name = name, rows_n = rows_n, source = get_lines, rows = {}, shown = {} }
+    blocks[#blocks + 1] = b
+    if on_change then on_change(function() guarded("menu : " .. name, refresh_block, b) end) end
+end
+
+-- The summary of the last game.
 function M.show_recap(get_lines, on_change)
-    recap_source = get_lines
-    if on_change then on_change(function() guarded("menu : récapitulatif", refresh_recap) end) end
+    show_block(S.RECAP_TITLE, 48, get_lines, on_change)
+end
+
+-- The statistics kept by the host.
+function M.show_stats(get_lines, on_change)
+    show_block(S.STATS.title, 30, get_lines, on_change)
 end
 
 function M.install(get_role, on_role_change, get_status)

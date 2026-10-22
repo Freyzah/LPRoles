@@ -177,6 +177,30 @@ function RT.lines(role, status, safe_idx)
     return out, kind
 end
 
+-- How a role works, with the host's values, and nothing about a game under way (the
+-- encyclopedia of the lobby): its lines, then how it gets a use back when the host gave it an
+-- item.
+function RT.howto(role, v)
+    v = v or {}
+    local out = {}
+    for _, l in ipairs(S.ROLE_HOWTO[role] or {}) do
+        local cond, key, rest = l:match("^([%?!])(%w+) (.*)$")
+        if cond then
+            if (cond == "?") == set(v, key) then out[#out + 1] = fill(rest, v) end
+        else
+            out[#out + 1] = fill(l, v)
+        end
+    end
+    if set(v, "item") then
+        local r = S.RECHARGE
+        local l = ((v.m or 1) > 1) and r.more or r.one
+        if v.rmax then l = l .. r.limit_book end
+        out[#out + 1] = fill(l .. ".", v)
+        if set(v, "eyes") then out[#out + 1] = fill(r.eyes, v) end
+    end
+    return out
+end
+
 -- The line without its marks (for plain text, as in the pause menu).
 function RT.plain(line)
     return (tostring(line or ""):gsub("%*", ""))

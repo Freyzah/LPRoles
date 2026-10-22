@@ -25,7 +25,9 @@ DUMPS = {"Mec": "Character__Mec", "GM": "Gameplay__GM", "HUD": "UI__Game__W_inGa
          "MainTab": "UI__Menu2__W_Menu_MainTab", "PlayerList": "UI__Game__W_Player_List",
          "DeadBody": "Character__Ghost__DeadBody", "TabletUI": "Character__Tablet__Interface__W_Tablet_UI", "TabletButton": "Character__Tablet__Interface__W_Tablet_ButtonText", "Tablet": "Character__Tablet__Tablet",
          "WorldItem": "Items__WorldItem", "ItemSpawner": "Items__Item_Spawner",
-         "PlayerData": "Character__Data_Player"}
+         "PlayerData": "Character__Data_Player",
+         "TutoPC": "Other__Tutos__PC_tuto", "TutoScreen": "Other__Tutos__Tutorial_Screen",
+         "TutoScreenW": "Other__Tutos__W_TutoScreeWorld", "TutoPCW": "Other__Tutos__W_TutoPC_UI"}
 
 EV_RIGHT = "BndEvt__W_Settings_Selection_ButtonR_K2Node_ComponentBoundEvent_5_OnButtonPressedEvent__DelegateSignature"
 EV_LEFT = "BndEvt__W_Settings_Selection_ButtonL_K2Node_ComponentBoundEvent_4_OnButtonPressedEvent__DelegateSignature"
@@ -47,7 +49,7 @@ FUNCTIONS = [
     ("GM", "Select Game Roles", 1, ""), ("GM", "End Game", 2, ""), ("GM", "Set HackerSphere", 1, ""),
     ("HUD", "Death Hidders", 1, ""), ("HUD", "Game Start", 1, ""), ("HUD", "Force End", 0, ""),
     ("Notif", "Show Message", 2, ""), ("UpperNotif", "Show Message", 2, ""),
-    ("PlayerStateW", "Set HP", 0, ""),
+    ("PlayerStateW", "Set HP", 0, ""), ("TutoScreenW", "Show Video", 1, ""),
     ("Mec", "Check Eyes State", 0, ""), ("Mec", "Net Switch Item", 1, "Server"), ("Mec", "Set Bag Item", 1, "Client"),
     ("Selection", "Rename", 1, ""), ("Selection", EV_RIGHT, 0, ""), ("Selection", EV_LEFT, 0, ""),
     ("Value", "Rename", 1, ""), ("Value", "Set Range", 4, ""), ("Value", "Set Value", 2, ""),
@@ -95,6 +97,9 @@ PROPERTIES = [
     ("WorldItem", "Data"), ("ItemSpawner", "Used"),
     ("Mec", "PlayerData"), ("Mec", "Stamina Regenering"), ("PlayerStateW", "Mec Ref"), ("PlayerStateW", "HPtext"),
     ("PlayerData", "Min Regen"), ("PlayerData", "Max Regen"), ("PlayerData", "Regen HP Speed"),
+    ("TutoPC", "PC Screen"), ("TutoPC", "World Screen"), ("TutoPC", "Widget"), ("TutoScreen", "Screen"),
+    ("TutoScreen", "Widget"), ("TutoScreenW", "Text_Tutorial"), ("TutoScreenW", "BlackScreen"),
+    ("TutoScreenW", "Video_Image"), ("TutoPCW", "HeadText"),
 ]
 # Native functions whose first parameter is a text.
 TEXT_NATIVES = {"SetText", "K2_SetText"}
@@ -141,6 +146,7 @@ NATIVE_FUNCTIONS = [
     "/Script/Engine.TextRenderComponent.K2_SetText", "/Script/Engine.TextRenderComponent.SetTextRenderColor",
     "/Script/Engine.TextRenderComponent.SetWorldSize", "/Script/Engine.TextRenderComponent.SetHorizontalAlignment",
     "/Script/Engine.SceneComponent.K2_SetWorldRotation",
+    "/Script/UMG.WidgetComponent.RequestRenderUpdate", "/Script/UMG.Widget.GetDesiredSize",
 ]
 NATIVE_OBJECTS = ["/Script/UMG.ScrollBox", "/Script/UMG.VerticalBox", "/Script/UMG.TextBlock",
                   "/Script/UMG.WrapBox", "/Script/UMG.Border", "/Script/MediaAssets.MediaPlayer",
@@ -243,6 +249,8 @@ def main():
                       ("W_Menu_MainTabButton_C", "/game/ui/menu2/w_menu_maintabbutton"),
                       ("W_Player_List_C", "/game/ui/game/w_player_list"),
                       ("W_PlayerState_C", "/game/ui/game/w_playerstate"),
+                      ("PC_tuto_C", "/game/other/tutos/pc_tuto"), ("Tutorial_Screen_C", "/game/other/tutos/tutorial_screen"),
+                      ("W_TutoScreeWorld_C", "/game/other/tutos/w_tutoscreeworld"), ("W_TutoPC_UI_C", "/game/other/tutos/w_tutopc_ui"),
                       ("W_inGame_C", "/game/ui/game/w_ingame"),
                       ("Vent_C", "/game/world/tasks/task_vents/vent"),
                       ("DeadBody_C", "/game/character/ghost/deadbody")):

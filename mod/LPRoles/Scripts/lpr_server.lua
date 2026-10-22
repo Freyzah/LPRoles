@@ -5,6 +5,8 @@ local C = require("lpr_config")
 local G = require("lpr_game")
 local N = require("lpr_net")
 local RC = require("lpr_recap")
+local EV = require("lpr_events")
+local ST = require("lpr_stats")
 
 local Sv = {}
 
@@ -49,6 +51,8 @@ local function fresh_game_fields(P)
     P.first_role = nil             -- the role drawn at the start (for the summary of the game)
     P.end_state = nil              -- how the last death came, for the summary: { kind, other }
     P.death_cause = nil            -- "poison" or "link": what is about to kill this player
+    P.ghost_event_until = nil      -- a Revenant shown by the event "Les morts se montrent": until when
+    P.kills = 0                    -- players this one killed in the game (for the statistics)
     P.link_done = false            -- Liés: the bond has already taken its toll (it acts once)
     P.vision_until, P.spirit_until = nil, nil
     P.last_hit = nil
@@ -523,7 +527,9 @@ local function start_spirit(P, now)
     P.charges = P.charges - 1
     local secs = C.get("revenant_duration")
     P.spirit_until = now + secs
-    broadcast("SPIRIT", idx(P), U.round(secs * 10))
+    -- shown at least as long as the event "Les morts se montrent" still shows it
+    local shown = math.max(secs, (P.ghost_event_until or 0) - now)
+    broadcast("SPIRIT", idx(P), U.round(shown * 10))
     tell(P, "MSG", "SPIRIT_START")
     sound_around("revenant", P)
     RC.add("spirit", idx(P))
@@ -1010,21 +1016,28 @@ local function hypnotist_done(P, T, now)
     U.log("Hypnotiseur : %s ferme les yeux de %s", G.player_name(P.mec), G.player_name(T.mec))
 end
 
+-- Two players change places: each is sent where the other stood, looking the way the other
+-- looked. The swap's own sound is heard by the two of them, and around each of them by those
+-- nearby. false when a place is unknown. (Also the random event "Grand échange".)
+local function swap_places(A, B)
+    local a, b = G.location(A.mec), G.location(B.mec)
+    if not a or not b then return false end
+    local ya = U.get(A.mec, "Net Orientation", 0.0) + 0.0
+    local yb = U.get(B.mec, "Net Orientation", 0.0) + 0.0
+    U.tcall(A.mec, "Request TP", b, yb)
+    U.tcall(B.mec, "Request TP", a, ya)
+    broadcast("SWAPFX", idx(A), idx(B))
+    return true
+end
+
 local function swapper_done(P, T)
-    local a, b = G.location(P.mec), G.location(T.mec)
-    if not a or not b or P.dreaming or P.fairy then
+    if P.dreaming or P.fairy or not swap_places(P, T) then
         tell(P, "MSG", "SWAP_FAILED")
         return
     end
-    local ya = U.get(P.mec, "Net Orientation", 0.0) + 0.0
-    local yb = U.get(T.mec, "Net Orientation", 0.0) + 0.0
     P.charges = P.charges - 1
-    U.tcall(P.mec, "Request TP", b, yb)
-    U.tcall(T.mec, "Request TP", a, ya)
     tell(P, "MSG", "SWAP_DONE", idx(T))
     tell(T, "MSG", "SWAP_YOU")
-    -- the swap's own sound: heard by the two of them, and around each of them by those nearby
-    broadcast("SWAPFX", idx(P), idx(T))
     RC.add("swap", idx(P), idx(T))
     U.log("Échangeur : %s et %s échangent leurs places", G.player_name(P.mec), G.player_name(T.mec))
 end
@@ -1084,8 +1097,8 @@ local function gagger_done(P, T, now)
     end
     P.charges = P.charges - 1
     local secs = C.get("gag_duration")
-    T.gag_until = now + secs
-    tell(T, "GAG", U.round(secs * 10))
+    T.gag_until = math.max(T.gag_until or 0, now + secs)       -- never shortens a gag already running
+    tell(T, "GAG", U.round((T.gag_until - now) * 10))
     tell(P, "MSG", "GAG_DONE", idx(T))
     RC.add("gag", idx(P), idx(T))
     U.log("Bâillonneur : %s coupe le micro de %s (%d s)", G.player_name(P.mec), G.player_name(T.mec), U.round(secs))
@@ -1520,6 +1533,7 @@ jester_win = function(P)
     if not C.get("jester_ends_game") then return end
     -- the game's end screen will say so, in place of "SESSION STOPPED" (lpr_screens.lua)
     broadcast("ENDTITLE", "jester")
+    game.ending = true                          -- the game ends in 3 s: no event any more
     local started = game.started_at
     U.after(3, "victoire du bouffon", function()
         local gm = G.gm()
@@ -1576,6 +1590,7 @@ local function on_death(P)
     local st = P.end_state
     if st.kind == "kill" then
         RC.add("kill", idx(st.other), idx(P))
+        st.other.kills = (st.other.kills or 0) + 1
     elseif st.kind == "poison" then
         RC.add("poisondeath", idx(P))
     elseif st.kind == "link" then
@@ -1988,7 +2003,11 @@ end
 local function on_game_start()
     game.active, game.started_at, game.announced, game.converted = true, U.now(), false, false
     RC.start(game.started_at)
+    EV.start(game.started_at)
     game.assigned, game.short, game.jester, game.vitals = false, 0, nil, nil
+    -- a game played with the test aids is not counted in the statistics
+    game.ending, game.tested = nil, nil
+    game.forced = (C.get("force_host_role") or "none") ~= "none" or C.get("ignore_min_players") == true
     standins, game.guard_now = nil, nil        -- the game empties its list of employees at every start
     each_player(function(P) reset_for_game(P) end)
     recount_frozen()
@@ -2028,6 +2047,7 @@ end
 local function on_game_end(win, force)
     if not game.active then return end
     game.active = false
+    EV.stop()
     U.log("Fin de partie : remise à zéro des rôles")
     each_player(function(P)
         if P.dreaming then end_dream(P, "end") end
@@ -2043,20 +2063,58 @@ local function on_game_end(win, force)
     -- the summary of the game, for the LPROLES tab of every machine: it tells every role, so it
     -- is sent only when the host wants the roles revealed at the end (the banners that did so
     -- before 0.14.2 were wiped by the return to the lobby before they could be read)
+    -- how the game ended: "employees", "dissidents", "jester" (the Bouffon's victory ended it),
+    -- "stopped" (the host's own stop), "unknown" (the game's values could not be read)
+    local ending = "unknown"
+    if force == true then
+        ending = (game.jester and game.ending) and "jester" or "stopped"
+    elseif win == true then
+        ending = "employees"
+    elseif win == false then
+        ending = "dissidents"
+    end
     U.try("récapitulatif", function()
         if not C.get("reveal_roles_at_end") then return end
-        local ending = "unknown"
-        if force == true then
-            ending = game.jester and "jester" or "stopped"
-        elseif win == true then
-            ending = "employees"
-        elseif win == false then
-            ending = "dissidents"
-        end
         for _, m in ipairs(RC.messages(ending, game.jester, recap_players())) do
             broadcast("RECAP", table.unpack(m))
         end
     end)
+    -- the statistics. Not counted: a game stopped or of unknown end, a game whose roles stay
+    -- secret (summary NON: who won would tell who played what), played with the test aids, a
+    -- training game, or with fewer than two players.
+    U.try("statistiques", function()
+        if ending ~= "employees" and ending ~= "dissidents" and ending ~= "jester" then return end
+        if not C.get("reveal_roles_at_end") then
+            U.log("Statistiques : partie non comptée (récapitulatif de fin de partie sur NON)")
+            return
+        end
+        local gm = G.gm()
+        if game.forced or game.tested or (gm and U.get(gm, "Difficulty", 1) == 0) then
+            U.log("Statistiques : partie non comptée (aide d'essai ou entraînement)")
+            return
+        end
+        local list = {}
+        each_player(function(P)
+            if not P.camp then return end                -- not in this game
+            local won
+            if P.role == "jester" then
+                won = game.jester == idx(P)
+            elseif ending == "employees" then
+                won = P.camp == "employee"
+            elseif ending == "dissidents" then
+                won = P.camp == "dissident"
+            else
+                won = false
+            end
+            local camp = P.camp
+            if (P.role == "jester" or P.role == "amnesiac") and camp ~= "dissident" then camp = "neutral" end
+            list[#list + 1] = { name = G.player_name(P.mec), first = P.first_role or "none", role = P.role or "none",
+                                camp = camp, won = won, survived = P.end_state == nil, kills = P.kills or 0 }
+        end)
+        if #list < 2 then return end
+        ST.record(ending, U.now() - game.started_at, list)
+    end)
+    game.hold_until = U.now() + 4              -- the messages of the lobby come after those of the end
     -- said again in the lobby: the players' machines drop the banners of the game with "END"
     if game.jester then broadcast("MSG", "JESTER_WIN", game.jester) end
     game.jester = nil
@@ -2311,6 +2369,93 @@ local function send_statuses(now)
     end)
 end
 
+-- ---------------------------------------------------------------- between games: encyclopedia, statistics
+-- Sent to every machine with the mod while no game runs, each time they change, and to a
+-- machine heard of for the first time.
+-- The encyclopedia (lpr_book.lua): every role's values, as status_of gives them to a player of
+-- that role, here for a stand-in that plays no game ("book" is nobody's key, and no role's own
+-- setting-up is run for it), with the camp, the switch and the player minimum of the role.
+local book = { rev = nil, seen = nil, seen_at = 0, pages = nil, sig = nil }
+local function send_books(now)
+    if book.rev ~= C.revision then
+        if book.seen ~= C.revision then
+            book.seen, book.seen_at = C.revision, now
+            return
+        end
+        if now - book.seen_at < 1 then return end          -- the settings are still being changed
+        book.rev = C.revision
+        local pages, parts = {}, {}
+        local mod_on = C.get("enabled") and 1 or 0
+        local camps = { any = 0, employee = 1, dissident = 2 }
+        for _, spec in ipairs(SPECS) do
+            local fake = { role = spec.id, key = "book", recharges = 0 }
+            if spec.id == "sheriff" then
+                fake.card = C.get("sheriff_card") and "shown" or nil
+                if C.get("sheriff_safe_info") then fake.safe, fake.marker_secs = "book", C.get("sheriff_marker_seconds") end
+            end
+            local camp = (spec.id == "jester" or spec.id == "amnesiac") and 3 or camps[spec.camp()] or 0
+            local values = status_of(fake, now)
+            values = (values ~= "" and (values .. ",") or "") .. string.format("on=%d,min=%d,camp=%d,mod=%d",
+                C.get(spec.prefix .. "_enabled") and 1 or 0, C.get(spec.prefix .. "_min_players") or 0, camp, mod_on)
+            pages[#pages + 1] = { spec.id, values }
+        end
+        local modes = { random = 0, mixed = 1, same = 2 }
+        pages[#pages + 1] = { "linked", string.format("on=%d,min=%d,camp=4,mod=%d,lmode=%d",
+            C.get("linked_enabled") and 1 or 0, C.get("linked_min_players") or 0, mod_on, modes[C.get("linked_mode")] or 0) }
+        for _, p in ipairs(pages) do parts[#parts + 1] = p[1] .. ":" .. p[2] end
+        book.pages, book.sig = pages, table.concat(parts, ";")
+    end
+    if not book.pages then return end
+    each_player(function(P)
+        if P.modded and P.book_sig ~= book.sig then
+            P.book_sig = book.sig
+            for _, p in ipairs(book.pages) do tell(P, "BOOK", p[1], p[2]) end
+        end
+    end)
+end
+
+-- The statistics (lpr_stats.lua) of the players present, only when the host shows what happened
+-- in the games (the summary's setting): otherwise who won would tell who played what.
+local function send_stats()
+    local messages, sig = nil, nil
+    if C.get("reveal_roles_at_end") then
+        local present = {}
+        each_player(function(P)
+            if P.modded then present[#present + 1] = { idx = idx(P), name = G.player_name(P.mec) } end
+        end)
+        messages, sig = ST.messages(present)
+    end
+    sig = messages and sig or "C"              -- none to show: the players' machines clear theirs
+    each_player(function(P)
+        if P.modded and P.stats_sig ~= sig then
+            P.stats_sig = sig
+            if messages then
+                for _, m in ipairs(messages) do tell(P, "STATS", table.unpack(m)) end
+            else
+                tell(P, "STATS", "C")
+            end
+        end
+    end)
+end
+
+-- Test aid (group TEST): one event at once, chosen by the host; the row goes back to "aucun".
+local function test_event(now)
+    local kind = C.get("test_event")
+    C.set("test_event", "none", true)
+    local mine = G.local_mec()
+    local me = mine and player(mine, false)
+    if not (game.active and game.announced) then
+        if me then tell(me, "MSG", "TEST_EVENT_NO") end
+        U.log("Test : évènement %s refusé (pas de partie en cours)", tostring(kind))
+        return
+    end
+    game.tested = true
+    if not EV.run(kind, now) then
+        if me then tell(me, "MSG", "TEST_EVENT_NONE") end
+        U.log("Test : évènement %s impossible maintenant", tostring(kind))
+    end
+end
+
 -- ---------------------------------------------------------------- periodic work (10 times per second)
 local last_prune = 0
 local function prune()
@@ -2359,12 +2504,21 @@ local function test_jester_win()
         return
     end
     U.log("Test : victoire du Bouffon déclenchée par l'hôte (groupe TEST)")
+    game.tested = true
     jester_win(me)
 end
 
 local function tick(now)
     if not G.is_host() then return end
     if C.get("test_jester_win") then U.try("test du bouffon", test_jester_win) end
+    -- the event chosen in the TEST group fires once the row has stayed on it 1.5 s: the arrows
+    -- go through the other values on the way
+    local pick = C.get("test_event") or "none"
+    if pick ~= game.test_pick then
+        game.test_pick, game.test_pick_at = pick, now
+    elseif pick ~= "none" and now - game.test_pick_at >= 1.5 then
+        U.try("test d'évènement", test_event, now)
+    end
     if now - last_prune > 5 then last_prune = now prune() end
     if game.active and not G.in_game() and now - game.started_at > 3 then on_game_end() end
     if frozen_count > 0 then
@@ -2374,7 +2528,21 @@ local function tick(now)
         end)
         if expired then recount_frozen() end
     end
-    if not game.active then return end
+    if not game.active then
+        if now >= (game.hold_until or 0) and now - (game.lobby_at or 0) >= 1 then
+            game.lobby_at = now
+            -- the host's own machine has the mod, even before it has said so
+            local mine = G.local_mec()
+            local me = mine and player(mine, true)
+            if me and not me.modded then
+                me.modded = true
+                N.send(me.mec, "ACK", U.VERSION)       -- as a hello from that machine would get
+            end
+            U.try("encyclopédie", send_books, now)
+            U.try("statistiques", send_stats)
+        end
+        return
+    end
     local hold = C.get("dream_hold_seconds")
     each_player(function(P)
         if P.closed_since and not P.hold_fired and now - P.closed_since >= hold then
@@ -2398,6 +2566,7 @@ local function tick(now)
     U.try("carte du shérif", tick_card, now)
     U.try("ange gardien", tick_guard, now)
     if game.announced then U.try("état des rôles", send_statuses, now) end
+    if game.announced then U.try("évènements", EV.tick, now) end
 end
 
 -- ---------------------------------------------------------------- hooks
@@ -2450,8 +2619,9 @@ function Sv.install()
         local P = player(ctx:get(), false)
         if not P then return end
         P.end_state = nil                          -- alive again, for the summary of the game
-        if P.spirit_until then                     -- a Revenant raised while showing itself: that is over
-            P.spirit_until = nil
+        -- a ghost raised while it was shown (a Revenant, or the event "Les morts se montrent"): over
+        if P.spirit_until or (P.ghost_event_until and U.now() < P.ghost_event_until) then
+            P.spirit_until, P.ghost_event_until = nil, nil
             broadcast("SPIRIT", idx(P), 0)
         end
         if P.cleaned and game.active then undo_revival(P) end
@@ -2494,6 +2664,8 @@ function Sv.install()
         if ok and cleared == true then return end
         U.try("sphères", correct_spheres)
     end)
+    EV.setup({ each_player = each_player, tell = tell, broadcast = broadcast, idx = idx,
+               swap_places = swap_places, game = game })
     U.every_tick("hôte", tick)
     U.log("Partie hôte prête")
 end

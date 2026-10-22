@@ -13,6 +13,7 @@ local K = require("lpr_marks")
 local MD = require("lpr_medic")
 local SC = require("lpr_screens")
 local RC = require("lpr_recap")
+local BK = require("lpr_book")
 
 local Cl = {}
 
@@ -682,11 +683,12 @@ local function end_gag(quiet)
     if not quiet then say("GAG_END", "info") end
 end
 
-local function on_gag(tenths)
+-- quiet: "1" when the gag is a random event's (its own banner says so, not "BÂILLONNÉ")
+local function on_gag(tenths, quiet)
     local secs = (tonumber(tenths) or 0) / 10
     if secs <= 0 then return end_gag(true) end
     gag = { ends = U.now() + secs, next = 0 }
-    say("GAG_YOU", "bad", math.floor(secs + 0.5))
+    if quiet ~= "1" then say("GAG_YOU", "bad", math.floor(secs + 0.5)) end
 end
 
 -- The game switches the microphone back on by itself now and then (a new character, a key):
@@ -927,6 +929,7 @@ local MSG = {
     ECHO_DONE = { "good", sfx = OK }, ECHO_NOTHING = { "warn", sfx = FAIL },
     AMNESIA_DONE = { "good", "name", sfx = OK }, AMNESIA_NO_ROLE = { "warn", sfx = FAIL }, AMNESIA_DISSIDENT = { "bad" },
     JESTER_WIN = { "role", "name" }, JESTER_LOST = { "bad" }, TEST_JESTER_NO = { "warn", sfx = FAIL },
+    TEST_EVENT_NO = { "warn", sfx = FAIL }, TEST_EVENT_NONE = { "warn", sfx = FAIL },
     VAMP_DONE = { "good", "num", sfx = OK }, VAMP_NOT_YOURS = { "warn", sfx = FAIL }, FEED_USED = { "warn", sfx = FAIL },
     WOLF_DONE = { "good", "num", sfx = OK },
     MEDIC_DONE = { "good", "name", sfx = OK }, MEDIC_FULL = { "warn", sfx = FAIL }, MEDIC_YOU = { "good" },
@@ -1272,10 +1275,11 @@ local function install_keys()
         local code = Key[C.KEY_NAME[name] or name]
         if code then
             local ok, err = U.on_key(code, name, function()
+                -- in the lobby, near the tutorial screen, the two keys turn the encyclopedia's pages
                 if C.get("power_key") == name then
-                    use_power()
+                    if not U.try("encyclopédie", BK.turn, 1) then use_power() end
                 elseif C.get("use_key") == name then
-                    use_item()
+                    if not U.try("encyclopédie", BK.turn, -1) then use_item() end
                 end
             end)
             if not ok then U.log("Touche %s non enregistrée : %s", name, tostring(err)) end
@@ -1355,14 +1359,19 @@ function Cl.install()
     N.on("HEAL", MD.on_heal)
     N.on("HELLO", function()
         G.clear_messages()                     -- a new game: nothing left to show of the one before
+        BK.close()
         SC.new_game()
         RC.clear()
         U.log("L'hôte demande qui a le mod (début de partie)")
         send_hello()
     end)
     SC.install()                               -- the role on the start screen, the Bouffon's end screen
+    N.on("BOOK", BK.on_book)                   -- the encyclopedia of the lobby
+    BK.install()
     RC.install_client()                        -- the summary of the last game
     N.on("ACK", function(version)
+        BK.reset()                             -- a host met for the first time: its pages come again
+        require("lpr_stats").reset()           -- and its statistics, if it has any to show
         local mec = G.local_mec()
         acked_for = mec and mec:GetAddress() or nil
         say("MOD_ACK", "info", version or "?")
@@ -1417,9 +1426,23 @@ function Cl.install()
     -- (ten times at most: the host only answers the first time it hears of a player), then
     -- again now and then in case the host has changed.
     local last, last_hello, tries = 0, 0, 0
+    local last_pc = nil
     U.every_tick("joueur", function(now)
         if now - last < 2 then return end
         last = now
+        -- another connection (another host, a host without the mod, playing alone): nothing kept
+        -- of the last host's summary, statistics and encyclopedia; a host with the mod sends them again
+        local pc = G.local_pc()
+        local pc_addr = U.valid(pc) and pc:GetAddress() or nil
+        if pc_addr and pc_addr ~= last_pc then
+            if last_pc then
+                RC.clear()
+                require("lpr_stats").reset()
+                BK.reset()
+                U.log("Nouvelle connexion : récapitulatif, statistiques et encyclopédie de l'hôte précédent effacés")
+            end
+            last_pc = pc_addr
+        end
         local mec = G.local_mec()
         if not mec then
             if ghost then ghost = nil end

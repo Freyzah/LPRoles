@@ -2,7 +2,14 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.14.2
+## 0.15.0
+
+- **Encyclopédie des rôles dans le lobby :** près de l'ordinateur des tutoriels ou de son grand écran, la touche de pouvoir affiche le rôle suivant et la touche « consommer » le précédent : nom, camp, activé ou non par l'hôte, et fonctionnement avec les réglages de l'hôte. Chacun feuillette de son côté ; les vidéos du jeu ne sont pas touchées.
+- **Évènements aléatoires** (groupe ÉVÈNEMENTS de l'onglet LPROLES, actifs par défaut) : de temps en temps pendant une partie, une panne de radio (micros coupés), un grand échange (deux joueurs au hasard changent de place), des soins pour tous, les morts qui se montrent, ou une fuite d'informations (le nombre de dissidents en vie). Chacun se coupe ou se règle ; le groupe TEST peut en déclencher un.
+- **Statistiques** dans l'onglet LPROLES, sous le récapitulatif : victoires, éliminations et survies de chaque joueur présent, ce soir et depuis le début, et victoires par rôle. L'hôte les garde dans `statistiques.txt`, que les mises à jour ne touchent pas. Ne comptent pas : les parties arrêtées, d'entraînement, jouées avec les aides d'essai, à moins de deux joueurs, ou avec le récapitulatif de fin de partie coupé.
+- Le bâillon du Bâillonneur ne raccourcit plus un bâillon déjà en cours.
+
+## 0.14.2 (non publiée)
 
 - **Plus de bandeaux avec les rôles à la fin de la partie :** le retour au lobby les effaçait avant qu'on puisse les lire. Le récapitulatif de l'onglet LPROLES les remplace ; son réglage s'appelle maintenant « Récapitulatif de fin de partie » (groupe GÉNÉRAL).
 - **Essai de la victoire du Bouffon :** un second clic pendant que la victoire est en cours n'affiche plus « TEST : IL FAUT ÊTRE LE BOUFFON ».
