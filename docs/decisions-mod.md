@@ -965,7 +965,7 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Exclus :** un corps que le Nettoyeur a fait disparaître ; un personnage qui ne fait pas partie de la partie.
 - **Option écartée :** *la proximité seule* (comme le Nettoyeur) : le Métamorphe est un rôle de visée, et pouvoir copier un mort de loin lui laisse le choix.
 
-## D75 — Shérif : plus de carte dans le sac, une carte en surbrillance dans le bâtiment (version 0.8.0)
+## D75 — Shérif : plus de carte dans le sac, une carte en surbrillance dans le vaisseau (version 0.8.0)
 
 - **Demande :** « Pour le sheriff, on change, il n'aura plus de carte d'accès dans son sac, mais il faut lui en mettre une en surbrillance, pour que ce soit moins broken ».
 - **Décision :** à l'annonce des rôles, l'hôte pose **une carte d'accès de plus** à un emplacement d'objets libre tiré au hasard, par l'appel que le jeu fait lui-même pour ses cartes et ses armes. La machine du Shérif dessine à cet endroit une boule jaune et une colonne jaune de 3 m, vues à travers les murs. Quand quelqu'un ramasse la carte, l'hôte le constate (l'objet n'existe plus) et la surbrillance s'éteint.
@@ -1064,7 +1064,7 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Demande de l'utilisateur :** « oui fais que les joueurs proches l'entendent aussi ».
 - **Décision :** sur la machine de chaque autre joueur, pendant l'envol, un lecteur de son est accroché au personnage de la Fée (il la suit) et joue la même copie du son, coupée à la durée de l'envol. Il est réglé pour être entendu depuis l'endroit où elle est et s'éteindre avec la distance : plein volume à moins de 3 m, silence au-delà de 21 m. La Fée, elle, garde le son « à plat » de la 0.8.4.
 - **Comment :** le composant sonore du lecteur multimédia a les mêmes réglages de distance que tout son du moteur. Le moteur les lit quand le composant démarre, et il démarre tout seul dès qu'il est créé : le mod l'arrête, écrit les réglages (sur le composant et sur la source sonore qu'il contient, pour couvrir les deux lectures possibles), puis le relance.
-- **Garde-fou :** si aucun des deux n'accepte les réglages, le son n'est pas joué chez les autres. Mieux vaut pas de son qu'un son entendu dans tout le bâtiment.
+- **Garde-fou :** si aucun des deux n'accepte les réglages, le son n'est pas joué chez les autres. Mieux vaut pas de son qu'un son entendu dans tout le vaisseau.
 - **Ce qui n'est pas vérifiable sans le jeu :** que le moteur applique bien ces réglages une fois écrits. S'il ne les appliquait pas, le son serait entendu partout à plein volume ; le journal de chaque joueur note ce qui a été écrit. Il faut deux joueurs pour l'essayer.
 - **Conséquences de jeu, voulues ou non :** l'envol s'entend à travers les murs (pas d'obstacle dans le calcul) ; avec le réglage « ni boule ni lumière », la Fée reste invisible mais plus inaudible. La page du rôle le dit (« Les joueurs proches entendent ton envol. »).
 - **Options écartées :**
@@ -1667,6 +1667,7 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Actif par défaut :** l'utilisateur l'a demandé pour ses parties ; un interrupteur par évènement et un général.
 - **Aide d'essai :** groupe TEST, « Déclencher un évènement » (une fois, puis retour à AUCUN).
 - **Non vérifiable sans le jeu :** la panne de radio entendue de l'autre côté, deux téléports au hasard en même temps, plusieurs fantômes montrés à la fois, l'ordre bandeau puis effet.
+- **Remplacé en 0.16.0 par D129 à D142 :** ces cinq évènements sont retirés à la demande de l'utilisateur, qui les trouvait fades (« pâles copies de mécaniques qu'on a déjà mis sur des rôles ») ; douze nouveaux les remplacent, sur un nouveau socle. Le bâillon du Bâillonneur garde la règle venue d'ici : il ne raccourcit jamais un bâillon en cours.
 
 ## D126 — Statistiques (version 0.15.0)
 
@@ -1723,3 +1724,164 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Vérifications ajoutées** (`tools/lp/verify_mod.py`) : les noms des évènements des flèches, de « Video End », « Play Video », « Waiting Video », de la propriété « Waiting » et des fonctions natives utilisées ; toute accroche écrite `CLASSE .. ":Fonction"` est maintenant vérifiée contre les noms du jeu (14 usages de plus couverts).
 - **Non vérifiable sans le jeu :** que les évènements des flèches se déclenchent bien sur l'hôte, l'arrêt de la vidéo chez les joueurs, la taille de police choisie (le journal la note), le texte qui se redessine sur l'écran.
 - **Version :** 0.15.1. Pas publiée.
+
+## D129 — Le socle des évènements aléatoires (version 0.16.0)
+
+- **Demande :** l'utilisateur trouvait les cinq évènements de la 0.15.0 fades, « pâles copies de mécaniques qu'on a déjà mis sur des rôles », et a demandé de nouvelles idées.
+- **Étude** (9 agents) : les leviers du jeu relevés dans les Blueprints, 24 idées sous quatre angles, 12 retenues, la faisabilité de chacune vérifiée dans les Blueprints.
+- **Choix de l'utilisateur**, par numéro : réunion d'urgence, cassette du corbeau, contrôle des armes, panne générale, micro ouvert, colis prioritaire, les morts savent, patate chaude, 1, 2, 3 soleil ; la fuite de gaz à la place du séisme (« on est dans un vaisseau spatial ») ; la dernière navette, désactivée par défaut parce qu'elle peut décider de la partie ; aimantés, avec une poussée faible et réglable. Les cinq anciens sont retirés. Non retenus : le rapport du légiste, les binômes de sécurité.
+- **Le socle :**
+  - `lpr_ev.lua` : le chargement des modules, le tirage, ce que l'hôte prête à un évènement (`ctx`, fin de partie comprise) et ce que chaque machine lui prête (`cx`), les messages de l'hôte (`EVON`, `EVOFF`, `EV`, `EVKEY`, `EVLINE`, `EVMARK`, `EVSND`, `EVSIREN`, `EVBODY`…), la rangée TEST ;
+  - `lpr_ev_world.lua` : le vaisseau (secteurs, points d'apparition, objets posés et suivis, armes, machines bloquées, boîtiers d'alarme, radios, caméras, chrono, ligne de vue) ;
+  - `lpr_ev_body.lua` : les corps (trêve, gel, poussée, souffle, épuisement, fatigue, voile, mort avec une cause) ;
+  - un fichier par évènement, `lpr_evm_<id>.lua`, qui n'agit que par le socle. Tout ce qu'un évènement a fait est défait à son arrêt, du plus récent au plus ancien, quelle que soit la raison (fin normale, interrupteur, TEST, fin de partie). Un module illisible ou incomplet est laissé de côté et noté au journal ; son interrupteur reste dans le menu.
+  - La référence pour écrire un module : `.omc/plans/evenements-api.md` (dossier de travail, hors du dépôt).
+- **Options :**
+  1. **Un socle commun et un fichier par évènement (retenu).** Quatre développeurs écrivent en parallèle sans toucher aux mêmes fichiers, et la remise en état n'est écrite qu'une fois.
+  2. Agrandir `lpr_events.lua` (la 0.15.0, 194 lignes, supprimé). Douze évènements et leur état dépasseraient la limite de 200 noms locaux d'un fichier Lua, et chacun referait sa propre remise en état.
+  3. Les écrire dans `lpr_server.lua` et `lpr_client.lua`. Le premier en était déjà à 163 noms (D118).
+- **Règles communes** (le manuel les détaille) : un évènement à la fois ; le premier 2 min après le début ; jamais deux fois de suite le même ; jamais dans la dernière minute ; chacun déclare ses conditions (vivants, présents, un mort, un dissident, moment de la partie, une fois par partie), que le tirage vérifie ; la navette a une fenêtre réservée en fin de partie. La rangée TEST lance un évènement sans ses conditions, même désactivé, ou arrête celui qui tourne.
+- **Choix de ma part :**
+  - **la 12e est la panne générale.** Un premier document de travail listait le rapport du légiste à sa place, par erreur : la liste choisie par l'utilisateur fait foi ;
+  - **tous les interrupteurs sur OUI, sauf la navette** ;
+  - **la pause comptée depuis la fin de l'évènement précédent**, plutôt que depuis son début : après un évènement long (une réunion dure près de 2 min), le suivant ne vient pas aussitôt ;
+  - **les annonces « par la vue » nomment le visage porté** (un Métamorphe déguisé), celles du système le vrai nom : l'écart est un indice ;
+  - **un joueur hypnotisé ne peut pas se servir des touches d'un évènement.** La touche passait avant le contrôle de l'hypnose : il aurait pu voter, monter dans la navette ou biper ;
+  - **des sons provisoires** générés par mes outils (bips, carillons, souffle, grésillements, toux), et la voix « un, deux, trois… soleil ! » faite avec la voix française de Windows, Hortense. L'amie de l'utilisateur qui a fait les sons des rôles pourra les remplacer, sous le même nom de fichier. Un seul réglage personnel les coupe tous, « Sons des évènements », comme « Sons des autres rôles » (D114).
+- **Garde-fous du socle :** aucune colonne ni lumière rouge (la couleur des dissidents) ; jamais « bâtiment » dans les textes, `banners.py` le refuse (le jeu se passe dans un vaisseau) ; chaque nom du jeu utilisé par un module est vérifié par `verify_mod.py` contre les Blueprints ; chaînes entre guillemets doubles seulement, pour que les vérifications les voient ; 25 noms locaux au plus par module.
+- **Morts d'un évènement :** une mort par le gaz, la bombe ou la navette n'a pas de tueur (ni révélation du Martyr, ni victoire du Bouffon, ni repas du Vampire quand il ne boit que ses propres victimes, ni élimination comptée). Règle finale en D142.
+- **Versions mélangées :** une machine plus ancienne ignore tous les messages des évènements, et l'hôte ne connaît pas la version de ses joueurs. Le manuel le dit : tout le monde passe à la 0.16.0 ensemble.
+- **Déroulé :** conception (un architecte du socle, quatre concepteurs d'évènements, un critique), socle écrit puis vérifié, douze modules écrits par quatre développeurs en parallèle, intégration, relecture contradictoire et corrections. Les chiffres sont en D142.
+- **Non vérifiable sans le jeu :** la liste « Jamais essayé en jeu » du manuel (voile de couleur, machines bloquées à distance, sirènes, chrono figé, poussée, épuisement, sac vidé, colonnes qui suivent un objet, touches des morts, écran de fin de la navette…).
+
+## D130 — Réunion d'urgence (version 0.16.0)
+
+- **Règles :** une fois par partie, 4 vivants, pas avant 3 min ni sous 1 min 30 au chrono. Appel en un lieu (45 s), sous une colonne cyan et la sirène d'un boîtier du secteur ; chrono figé et machines de tâche bloquées pendant la marche ; appel des présents à 12 m ; débat de 30 s en trêve ; vote visé pendant les 20 dernières secondes (2 voix, la moitié des voix exprimées, pas d'égalité en tête) ; fouille du désigné, main et sac lâchés à ses pieds, puis consigne de 30 s. Son camp n'est jamais dit.
+- **Choix de ma part : la trêve bloque aussi les pouvoirs des rôles.**
+  1. Pouvoirs libres pendant le débat (la première fiche) : un Hypnotiseur, un Empoisonneur ou un Voleur agirait à l'abri d'une trêve qui désarme les autres.
+  2. **Pouvoirs bloqués pour les présents pendant le débat et le vote, et pour le désigné jusqu'à la fin de sa consigne (retenu).** La touche de pouvoir des présents passe par la réunion ; pendant le vote, elle vote. Ce qu'une touche ne peut pas arrêter (les yeux du Rêveur, un geste commencé avant l'appel : Recruteur, Nettoyeur, repas, visée) est refusé ou annulé, avec le son d'échec. La touche « consommer » est refusée aussi, sauf pour un empoisonné prévenu : il peut boire son antidote, rien d'autre.
+- **Le poison attend :** de l'appel au résultat, la centrifugeuse est bloquée et aucun antidote ne peut être fait. Le poison s'arrête donc de courir, et le temps restant reste figé sur les pages de la victime et de l'Empoisonneur (relecture, D142 : il courait).
+- **Noms :** présence, absence, retard et fouille au vrai nom (le système voit qui est là) ; « TON VOTE », « A FRAPPÉ », « ATTAQUE » au visage vu. Les votes ne sont dits qu'au récapitulatif.
+- **Non vérifiable sans le jeu :** que la trêve envoyée par l'hôte bloque couteau, tir, grenade, ramassage et sac sur une machine distante ; la portée de la sirène ; le rayon de 12 m et l'écart de hauteur de 2,5 m face aux ponts du vaisseau ; le vote visé à 10–20 m dans une foule ; la fouille d'un joueur distant, ou d'un Rêveur réveillé 2 s plus tôt ; le chrono figé sans saut ; une machine en plein cycle bloquée puis libérée.
+
+## D131 — La cassette du corbeau (version 0.16.0)
+
+- **Règles :** une cassette de musique du jeu, posée dans un secteur annoncé, loin des vivants, marquée d'une colonne violette tant qu'elle est au sol. Contenu figé à la pose : l'heure du chrono et deux noms de vivants (trois à partir de six), dont au moins un dissident, aux vrais noms. Le premier qui la ramasse l'écoute seul ; chaque nouveau porteur l'écoute une fois. Glissée dans une radio, ou la touche « consommer » à 2,5 m d'une radio, elle parle à tous. Effacée au bout de 150 s.
+- **Choix de ma part :**
+  - **une fois par partie** : deux cassettes recoupées donneraient souvent une certitude ;
+  - **3 vivants au moins, dont un dissident** : à deux vivants, les deux seraient nommés ;
+  - **trois noms à partir de 6 vivants, sans réglage** (la fiche en proposait un de plus) : sous six vivants, un troisième nom n'écarterait presque personne.
+- **Anonymat :** aucun bandeau ne nomme le porteur. La colonne s'éteint quand quelqu'un ramasse la cassette et ne revient qu'après 2 s au sol, avec « CASSETTE AU SOL » (relecture, D142 : elle revenait en moins d'une demi-seconde et montrait où le porteur anonyme l'avait posée, ou venait d'être tué). Le vol du Voleur, de main en main, n'est pas annoncé.
+- **Essai seul :** sans dissident vivant, un contenu fictif, annoncé comme tel.
+- **Non vérifiable sans le jeu :** que le lecteur d'une radio accepte cette cassette hors du mode musique du jeu ; que la marque mise dans son état survive à la main, au sac et au lecteur ; que la radio reste propre après ; qu'une cassette posée par l'hôte se voie, se ramasse et se range ; si des emplacements d'objets sont dans les pièces fermées par une carte ; la lisibilité de la colonne violette et la portée du grésillement.
+
+## D132 — Contrôle des armes (version 0.16.0)
+
+- **Règles :** une fois par partie, 3 vivants, pas dans la dernière minute. Préavis de 30 s (rappel à 10 s : chaque porteur lit ce qu'il porte), puis scan de la main et du sac de chaque vivant ; chaque porteur est nommé à tous, au vrai nom ; la liste reste 40 s sur les tablettes. Par défaut rien n'est pris : l'information est publique, chacun en fait ce qu'il veut.
+- **Choix de ma part : le scalpel est une arme.** Il frappe comme le couteau, dont il partage les données de coup. L'autre option était de le laisser hors de la liste : son porteur passerait pour désarmé.
+- **Option « Confisquer les armes trouvées »** (NON) : l'arme est reposée à 25 m au moins de son porteur, dans l'état où il l'avait vraiment. Le relevé de l'hôte garde l'état d'un objet au moment où il a été ramassé (un tir ne baisse que le compte de la machine du tireur) : la machine de chaque porteur dit donc à l'hôte sa vraie main et son vrai sac, et l'hôte écoute aussi les munitions envoyées avec chaque tir (relecture, D142 : une arme vidée revenait chargée).
+- **Non vérifiable sans le jeu :** la sirène d'une seconde entendue depuis les couloirs, et chaque boîtier remis à l'identique ; le sac lu à jour sur l'hôte ; la confiscation (sac vidé, arme reposée avec ses munitions, C4 ou détonateur encore utilisables) ; la réponse des machines par la demande d'interaction du jeu ; la lisibilité de l'éclair cyan ; le nom affiché des armes d'entraînement.
+
+## D133 — Panne générale (version 0.16.0)
+
+- **Règles :** 4 vivants, pas sous 1 min 30 au chrono. Machines de tâche bloquées (le chargeur du défibrillateur aussi), écrans des caméras noirs, radios en pause. Deux boîtiers d'alarme de deux secteurs, loin l'un de l'autre, sonnent en alternance ; deux joueurs différents appuient à 3 s d'écart au plus pour relancer, nommés au vrai nom ; sinon le courant revient seul à 75 s. Option de surrégime (NON) : une relance dans les 30 s fait tourner les machines deux fois plus vite pendant 1 min.
+- **Choix de ma part : c'est le 12e évènement.** Le premier document de travail du socle listait le rapport du légiste à sa place ; la liste choisie par l'utilisateur dit la panne.
+- **Tirage des boîtiers :** d'abord ceux qui ne sont ni armés (un appui déclencherait aussi la vraie alarme et l'userait pour la partie) ni en train de sonner ; deux boîtiers à 30 m au moins quand il y en a, sinon les plus éloignés. Un échec dit le côté, jamais le nom. Jamais le même joueur pour les deux appuis : l'Échangeur et l'Écho ne suffisent pas.
+- **Le poison attend** pendant la panne, comme pendant la réunion (D130).
+- **Écrans, radios :** écrans noirs par le réglage local de la caméra en temps réel (chaque joueur retrouve ensuite son propre choix) ; radios en pause, relancées à la fin, sauf en fin de partie.
+- **Non vérifiable sans le jeu :** combien de boîtiers il y a, et où ; l'appui vu par l'hôte sur un boîtier sans fusible ; s'il faut les mains vides pour appuyer ; la sirène locale entendue du couloir ; la reprise des radios au bon endroit ; le retour des écrans ; le blocage des machines d'un joueur distant ; l'effet réel du surrégime.
+
+## D134 — Micro ouvert (version 0.16.0)
+
+- **Règles :** 3 vivants. Pendant 60 s, le vivant le plus proche du clavier du pupitre des caméras (2 m, même étage) est entendu partout à pleine voix, morts compris ; un orateur à la fois, place gardée jusqu'à 50 cm au-delà.
+- **Comment :** rien n'est répliqué. Chaque machine accroche la voix de l'orateur sous les oreilles de son propre joueur, 60 cm devant, avec un filtre de haut-parleur (passe-bas à 3,5 kHz). Elle la remet comme le jeu l'avait (sous le personnage, puis la mise à jour de mort du jeu, qui coupe ou rend la voix) quand l'orateur change ou que l'évènement finit. Un joueur sans le mod entend les voix du jeu.
+- **Détails :** le bâillon prime (un bâillonné ne prend pas un micro libre ; un orateur bâillonné garde la place, muet) ; l'avis nomme le visage porté, mais la voix est la vraie (un indice) ; lampe et colonne orange, pas rouge ; un carillon toutes les 2 s au plus, et la marge de 50 cm, pour qu'un joueur au bord de la zone ne fasse pas crépiter les changements.
+- **Non vérifiable sans le jeu** (à essayer avant le reste) : que la voix suive sa source accrochée aux oreilles d'une autre machine ; le volume et l'image à 60 cm ; la remise exacte, silence au-delà de la portée compris ; la voix d'un orateur très éloigné ; la place du clavier et les 2 m ; le filtre audible.
+
+## D135 — Colis prioritaire (version 0.16.0)
+
+- **Règles :** 3 vivants, plus de 3 min au chrono. Un colis posé dans un secteur, une balise dans un des deux secteurs les plus éloignés ; 3 s à 3 m de la balise, colis en main, pour livrer : 2 min de plus au chrono ; pas livré en 2 min 30 : 1 min de moins, jamais sous 30 s. Le porteur brille en vert et bipe, colis en main ou dans le sac ; personne n'est nommé. Il peut revenir dans la même partie.
+- **Choix de ma part : une boîte de conserve, pas le jerrican.** La fiche proposait le jerrican. C'est une arme lourde du jeu, une massue : il armerait le porteur, et pourrait le ralentir ou gêner ses sauts. La boîte de conserve ne sert à aucune tâche.
+- **Détails :** seules la livraison et l'échéance touchent au chrono (un arrêt par TEST, par un interrupteur ou par la fin de partie ne donne ni ne retire rien) ; un porteur qui quitte la partie fait réapparaître le colis, sans pénalité ; la perte ne fait jamais remonter un chrono déjà bas.
+- **Non vérifiable sans le jeu :** la boîte posée par l'hôte, visible, ramassable, et si elle va dans le sac ; le temps ajouté repris chez tous en moins d'une seconde ; la zone de 3 m et les 3 s avec les positions vues par l'hôte ; la lumière et le bip (environ 10 m) ; ce que devient la main d'un joueur qui se déconnecte ; l'équilibre +2 / -1 min en vraie partie.
+
+## D136 — Les morts savent (version 0.16.0)
+
+- **Règles :** un mort, 2 vivants, plus de 2 min 30 au chrono. Une capsule (un œuf cyan du jeu, qui ne sert à aucune tâche) posée loin des vivants ; seuls les morts qui ont le mod la voient. Chaque fantôme bipe là où il flotte avec sa touche de pouvoir, toutes les 4 s au plus. Le vivant qui la ramasse, quel que soit son camp, donne 2 min au chrono ; pas trouvée en 2 min, elle s'éteint, sans pénalité.
+- **Détails :** un Revenant mort qui a encore des apparitions bipe avec la touche « consommer », pour garder la sienne, et repasse à la touche de pouvoir dès sa dernière apparition utilisée. Un mort pendant l'évènement est accueilli 2,5 s plus tard, après son écran de mort. Le bip est placé là où le jeu dessine le fantôme.
+- **Relecture (D142) :** un corps nettoyé par le Nettoyeur, relevé puis aussitôt retué par le mod, perdait la colonne et lisait « TU ES VIVANT ».
+- **Non vérifiable sans le jeu :** que la position d'un mort distant, lue sur l'hôte, suive son fantôme ; l'audibilité du bip (3 m, 18 m, à travers les cloisons) ; l'œuf bien cyan avec sa marque ; la capsule retirée de la main d'un joueur distant ; les 2 min affichées chez tous ; la touche « consommer » d'un Revenant mort qui arrive à l'hôte ; un mort qui ouvre sa tablette.
+
+## D137 — Patate chaude (version 0.16.0)
+
+- **Règles :** 3 joueurs présents dont 2 qui ont le mod, pas avant 1 min de partie ni sous 1 min 30 au chrono. Une bombe passe au contact (1,5 m, même étage, sans mur ; une passe par seconde au plus, pas de retour avant 5 s) et explose au bout de 45 à 75 s, délai secret : la boule de feu et le bruit d'une C4 du jeu (pas sa vraie explosion), 50 PV au porteur, arrêté net et épuisé ; moins pour les autres à 8 m et en vue, repoussés. Par défaut elle ne tue pas : chacun garde 10 PV.
+- **Détails :** la fiche voulait une lumière rouge sur le porteur : elle est orange, le rouge étant la couleur des dissidents. Seuls les joueurs qui ont le mod portent la bombe : un joueur sans le mod ne saurait pas qu'il l'a. Le porteur prend un coup sans direction plutôt que le souffle du jeu, dont le tracé partirait de sa propre tête et le projetterait n'importe où.
+- **Relecture (D142) :** en mode non mortel, la cause « bombe » était posée pendant 3 s sur tous les joueurs à 8 m, et un vrai meurtre dans ces 3 s perdait son tueur ; un joueur sans le mod était repoussé à travers les murs (l'hôte trace maintenant la ligne lui-même).
+- **Non vérifiable sans le jeu :** le délai de l'explosion envoyée par l'hôte ; la force du recul (0,4 au plus) et les chutes ; la taille de l'explosion du jeu ; le bip à travers les murs ; la durée de l'épuisement ; la passe à 1,5 m avec le retard du réseau ; la couleur du voile.
+
+## D138 — 1, 2, 3, soleil ! (version 0.16.0)
+
+- **Règles :** 3 vivants dont 2 présents qui ont le mod, pas sous 1 min 30 au chrono, une radio libre. Toutes les radios qui ne jouent pas de cassette jouent la même musique du jeu, fort, et chaque machine en joue une copie douce ; 6 à 15 s de musique, la voix « un, deux, trois… soleil ! », la musique coupée net sur « soleil », puis 3 s figé, après 0,8 s de grâce. 4 manches. Pris : épuisé.
+- **Choix de ma part :**
+  - **pris = se déplacer de plus de 40 cm, frapper quelqu'un ou tirer.** Écarté : tout coup donné, même dans le vide (un geste avec un bocal ou un poisson en main) ;
+  - **les radios qui jouent déjà une cassette sont laissées tranquilles.** Écarté : les mettre en pause pendant l'évènement. Près d'elles, la coupure ne s'entend pas, mais l'avis et la voix restent ;
+  - **un joueur sans le mod n'est jamais pris** : il n'a ni le signal ni la règle ;
+  - **la voix** faite avec la voix française de Windows (Hortense), calée pour que « soleil » tombe sur la coupure (le mot commence vers 1,56 s).
+- **Relecture (D142) :** les radios étaient remises dans l'état du début (une cassette mise ou retirée pendant l'évènement laissait la mauvaise musique) : elles le sont maintenant d'après leur état à la fin ; un joueur déplacé de moins de 2,5 m par un pouvoir (Échangeur, Écho) était pris : toute téléportation du jeu l'excuse maintenant.
+- **Non vérifiable sans le jeu :** que les ordres de musique de l'hôte arrivent partout ; une radio sans cassette qui joue bien la musique ; combien de radios il y a, et où ; la copie douce en phase ; le seuil de 40 cm et la grâce de 0,8 s face au retard du réseau ; le tir vu pour toutes les armes à feu ; l'effet de l'épuisement.
+
+## D139 — Fuite de gaz (version 0.16.0)
+
+- **Demande :** elle remplace le séisme proposé par l'étude : « on est dans un vaisseau spatial ».
+- **Règles :** un joueur présent, pas dans la dernière minute. Une fuite dans un secteur occupé (jamais un secteur dont une bouteille de gaz est en surpression) ; 30 s de préavis (sirènes du secteur sans arrêt, sifflement, boule et lumière vertes, voile près de la fuite, compte à rebours) ; l'explosion ; puis 60 s d'air vicié à 12 m, qui épuise.
+- **L'explosion, deux options :**
+  1. **Celle du jeu, calculée par la machine de chacun et adoucie (par défaut) :** 60 PV au centre, rien à 15 m, les murs protègent, avec les effets de l'explosion de gaz du jeu. Elle peut tuer un joueur déjà affaibli.
+  2. **La vraie explosion d'une bouteille de gaz** (réglage, NON) : jusqu'à 100 PV, mortelle de près, portée 30 m (le jeu la calcule pour chaque joueur à 35 m ou moins).
+- **Mort par le gaz :** sans tueur, « meurt (fuite de gaz) ».
+- **La sirène réveille un Rêveur endormi à portée :** sur sa machine, le jeu mesurerait l'explosion depuis son fantôme, pas depuis son corps.
+- **Relecture (D142) :** un vrai meurtre dans les 3 s après l'explosion, n'importe où dans son rayon, comptait comme une mort par le gaz, sans tueur ; un Rêveur qui s'endormait près de la fuite dans la dernière seconde échappait au souffle (il est maintenant réveillé à chaque dixième de seconde du préavis, et soufflé à son retour dans son corps).
+- **Non vérifiable sans le jeu :** les points d'apparition au sol et dégagés ; le recul de l'explosion (des chutes ?) ; la vraie explosion créée depuis Lua (classe trouvée, effets chez les joueurs, 100 PV) ; l'avis de dégâts reçu par l'hôte pour chaque blessé ; la sirène continue ; les couleurs du voile ; le rythme de la fatigue face à la récupération du jeu ; les effets du jeu lancés depuis Lua.
+
+## D140 — Dernière navette (version 0.16.0)
+
+- **Demande :** telle que décrite, elle peut décider de la partie : son propre interrupteur, sur NON par défaut.
+- **Règles :** une fois par partie, dans les 3 dernières minutes et avec 1 min 20 au moins au chrono (l'attente + 20 s), 2 vivants dont 2 employés, jamais en entraînement. Deux places au quai ; on monte avec la touche de pouvoir (on ne marche plus, on peut se défendre) et on descend de même ; portes fermées 10 s avant le départ, qui a lieu au bout de 60 s. Pendant les 30 s qui précèdent sa fenêtre, aucun autre évènement ne commence. Descendre est un ajout de la fiche : sans cela, un dissident assis à côté du premier employé monté gagnerait à coup sûr.
+- **Choix de ma part :**
+  1. **Le Bouffon et l'Amnésique sans rôle montent comme des non-dissidents.** Options : leur interdire de monter (premier document du socle), ce qui révèle leur rôle à qui regarde le quai ; les laisser monter et annuler le départ (« PASSAGER NON AUTORISÉ », la fiche), ce qui révèle un neutre à bord ; **les compter comme non-dissidents (retenu)** : rien n'est révélé.
+  2. **Deux dissidents à bord quittent la partie** (comme le voulait la fiche ; la critique demandait de trancher) : ils meurent sans tueur, sans corps, ne sont jamais relevés, et la partie continue selon ses propres règles. Conséquence acceptée : s'ils étaient les derniers dissidents, la partie ne peut plus finir que par les tâches ou par le chrono, dont la fin est une victoire des dissidents sans dissident vivant. À voir en jeu.
+  3. **Une victoire par la navette est une vraie fin de partie du jeu,** comptée comme une victoire ordinaire dans les statistiques (l'autre option : ne pas la compter). Chaque joueur lit « VICTOIRE PAR LA NAVETTE » ou « DÉFAITE PAR LA NAVETTE » sur l'écran de fin. Le Bouffon ne gagne jamais avec un camp : il lit la défaite, ou « LE BOUFFON GAGNE » s'il avait déjà gagné par sa mort, comme le comptent les statistiques.
+- **Relecture (D142) :** des réglages permis (une fenêtre trop courte pour l'attente) et les parties d'entraînement rendaient la navette impossible, mais elle bloquait quand même les autres évènements pendant 30 s ; deux dissidents Liés partant ensemble : la mort par le lien écrasait le départ en navette ; le Bouffon lisait « VICTOIRE PAR LA NAVETTE » alors que les statistiques comptaient une défaite.
+- **Non vérifiable sans le jeu :** deux places distinctes dans chaque secteur ; où finit le corps d'un dissident parti (une mort demandée sans corps) ; le titre de l'écran de fin, qui doit rester affiché ; le gel des passagers face à un recul ; le temps de réponse d'un appui sur une place.
+
+## D141 — Aimantés (version 0.16.0)
+
+- **Demande :** une poussée faible et réglable, pour éviter les chutes mortelles ; le sens de la poussée est à vérifier en jeu.
+- **Règles :** 3 présents, pas dans la dernière minute. Pendant 40 s, deux joueurs à 2,5 m l'un de l'autre, au même étage et en vue, pendant 0,3 s : décharge (une poussée faible qui les écarte, un éclair bleu, un claquement, un peu de fatigue), puis 1,5 s de repos pour la paire ; trois décharges en 10 s épuisent. Chaque machine prévient son joueur à 4 m (voile bleu, grésillement).
+- **La poussée :** l'appel du jeu qui fait reculer un joueur touché, avec zéro dégât. 0,3 donne environ 3,4 m/s, 1 environ 8 m/s ; réglable de 0,1 à 1 par pas de 0,1 (le menu n'affiche qu'une décimale).
+- **Détails :** pas de décharge à travers un mur, ni quand l'un des deux est en l'air (personne n'est poussé au-dessus d'un vide) ; les corps, celui d'un Rêveur endormi compris, ne sont pas aimantés ; un joueur sans le mod est repoussé aussi, sans le reste, sauf qu'une surcharge lui fait lâcher son objet. Une chute mortelle après une poussée est une mort ordinaire, sans cause d'évènement.
+- **Relecture (D142) :** une surcharge sur un joueur sans le mod l'arrêtait net contre l'autre aimant au lieu de le repousser (l'arrêt partait après la poussée et l'annulait). Écarté : « un joueur qui saute sans arrêt n'est jamais aimanté » : c'est la règle voulue.
+- **Non vérifiable sans le jeu :** le sens du recul ; la force à 0,3 et les chutes possibles ; le recul d'un joueur bloqué par une tâche ; le retard des positions vues par l'hôte ; la portée du couteau face aux 2,5 m ; deux joueurs coincés dans un couloir étroit ; le claquement et le grésillement.
+
+## D142 — Relecture contradictoire et corrections (version 0.16.0)
+
+- **Conception relue avant d'écrire :** le critique a croisé le socle et les douze fiches. 14 points bloquants (une mort d'évènement attribuée au dernier agresseur, une cause de mort qui écrasait celle des rôles, une mort demandée incomplète, des appels du jeu et des guillemets simples qui échappaient aux vérifications, un voile, des colonnes, des lampes et des sons répétés qui n'auraient pas marché comme décrit…) et environ 45 ajouts au socle ; un socle révisé les a tranchés.
+- **Socle écrit, puis vérifié :** 2 défauts majeurs et 11 mineurs, corrigés avant les modules.
+- **Douze modules** écrits par quatre développeurs en parallèle (réunion, panne, armes ; cassette, colis, morts savent ; patate chaude, aimantés, gaz ; micro, soleil, navette), puis intégrés.
+- **Relecture contradictoire** (10 agents : 5 chercheurs, un pour le socle et un par groupe de trois évènements, chacun contre-vérifié par un sceptique chargé de réfuter) : 22 problèmes signalés, 18 confirmés (1 majeur, 17 mineurs), 4 écartés.
+- **Le majeur :** un souffle qui ne pouvait pas tuer posait quand même la cause de mort de l'évènement sur chaque joueur touché, pendant 3 s : un vrai meurtre dans ces 3 s perdait son tueur (ni révélation du Martyr, ni victoire du Bouffon, ni repas du Vampire, ni élimination). **Règle finale :** une cause n'est posée que là où l'évènement peut tuer (souffle ou coup mortel avec des dégâts, départ en navette), avec l'heure de son coup. Le coup d'un joueur porté après garde son tueur (un survivant achevé) ; un coup porté avant ne compte pas ; un passager de la navette n'a jamais de tueur.
+- **Les 17 mineurs**, corrigés :
+  - réunion (D130) : la fouille lâchait l'arme du sac avec des munitions périmées (la machine du joueur lâche maintenant son sac elle-même) ; la trêve laissait passer les yeux du Rêveur et les gestes déjà commencés ; le consigné gardait ses pouvoirs ; le poison courait pendant que la réunion ou la panne empêchait l'antidote ;
+  - navette (D140) : le titre du Bouffon ; la navette impossible qui bloquait les autres évènements ; deux Liés dissidents partis ensemble ;
+  - armes (D132) : les munitions des armes confisquées ;
+  - cassette (D131) : la colonne revenue trop tôt ;
+  - les morts savent (D136) : le corps nettoyé relevé puis retué ;
+  - patate chaude (D137) : la cause posée sur les joueurs à 8 m ; les joueurs sans le mod repoussés à travers les murs ;
+  - fuite de gaz (D139) : le meurtre dans les 3 s ; le Rêveur endormi dans la dernière seconde ;
+  - aimantés (D141) : la surcharge d'un joueur sans le mod ;
+  - soleil (D138) : les radios remises dans l'état du début ; la téléportation courte prise pour un mouvement.
+- **Écartés (4) :** la tablette qui dit « ramassée » 2 s après une chute de la cassette (vrai, mais la correction proposée ne changeait rien de visible) ; un joueur qui saute sans arrêt n'est jamais aimanté (voulu) ; un délai de la bombe plus long que le chrono (seulement hors des réglages par défaut, et prévu) ; sur une place de la navette, la touche monte au lieu de lancer le pouvoir (voulu par la fiche).
+- **Contre-vérification** (2 agents) : les 18 corrections sont complètes. Deux nouveaux défauts mineurs, nés de deux corrections combinées, corrigés ensuite :
+  - la touche « consommer » d'un empoisonné, rendue pendant la trêve pour l'antidote, rechargeait aussi le pouvoir de son rôle : seul l'antidote passe maintenant ;
+  - avec « Consigne du fouillé » à 0, le secours de l'hôte pour vider un sac reconnaissait l'objet à son seul type : un objet du même type remis dans le sac dans la seconde et demie retombait. Il regarde maintenant si un nouvel objet de ce type est apparu au sol.
+- **Contrôles :** syntaxe et portée (`luacheck.py`), noms du jeu (`verify_mod.py`), bandeaux (`banners.py`, qui refuse aussi « bâtiment »), pages, essais de la mise à jour, construction de l'archive. **Jamais lancé en jeu.**
+- **Version :** 0.16.0. Pas installée, pas publiée.

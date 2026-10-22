@@ -2,7 +2,27 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.15.1
+## 0.16.0
+
+- **Douze nouveaux évènements aléatoires** remplacent les cinq de la 0.15.0, qui ne faisaient que copier des pouvoirs de rôles :
+  - **Réunion d'urgence** : tout le monde est appelé en un lieu, chrono et machines arrêtés ; débat sous trêve, vote avec la touche de pouvoir, puis le désigné est fouillé et consigné. Son camp n'est jamais dit.
+  - **La cassette du corbeau** : une cassette anonyme donne deux ou trois noms, dont au moins un dissident. Celui qui la ramasse l'écoute seul ; glissée dans une radio, elle parle à tous.
+  - **Contrôle des armes** : annoncé 30 s à l'avance, un scan nomme à tous chaque porteur d'arme, main et sac.
+  - **Panne générale** : machines bloquées, caméras noires, radios muettes, jusqu'à ce que deux joueurs appuient ensemble sur deux boîtiers d'alarme éloignés, ou 75 s au plus.
+  - **Micro ouvert** : celui qui se tient au pupitre des caméras est entendu dans tout le vaisseau.
+  - **Colis prioritaire** : un colis à livrer à une balise lointaine ; livré, le chrono gagne 2 min, sinon il en perd 1. Son porteur brille et bipe.
+  - **Les morts savent** : seuls les morts voient la capsule de secours, et bipent là où ils flottent pour guider les vivants, ou les égarer. Trouvée : 2 min de plus au chrono.
+  - **Patate chaude** : une bombe passe de joueur en joueur au contact et explose au bout d'un temps secret. Elle ne tue pas, sauf réglage.
+  - **1, 2, 3, soleil !** : on bouge pendant la musique des radios, on se fige quand elle s'arrête ; qui bouge, frappe ou tire est épuisé.
+  - **Fuite de gaz** : une fuite dans un secteur occupé, une explosion 30 s plus tard, puis un air qui épuise.
+  - **Dernière navette** (désactivée par défaut : elle peut finir la partie) : dans les 3 dernières minutes, deux places à bord. Deux employés font gagner les employés, un dissident fait gagner les dissidents, deux dissidents quittent le vaisseau.
+  - **Aimantés** : pendant 40 s, les joueurs trop proches se repoussent.
+- Chaque évènement a son interrupteur dans le groupe ÉVÈNEMENTS et ses réglages dans son propre groupe (ÉV. RÉUNION, ÉV. CASSETTE…). La pause entre deux évènements compte depuis la fin du précédent.
+- **Groupe TEST :** « Déclencher un évènement » lance n'importe lequel, même désactivé ; « ARRÊTER L'ÉVÈNEMENT » arrête celui qui tourne.
+- **Nouveau réglage personnel** « Sons des évènements », dans MES RÉGLAGES. Ces sons sont provisoires.
+- **Tous les joueurs doivent passer à la 0.16.0** : une version plus ancienne ne voit pas les évènements.
+
+## 0.15.1 (non publiée)
 
 - **Encyclopédie des rôles commune à tous :** les **flèches gauche et droite de l'ordinateur des tutoriels** (ses propres boutons, que chacun peut presser) changent de rôle, et tout le monde voit la même page sur le grand écran : on peut présenter les rôles devant tout le monde. Une vidéo en cours s'arrête (dans le jeu, ces flèches avançaient ou reculaient la vidéo de 10 secondes) ; les autres boutons de l'ordinateur relancent les vidéos comme avant. Les touches du mod ne tournent plus les pages. Il faut que l'hôte ait le mod.
 - **Le texte tient sur le grand écran :** la taille de la police s'adapte à chaque page (elle était beaucoup trop grande, et la page coupée).
@@ -122,7 +142,7 @@ Le réglage « Rôle forcé pour l'hôte » propose ces huit rôles pour les ess
 - **0.7.4** : pendant l'envol de la Fée, les autres voient une boule violette à la place de son corps. Testée à deux : la boule apparaît, mais le corps reste visible.
 - **0.7.5** : le corps de la Fée est réellement caché pendant l'envol ; boule de 25 cm ; envol de 5 s. Le journal note comment chaque réglage est changé ; un lien est révélé en une ligne à la fin. Testée à deux : tout fonctionne.
 - **0.7.6** : le Métamorphe garde sa propre couleur dans la liste des joueurs pendant le déguisement. Jouée à cinq le 6 octobre ; ce correctif n'est pas confirmé (le journal de l'hôte dit n'avoir pas trouvé sa propre ligne). Un blocage du jeu au lancement d'une partie, cause non établie (D72).
-- **0.8.0** : une touche lance tous les pouvoirs (les yeux fermés ne servent plus qu'au Rêveur) ; le Métamorphe peut prendre l'apparence d'un cadavre ; le Shérif n'a plus de carte dans son sac, une carte d'accès posée dans le bâtiment lui est montrée en surbrillance. Installée avec la 0.8.3 ; pas encore lancée en jeu.
+- **0.8.0** : une touche lance tous les pouvoirs (les yeux fermés ne servent plus qu'au Rêveur) ; le Métamorphe peut prendre l'apparence d'un cadavre ; le Shérif n'a plus de carte dans son sac, une carte d'accès posée dans le vaisseau lui est montrée en surbrillance. Installée avec la 0.8.3 ; pas encore lancée en jeu.
 - **0.8.1** : le protégé de l'Ange gardien se relève même s'il était le dernier employé en vie, sans que la partie se termine. Installée avec la 0.8.3 ; pas encore lancée en jeu.
 - **0.8.2** : le lien des Liés ne joue plus qu'une fois : un lié relevé (par un Ange gardien, par exemple) n'est pas retué si l'autre meurt de nouveau. Installée avec la 0.8.3 ; pas encore lancée en jeu.
 - **0.8.3** : l'apparition du Revenant dure 20 s par défaut (réglable jusqu'à 60 s) ; il retrouve ses apparitions à chaque mort, donc un Revenant réanimé qui meurt de nouveau peut se manifester encore. Installée avec la 0.8.3 ; pas encore lancée en jeu.

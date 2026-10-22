@@ -1,8 +1,8 @@
 # LPRoles — rôles supplémentaires pour LOCKDOWN Protocol
 
-Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.11.4, c'est elle que reçoit la mise à jour automatique. Ce document décrit la 0.12.0.
+Version 0.16.0, **jamais lancée en jeu**, pas encore installée. **Pas encore publiée** : la dernière version publiée sur GitHub (https://github.com/Freyzah/LPRoles) est la 0.13.1, c'est elle que reçoit la mise à jour automatique. Ce document décrit la 0.16.0.
 
-À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-0.12.0-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
+À partir de la 0.9.0, le mod se met à jour tout seul au lancement du jeu (voir « Mise à jour automatique »). Vos amis installent la 0.9.0 une dernière fois à la main, avec l'archive complète `LPRoles-<version>-pour-les-joueurs.zip` (ou celle de la 0.9.0, qui se mettra à jour seule).
 
 **État des tests :**
 - **0.1.0** : testée en solo par l'hôte (chargement, rêve, recharge, envol, carte du Shérif).
@@ -32,7 +32,7 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.7.4** : pendant l'envol de la Fée, les autres voient une boule violette à la place de son corps. Testée à deux : la boule apparaît, mais le corps reste visible.
 - **0.7.5** : le corps de la Fée est réellement caché pendant l'envol ; boule de 25 cm ; envol de 5 s. Le journal note comment chaque réglage est changé ; un lien est révélé en une ligne à la fin. Testée à deux : tout fonctionne.
 - **0.7.6** : le Métamorphe garde sa propre couleur dans la liste des joueurs pendant le déguisement. Jouée à cinq le 6 octobre ; ce correctif n'est pas confirmé (le journal de l'hôte dit n'avoir pas trouvé sa propre ligne). Un blocage du jeu au lancement d'une partie, cause non établie (D72).
-- **0.8.0** : une touche lance tous les pouvoirs (les yeux fermés ne servent plus qu'au Rêveur) ; le Métamorphe peut prendre l'apparence d'un cadavre ; le Shérif n'a plus de carte dans son sac, une carte d'accès posée dans le bâtiment lui est montrée en surbrillance. Installée avec la 0.8.3 ; pas encore lancée en jeu.
+- **0.8.0** : une touche lance tous les pouvoirs (les yeux fermés ne servent plus qu'au Rêveur) ; le Métamorphe peut prendre l'apparence d'un cadavre ; le Shérif n'a plus de carte dans son sac, une carte d'accès posée dans le vaisseau lui est montrée en surbrillance. Installée avec la 0.8.3 ; pas encore lancée en jeu.
 - **0.8.1** : le protégé de l'Ange gardien se relève même s'il était le dernier employé en vie, sans que la partie se termine. Installée avec la 0.8.3 ; pas encore lancée en jeu.
 - **0.8.2** : le lien des Liés ne joue plus qu'une fois : un lié relevé (par un Ange gardien, par exemple) n'est pas retué si l'autre meurt de nouveau. Installée avec la 0.8.3 ; pas encore lancée en jeu.
 - **0.8.3** : l'apparition du Revenant dure 20 s par défaut (réglable jusqu'à 60 s) ; il retrouve ses apparitions à chaque mort, donc un Revenant réanimé qui meurt de nouveau peut se manifester encore. Installée avec la 0.8.3 ; pas encore lancée en jeu.
@@ -70,6 +70,7 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.15.0** : encyclopédie des rôles sur l'écran des tutoriels du lobby, évènements aléatoires (groupe ÉVÈNEMENTS), statistiques dans l'onglet LPROLES. Installée le 22 octobre, pas publiée.
 - **Essai seul de l'utilisateur (0.15.0)** : l'encyclopédie s'affiche sur le grand écran, mais le texte est beaucoup trop grand (coupé à gauche, à droite et en haut). L'utilisateur la veut commune à tous, tournée avec les boutons de l'ordinateur et non avec des touches.
 - **0.15.1** : encyclopédie commune à tous, tournée avec les flèches de l'ordinateur des tutoriels ; police adaptée à l'écran. **Jamais lancée en jeu.** Installée le 22 octobre (jeu fermé), pas publiée.
+- **0.16.0** : douze nouveaux évènements aléatoires remplacent les cinq de la 0.15.0, sur un nouveau socle (groupe ÉVÈNEMENTS, plus un groupe ÉV. par évènement) ; réglage personnel « Sons des évènements ». **Jamais lancée en jeu.** Installée le 22 octobre (jeu fermé), pas publiée.
 
 ## Ce qui est installé
 
@@ -140,7 +141,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 
 | Rôle | Camp par défaut | Pouvoir |
 |---|---|---|
-| **Shérif** | Employé | Une carte d'accès posée dans le bâtiment lui est montrée en surbrillance (lui seul la voit ainsi) ; connaît une personne sûre, marquée 20 s d'une sphère verte |
+| **Shérif** | Employé | Une carte d'accès posée dans le vaisseau lui est montrée en surbrillance (lui seul la voit ainsi) ; connaît une personne sûre, marquée 20 s d'une sphère verte |
 | **Recruteur** | Dissident | Convertit un employé en dissident, 45 s après le geste. Une fois par partie, pas pendant la première minute |
 | **Rêveur** | Les deux | Fantôme 18 s ; son corps reste assis, yeux fermés, vulnérable. Une charge |
 | **Fée** | Les deux | Fantôme rapide et intouchable 5 s ; les autres voient une boule violette et une lumière à la place de son corps, qui réapparaît là où elle se pose. Une charge |
@@ -247,7 +248,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 ### Médecin (employé par défaut, depuis la 0.12.0)
 
 - **En permanence :** il voit la **vie de chaque joueur**, un nombre au-dessus de sa tête, vert à partir de 70, orange à partir de 30, rouge en dessous. Lui seul le voit.
-  - Le nombre est un texte posé dans le bâtiment, tourné vers le Médecin : **un mur le cache**, il ne sert pas à repérer quelqu'un à travers une cloison.
+  - Le nombre est un texte posé dans le vaisseau, tourné vers le Médecin : **un mur le cache**, il ne sert pas à repérer quelqu'un à travers une cloison.
   - Il n'est pas affiché pour un mort. La réserve d'un Vampire est comptée (115 pour 100 + 15).
   - Réglage « Voit la vie au-dessus des têtes » sur NON : il ne garde que son soin.
 - **Son pouvoir :** il vise un joueur à 6 m au plus et appuie : ce joueur **retrouve toute sa vie aussitôt** (« … EST SOIGNÉ » chez lui, « UN MÉDECIN T'A SOIGNÉ » chez le joueur). 2 soins par partie.
@@ -295,6 +296,7 @@ Un rôle dont les utilisations sont comptées peut en récupérer une en consomm
 - Elle ne peut pas être la même touche que celle de consommation : si on choisit celle de l'autre, les deux réglages échangent leurs touches.
 - Boutons de souris (depuis la 0.8.15) : essayés en jeu par l'utilisateur, ils fonctionnent. Deux limites connues : si un joueur a lui-même mis une action du jeu sur l'un de ces boutons (réglages de touches du jeu), le bouton fera les deux à la fois ; et une souris dont le logiciel (Logitech, Razer...) a donné un autre rôle à ces boutons n'envoie plus « bouton 4 / 5 », le mod ne la verra donc pas.
 - Elle ne fait rien quand le menu Échap est ouvert, pendant un envol ou un rêve, ni pour un joueur hypnotisé.
+- Pendant certains évènements aléatoires, elle sert à l'évènement : voter (réunion d'urgence), monter dans la navette ou en descendre (sur une place seulement), biper pour un mort (les morts savent). Pendant le débat d'une réunion, elle ne fait rien. Voir « Évènements aléatoires ».
 - La page du rôle sur la tablette et l'onglet LPROLES écrivent la touche choisie.
 - Le Rêveur garde son geste (les deux yeux fermés) : pour lui, la touche affiche seulement « RÊVEUR : FERME LES DEUX YEUX ».
 
@@ -312,6 +314,7 @@ Un rôle dont les utilisations sont comptées peut en récupérer une en consomm
 
 - Par défaut **G**. Chaque joueur la choisit pour lui-même dans l'onglet LPROLES, groupe **MES RÉGLAGES**, parmi les touches que le jeu n'utilise pas : les lettres G, B, N, L, M, Y, I, P et les deux boutons latéraux de la souris, **SOURIS 4** (celui de l'arrière) et **SOURIS 5** (celui de l'avant).
 - Elle consomme l'objet tenu en main pour rendre une utilisation du pouvoir (voir « Recharger un pouvoir »).
+- Pendant certains évènements aléatoires, elle sert aussi : diffuser la cassette du corbeau, cassette en main près d'une radio ; biper pour un Revenant mort qui a encore des apparitions (les morts savent). Pendant le débat et le vote d'une réunion, et pour le consigné, elle ne fait rien, sauf qu'un présent empoisonné qui le sait peut boire son antidote pendant le débat ou le vote.
 - Elle ne fait rien quand le menu Échap ou la tablette est ouvert, quand les mains sont occupées (échange entre la main et le sac, objet tout juste pris ou posé), pour un Clandestin caché, ni pour un rôle qui n'a pas d'objet de recharge.
 - L'ancienne recharge en fermant les yeux est désactivée par défaut. L'hôte peut la remettre pour le Rêveur (groupe RÊVEUR, « Recharger aussi en fermant les yeux »).
 - Elle n'apparaît pas dans le menu des touches du jeu (voir `decisions-mod.md`, D38).
@@ -321,6 +324,7 @@ Un rôle dont les utilisations sont comptées peut en récupérer une en consomm
 - Les quinze sons du mod sont réglés au **même niveau d'écoute**, -23 LUFS, mesuré comme le fait la radiodiffusion (ITU-R BS.1770) sur les 0,4 s les plus fortes de chaque son. C'est le niveau qu'avaient déjà le son de l'envol et le son de consommation, ceux que l'utilisateur avait entendus en jeu sans les trouver déplacés.
 - Exception : le son de l'envol de la Fée est 3 dB plus bas (-26 LUFS), l'utilisateur le trouvant un peu fort à l'écoute en jeu.
 - Deux sons restent un peu en dessous, `shapeshift` (-25,6) et `clean` (-24,1) : les monter davantage les ferait saturer.
+- Les seize sons des évènements aléatoires (0.16.0, `ev_….wav`) suivent la même règle : -23 LUFS pour les sons brefs, -26 pour ceux qui durent ou se répètent (souffle de la cassette, sifflement et toux du gaz, grésillement des aimantés). Le réglage ci-dessous s'applique aussi à eux (pas encore entendu en jeu).
 - Chaque joueur règle le tout dans MES RÉGLAGES, « Volume des sons du mod (%) », de 10 à 200 % (100 par défaut). Essayé en jeu : il fonctionne.
 - Les sons du mod suivent le curseur de volume du jeu (vérifié en jeu par l'utilisateur le 7 octobre) : le réglage ci-dessus s'y ajoute.
 - Les sons du jeu lui-même n'ont pas pu être mesurés (ils sont dans un format que rien ici ne sait lire) : le niveau par rapport au jeu se juge à l'oreille, avec ce réglage.
@@ -417,9 +421,9 @@ Dix sons composés par la même amie (9 octobre 2026). Un joueur les coupe tous 
 Un onglet **LPROLES** s'ajoute au menu Échap du jeu, juste après l'onglet « Règles ».
 
 - **Pour tous :** le rôle du joueur et le rappel de son fonctionnement (les mêmes lignes que sur la tablette ; une ligne longue continue sur la rangée suivante).
-- **Pour tous :** le groupe MES RÉGLAGES (touche de pouvoir, touche de consommation, page de la tablette), enregistré sur sa propre machine.
+- **Pour tous :** le groupe MES RÉGLAGES (touche de pouvoir, touche de consommation, page de la tablette, sons), enregistré sur sa propre machine.
 - **Pour l'hôte :** tous les réglages de la partie, **un groupe à la fois** (depuis la 0.11.1). La première rangée de réglages, « Réglages affichés », choisit le groupe avec ses flèches ; seul ce groupe occupe la page.
-  - Ordre des groupes : **MES RÉGLAGES**, **TEST**, **RÔLE FORCÉ**, **GÉNÉRAL**, **RÔLES ACTIFS**, puis les rôles par ordre alphabétique. La flèche gauche depuis MES RÉGLAGES mène aux derniers rôles de l'alphabet.
+  - Ordre des groupes : **MES RÉGLAGES**, **TEST**, **RÔLE FORCÉ**, **GÉNÉRAL**, **ÉVÈNEMENTS**, les douze groupes des évènements (**ÉV. RÉUNION**, **ÉV. CASSETTE**, **ÉV. ARMES**, **ÉV. PANNE**, **ÉV. MICRO**, **ÉV. COLIS**, **ÉV. MORTS**, **ÉV. PATATE**, **ÉV. SOLEIL**, **ÉV. GAZ**, **ÉV. NAVETTE**, **ÉV. AIMANTÉS**, depuis la 0.16.0), **RÔLES ACTIFS**, puis les rôles par ordre alphabétique. La flèche gauche depuis MES RÉGLAGES mène aux derniers rôles de l'alphabet.
   - **TEST** est à un clic de MES RÉGLAGES.
   - **RÔLE FORCÉ** (depuis la 0.11.5) liste tous les rôles, un par rangée, par ordre alphabétique : un clic sur un rôle le force pour l'hôte (OUI), un clic de plus l'enlève. Une seule rangée est sur OUI à la fois. C'est le même réglage que « Rôle forcé pour l'hôte » du groupe TEST, qui reste là. Quand un rôle est forcé, l'onglet s'ouvre directement sur ce groupe.
   - **RÔLES ACTIFS** réunit l'interrupteur OUI/NON de chaque rôle (et des Liés), par ordre alphabétique. Chaque rôle garde aussi le sien dans son propre groupe : les deux rangées restent identiques.
@@ -486,26 +490,221 @@ C'est l'hôte qui tient la page et l'envoie aux machines qui ont le mod (message
 
 ## Évènements aléatoires
 
-Groupe **ÉVÈNEMENTS** de l'onglet LPROLES (juste après GÉNÉRAL), **actif par défaut**. Pendant une partie, une fois les rôles annoncés, l'hôte tire un évènement parmi ceux qui sont activés : le premier après 2 min (réglable), puis toutes les 2 min 30 environ (réglable, plus ou moins un quart au hasard), jamais deux fois de suite le même. Chacun est annoncé à tous par un bandeau violet et noté dans le récapitulatif.
+**Depuis la 0.16.0**, douze évènements remplacent les cinq de la 0.15.0 (panne de radio, grand échange, soins pour tous, les morts se montrent, fuite d'informations). Ceux-là ont été retirés à la demande de l'utilisateur : ils ne faisaient que copier des pouvoirs de rôles. **Aucun des douze n'a encore été lancé en jeu.**
 
-| Évènement | Effet |
-|---|---|
-| Panne de radio | Les micros de tous les vivants sont coupés 15 s (réglable). Un bâillon déjà en cours n'est jamais raccourci. |
-| Grand échange | Deux vivants tirés au hasard échangent leurs places, une seconde après le bandeau (le son de l'échange s'entend). Jamais un Rêveur endormi, une Fée en vol ou un Clandestin caché. |
-| Soins pour tous | Tous les vivants retrouvent toute leur vie. Le poison reste. |
-| Les morts se montrent | Les fantômes de tous les morts sont vus et entendus de tous 10 s (réglable), comme le Revenant. Un Revenant qui a encore une apparition garde son pouvoir libre. |
-| Fuite d'informations | Tout le monde apprend le nombre de dissidents en vie (la Taupe et le Vampire comptent ; un recruté compte une fois converti ; le Bouffon et l'Amnésique non). |
+### Règles communes
 
-- Pas d'évènement quand le mod est désactivé, ni pendant les 3 s qui suivent la victoire du Bouffon.
-- **Groupe TEST, « Déclencher un évènement »** : en partie, choisir l'évènement avec les flèches ; il part quand la rangée est restée **une seconde et demie** sur lui (les flèches passent sur les autres sans les déclencher), puis la rangée revient sur AUCUN. Une partie où il a servi ne compte pas dans les statistiques.
-- **Limites :** seuls les joueurs qui ont le mod peuvent être réduits au silence ou soignés (tous l'ont). **Jamais essayé en jeu** : la panne de radio vue de l'autre côté, deux téléports en même temps, plusieurs fantômes à la fois.
+- **Quand.** Pendant une partie, une fois les rôles annoncés. Le premier vient 2 min après le début. Les suivants viennent après une pause de 2 min 30 en moyenne (plus ou moins un quart, au hasard), **comptée depuis la fin de l'évènement précédent**.
+- **Un seul à la fois**, tiré au hasard parmi ceux qui sont activés et possibles à ce moment. Chacun a ses conditions (nombre de vivants, temps au chrono, un mort, un dissident en vie…), données avec chaque évènement. Jamais deux fois de suite le même, sauf s'il est le seul possible. Si aucun ne l'est, l'hôte réessaie 10 s plus tard.
+- **Jamais dans la dernière minute du chrono**, sauf la navette si son attente est réglée sous 40 s : elle peut partir tant qu'il reste l'attente + 20 s.
+- **Interrupteurs, groupe ÉVÈNEMENTS.** « Évènements aléatoires » (OUI) les coupe tous. Puis un interrupteur par évènement, tous sur OUI **sauf « Dernière navette (peut finir la partie) », sur NON** : elle peut décider de la partie. Couper un interrupteur arrête aussitôt l'évènement en cours, sauf un évènement lancé par le groupe TEST, qui ignore les interrupteurs : seuls « Mod actif » sur NON, la fin de la partie ou la rangée TEST l'arrêtent avant sa fin.
+- **Réglages du groupe ÉVÈNEMENTS :** « Premier évènement après (s) » (120), « Pause moyenne entre deux (s) » (150). Chaque évènement a en plus son propre groupe (ÉV. RÉUNION, ÉV. CASSETTE…), décrit plus bas.
+- **Ce qu'on voit.** Des bandeaux annoncent l'évènement. Ce qui presse (un compte à rebours, un vote, « SOLEIL ! ») s'écrit sur la ligne du haut de l'écran, tout de suite, à la place du message d'avant. La page du rôle sur la tablette (flèche **>**) met l'évènement dans son bandeau sombre, avec le temps qui reste, quel que soit le rôle. Des colonnes lumineuses, des lumières et des sons montrent les lieux. Colonnes et lumières ne sont jamais rouges : c'est la couleur des dissidents.
+- **Quel nom est dit.** Ce qui se voit nomme le visage porté : un Métamorphe déguisé est annoncé sous le nom de celui qu'il copie (un vote, le porteur de la bombe, le joueur au micro…). Ce que le vaisseau enregistre nomme le vrai joueur (l'appel de la réunion, le scan des armes, la relance de la panne, la cassette). L'écart entre les deux est un indice, voulu.
+- **À la fin d'un évènement,** tout ce qu'il a posé est retiré : colonnes, lumières, sons, sirènes, chrono figé, machines bloquées, trêves, touches, voiles, et la cassette, le colis ou la capsule où qu'ils soient. Les dégâts, la fatigue, les objets tombés, les armes confisquées et le temps gagné ou perdu au chrono restent.
+- **Le chrono.** À zéro, les dissidents gagnent (règle du jeu). Du temps gagné aide donc les employés, du temps perdu les dissidents.
+- **Morts d'un évènement** (fuite de gaz ; bombe de la patate chaude, si elle peut tuer ; départ en navette) : la mort n'a pas de tueur. Le Martyr ne révèle rien, le Bouffon ne gagne pas, le Vampire ne peut pas boire le corps (avec « Seulement ses propres victimes », sur OUI par défaut), personne ne compte d'élimination. Le récapitulatif dit « meurt (fuite de gaz) », « meurt (bombe) » ou « part en navette ». Un coup porté par un joueur **après** l'explosion garde son tueur (un survivant achevé). Un Lié suit son partenaire comme d'habitude ; l'Ange gardien relève son protégé, sauf un passager de la navette.
+- **Épuisé** (soleil, patate chaude, gaz, aimantés) : l'objet en main tombe et le joueur titube un moment. Courir épuisé fait perdre de la vie : c'est la règle du jeu. Un joueur sans le mod n'est épuisé que par une surcharge des aimantés : son objet tombe et il s'arrête net.
+- **Un joueur hypnotisé** ne peut pas se servir des touches d'un évènement (voter, monter dans la navette, biper) : il entend le son d'échec.
+- **Pas d'évènement** quand le mod est désactivé, ni pendant une fin de partie (les 3 s de la victoire du Bouffon, les 3 s avant la fin par la navette).
+- **Récapitulatif.** Chaque évènement y a ses lignes : « Évènement : … », puis ce qui s'est passé (votes, lecteurs de la cassette, porteurs d'armes, livreur, bips, joueurs pris…). Le journal du mod note le début et la fin de chacun (« Évènement … commencé », « … terminé »).
+
+**Tous les joueurs doivent avoir la 0.16.0.** Une machine plus ancienne ignore les messages des évènements : ni bandeau, ni colonne, ni touche, et un passager de la navette pourrait marcher. Ce que fait le jeu lui-même (chrono, machines bloquées, explosions, poussées) touche tout le monde.
+
+**Sons.** Les sons des évènements sont provisoires, générés pour l'occasion : bips, carillons, souffle, grésillements, toux. La voix « un, deux, trois… soleil ! » est la voix française de Windows (Hortense). L'amie qui a fait les sons des rôles pourra les remplacer : même nom de fichier dans `sounds` (`ev_meeting_chime.wav`, `ev_sun_voice.wav`…), converti avec `python tools\lp\sound.py` et mis au niveau avec `python tools\lp\loudness.py --set -23` (`--set -26` pour un son qui dure ou se répète). Chaque joueur les coupe tous pour lui dans MES RÉGLAGES, « **Sons des évènements** » (OUI). Les sons du jeu lui-même (sirènes des boîtiers, explosions, musique des radios) restent.
+
+**Essayer : groupe TEST, « Déclencher un évènement ».** En partie, choisissez l'évènement avec les flèches : il part quand la rangée est restée **une seconde et demie** sur lui, puis la rangée revient sur AUCUN.
+- Il part sans ses conditions (nombre de joueurs, moment de la partie), **même si son interrupteur est sur NON** (c'est ainsi qu'on essaie la navette), et sans compter comme sa fois de la partie. Un évènement en cours est d'abord arrêté.
+- **« ARRÊTER L'ÉVÈNEMENT »** arrête celui qui tourne (« TEST : ÉVÈNEMENT ARRÊTÉ », ou « TEST : RIEN À ARRÊTER »).
+- Hors d'une partie : « TEST : PAS DE PARTIE EN COURS ». Un évènement impossible dit pourquoi (« TEST : AUCUNE RADIO LIBRE »…) ou « TEST : ÉVÈNEMENT IMPOSSIBLE ».
+- Ce qui s'essaie seul est dit avec chaque évènement. Une partie où la rangée a servi ne compte pas dans les statistiques.
+
+### Réunion d'urgence
+
+Une fois par partie, à 4 vivants au moins, pas avant 3 min de partie, ni sous 1 min 30 au chrono.
+
+- **L'appel.** Un carillon, puis « RÉUNION D'URGENCE », « RESTAURANT, DANS 45 S », « CHRONO ET MACHINES ARRÊTÉS ». Une colonne cyan marque le lieu pour tous, morts compris, à travers les murs. La sirène d'un boîtier d'alarme du secteur sonne par à-coups, pour guider à l'oreille (le lieu est tiré dans un secteur qui en a un, quand c'est possible). Personne n'est téléporté : on voit qui vient avec qui.
+- **Pendant la marche,** le chrono est figé et aucune machine de tâche ne prend ni ne rend d'objet : sécher la réunion ne fait rien gagner sur les tâches. Les pouvoirs restent libres.
+- **L'appel, à l'heure dite,** compte les vivants à 12 m au plus de la colonne, au même étage. Un Rêveur endormi compte si son corps est là ; un Clandestin caché n'est jamais présent. « TOUT LE MONDE EST LÀ », ou « ABSENTS : … » (vrais noms, morts et vivants mêlés ; au-delà de quatre, leur nombre, et les noms sur la tablette).
+- **Le débat (30 s) se tient en trêve.** Les présents ne peuvent ni frapper, ni tirer, ni ramasser, poser ou changer d'objet ; ils marchent et parlent. **Les pouvoirs des rôles sont bloqués aussi** (« TRÊVE : POUVOIR BLOQUÉ »), le geste du Rêveur compris. Seule exception : un empoisonné qui le sait peut boire son antidote. Un vivant qui arrive en retard est annoncé (« EN RETARD : … »), entre dans la trêve et peut voter.
+- **Le vote** occupe les 20 dernières secondes du débat. Visez un joueur de la réunion et appuyez sur la touche de pouvoir (« TON VOTE : … ») ; sans personne en vue, c'est un vote blanc. On peut changer d'avis jusqu'au bout. Les votes restent secrets jusqu'au récapitulatif.
+- **Le résultat.** Chrono, machines et trêve repartent aussitôt. Il faut au moins 2 voix, au moins la moitié des voix exprimées, et pas d'égalité en tête ; sinon « PAS DE MAJORITÉ ».
+- **La fouille.** « FOUILLÉ : … » (vrai nom), puis ce qu'il a en main et dans son sac (« MAIN : PISTOLET », « SAC : OBJET », ou « POCHES VIDES ») : tout tombe à ses pieds, chacun peut le ramasser. Puis il est **consigné** 30 s : ni marcher, ni agir, ni pouvoir ; il peut parler et regarder, et on peut le frapper. **Son camp n'est jamais dit.** Un désigné endormi, en vol ou caché est d'abord ramené dans son corps (le Clandestin sort là où il s'était caché), puis fouillé.
+- **Un coup pendant la trêve** est annoncé, sous le visage vu : « … A FRAPPÉ EN RÉUNION » (un présent, en gardant la gâchette du SMG, par exemple) ou « … ATTAQUE LA RÉUNION » (un absent qui frappe un présent).
+- **Réglages (ÉV. RÉUNION) :** « Temps pour venir (s) » (45), « Durée du débat (s) » (30), « Vote : dernières secondes du débat » (20), « Rayon de l'appel (cm) » (1200), « Consigne du fouillé (s, 0 = non) » (30).
+- **Rôles.** Le poison s'arrête de courir tant que les machines sont bloquées (l'antidote ne peut pas être fait) : le temps restant reste figé sur les pages. Un Bouffon désigné puis consigné reste un appât : tué par un employé, il gagne. Un joueur sans le mod est compté, mis en trêve et fouillé, mais ne vote pas, et sa consigne ne bloque que ses actions.
+- **Seul :** l'hôte est le seul présent, « PAS DE MAJORITÉ ». À deux, une voix suffit pendant un essai.
+
+### La cassette du corbeau
+
+Une fois par partie, à 3 vivants au moins dont un dissident, pas sous 1 min 30 au chrono.
+
+- **Une cassette anonyme** (une cassette de musique du jeu) apparaît dans un secteur annoncé (« CASSETTE ANONYME », « SECTEUR BOTANIQUE »), à 12 m au moins de tout vivant quand c'est possible. Une colonne violette la montre à tous, à travers les murs, tant qu'elle est au sol.
+- **Son contenu** est tiré et figé quand elle apparaît : l'heure du chrono (« ENREGISTRÉE À 6:12 AU CHRONO ») et deux noms de vivants, trois à partir de 6 vivants, **dont au moins un dissident** (peut-être tous). Ce sont les vrais noms : un Métamorphe déguisé y est sous le sien. La Taupe et les recrues déjà converties comptent comme dissidents ; le Bouffon, l'Amnésique sans rôle de dissident et une recrue pas encore convertie, non.
+- **Le premier qui la ramasse l'écoute seul :** un grésillement chez lui, les bandeaux du contenu, puis le contenu reste sur sa tablette avec la façon de la diffuser. Les autres lisent seulement « LA CASSETTE A ÉTÉ RAMASSÉE », sans nom. Chaque nouveau porteur l'écoute à son tour, une fois : deux lecteurs peuvent se confirmer, ou se contredire.
+- **La diffuser :** la glisser dans le lecteur d'une radio, ou appuyer sur la touche « consommer », cassette en main, à 2,5 m au plus d'une radio (sinon « APPROCHE-TOI D'UNE RADIO »). « LA CASSETTE PARLE » : tout le monde reçoit le contenu, un grésillement part de la radio, et le contenu reste 30 s sur toutes les tablettes. La cassette disparaît.
+- **Posée ou tombée** (un porteur tué, par exemple), elle est annoncée au sol 2 s plus tard (« CASSETTE AU SOL : … ») et sa colonne revient. Un porteur qui quitte la partie la fait réapparaître dans son dernier secteur.
+- **Pas diffusée à temps :** « LA CASSETTE S'EST EFFACÉE », et elle disparaît.
+- **Réglage (ÉV. CASSETTE) :** « Effacée au bout de (s) » (150).
+- **Rôles.** Le Voleur peut la prendre dans la main d'un porteur, sans bandeau : personne ne l'a vu. Un Clandestin caché qui la porte ne révèle rien. Un bâillonné peut la diffuser. Un joueur sans le mod peut la ramasser, mais n'entend rien ; il peut la glisser dans une radio.
+- **Seul :** sans dissident vivant, l'essai fabrique un contenu fictif, annoncé comme tel (« TEST : CONTENU FICTIF »).
+
+### Contrôle des armes
+
+Une fois par partie, à 3 vivants au moins, pas dans la dernière minute.
+
+- **Le préavis.** « CONTRÔLE DES ARMES », « DANS 30 S : MAIN ET SAC ». Chacun peut cacher son arme, la confier à quelqu'un, ou la garder. 10 s avant, « CONTRÔLE DANS 10 S », et chaque porteur lit, pour lui seul, ce qu'il porte (« TU PORTES : COUTEAU ») : un sac s'oublie vite.
+- **Le scan.** La sirène de chaque boîtier d'alarme (huit au plus) sonne une seconde, un bip de scanner, un éclair cyan sur l'écran de chaque vivant qui a le mod, « SCAN DU VAISSEAU ». La main et le sac de chaque vivant sont lus, joueurs sans le mod compris.
+- **Les armes :** couteau, scalpel, pistolet, revolver, shorty, fusil à pompe, SMG, fusil, C4, détonateur, grenade. Une arme posée au sol, dans une caisse ou dans une machine, une C4 posée ou une grenade lancée échappent au scan.
+- **Le résultat.** « PORTEURS D'ARMES : 2 », puis un bandeau par porteur, trois au plus (« PAUL PORTE : PISTOLET + COUTEAU ») ; au-delà, « 5 PORTEURS : VOIR TABLETTE ». Ou « AUCUNE ARME DÉTECTÉE ». La liste reste 40 s sur toutes les tablettes. Ce sont les vrais noms : le scan lit la personne, pas le visage. Par défaut, rien n'est confisqué : chacun fait ce qu'il veut de l'information.
+- **Réglages (ÉV. ARMES) :** « Préavis (s) » (30), « Confisquer les armes trouvées » (NON). Sur OUI, chaque arme trouvée est retirée et reposée à 25 m au moins de son porteur, avec ses munitions ; elle reste dans la partie (« ARMES CONFISQUÉES », « TON ARME EST CONFISQUÉE »). Un porteur endormi, en vol ou caché garde la sienne jusqu'à son retour.
+- **Rôles.** Un Rêveur endormi, une Fée en vol et un Clandestin caché sont contrôlés et nommés ; la cachette n'est pas révélée. Les morts ne sont pas contrôlés. Le Voleur peut prendre une arme pendant le préavis : c'est l'état au moment du scan qui compte.
+- **Seul :** l'évènement s'essaie seul.
+
+### Panne générale
+
+À 4 vivants au moins, pas sous 1 min 30 au chrono.
+
+- **Le courant saute.** Aucune machine de tâche ne prend ni ne rend d'objet (le chargeur du défibrillateur non plus), les écrans des caméras sont noirs, les radios se taisent. Les lumières, les portes et les lecteurs de carte ne sont pas touchés.
+- **Deux boîtiers d'alarme** de deux secteurs différents, loin l'un de l'autre (30 m au moins quand c'est possible), deviennent des balises. Chacune sonne 2 s toutes les 15 s, la seconde 7 s après la première, pour les trouver à l'oreille. « PANNE GÉNÉRALE », « BOTANIQUE + MACHINES », « APPUYEZ ENSEMBLE AUX ALARMES ».
+- **Relancer :** deux joueurs différents appuient sur le bouton des deux boîtiers à 3 s d'écart au plus. « COURANT RÉTABLI », « PAR … ET … » : les vrais noms, le réseau du vaisseau enregistre les appuis. Un seul appui : « RATÉ, SEUL BOTANIQUE A APPUYÉ » (le côté, jamais le nom) ; on peut réessayer aussitôt. Un coup sur le bouton compte aussi.
+- **Sans relance,** le courant revient seul au bout de 75 s (« LE COURANT REVIENT »).
+- **Attention :** appuyer sur un boîtier armé (fusible en place) déclenche aussi sa vraie alarme et l'use pour la partie. Le tirage évite les boîtiers armés quand il le peut.
+- **Réglages (ÉV. PANNE) :** « Durée maximale (s) » (75), « Écart permis entre les appuis (s) » (3), « Relance rapide : surrégime des machines » (NON). Sur OUI, une relance dans les 30 premières secondes fait tourner les machines deux fois plus vite pendant 1 min (chargeur de batteries, centrifugeuse, mélangeur, analyseur, nettoyeurs de filtres et de bocaux).
+- **Rôles.** Le poison s'arrête de courir pendant la panne (pas d'antidote possible). L'Échangeur et l'Écho n'aident pas : il faut deux joueurs différents. Les morts, un Rêveur endormi, une Fée en vol et un Clandestin caché ne peuvent pas appuyer. Un joueur sans le mod peut appuyer ; il garde ses écrans de caméras.
+- **Seul :** pendant un essai, la paire de boîtiers la plus proche est tirée, l'écart permis passe à 20 s et le même joueur peut faire les deux appuis.
+
+### Micro ouvert
+
+À 3 vivants au moins.
+
+- **Pendant 60 s,** le pupitre de la salle des caméras devient le haut-parleur du vaisseau : une colonne orange et une lampe orange « à l'antenne » le marquent. « MICRO OUVERT (60 S) », « PUPITRE DES CAMÉRAS ».
+- **Le vivant le plus proche du clavier,** à 2 m au plus et au même étage, prend le micro. Chaque joueur qui a le mod l'entend alors comme s'il parlait juste devant lui, avec un son de haut-parleur, où qu'il soit, morts compris. « AU MICRO : … » en haut de l'écran, et un carillon à chaque changement.
+- **Un seul orateur à la fois.** Il garde la place jusqu'à 50 cm au-delà de la distance. S'il s'éloigne, meurt, s'endort, s'envole ou se cache, la place va au plus proche (« MICRO LIBRE » s'il n'y a personne).
+- **À la fin,** « MICRO FERMÉ » : les voix redeviennent celles du jeu, entendues de près.
+- **Réglages (ÉV. MICRO) :** « Durée (s) » (60), « Distance du pupitre (cm) » (200).
+- **Rôles.** Le bâillon gagne : un bâillonné ne prend pas un micro libre, et un orateur bâillonné garde la place, muet. Un Métamorphe déguisé est annoncé sous le visage porté, mais on entend sa vraie voix. Un joueur sans le mod peut parler au micro, mais ne l'entend pas. L'orateur est seul, à un endroit que tout le monde connaît.
+- **Seul :** l'hôte peut prendre le micro, mais il faut une seconde machine pour l'entendre.
+
+### Colis prioritaire
+
+À 3 vivants au moins, avec plus de 3 min au chrono (et plus que le temps pour livrer + 30 s). Il peut revenir dans la même partie.
+
+- **Un colis** (une boîte de conserve du jeu) apparaît dans un secteur, à 12 m au moins de tout vivant quand c'est possible ; une balise (colonne cyan) l'attend dans un des deux secteurs les plus éloignés. « COLIS PRIORITAIRE », « BOTANIQUE VERS HÔPITAL », « À LIVRER EN 2:30 », « LIVRÉ : +2:00, PERDU : -1:00 ». Au sol, le colis a une colonne verte, à travers les murs.
+- **Son porteur ne se cache pas :** une lumière verte pulse sur lui et un bip doux s'entend autour (jusqu'à une dizaine de mètres), colis en main comme dans le sac. Personne n'est nommé : la lumière dit qui l'a. Chaque nouveau porteur lit « TU PORTES LE COLIS » et la balise.
+- **Livrer :** rester 3 s à 3 m au plus de la balise, **colis en main** (compte à rebours en haut de l'écran ; dans le sac : « SORS LE COLIS DU SAC »). « COLIS LIVRÉ : +2:00 » : le chrono gagne 2 min.
+- **Pas livré à temps :** « COLIS PERDU : -1:00 », le chrono perd 1 min, sans jamais descendre sous 30 s. Un rappel tombe 30 s avant la fin. Un colis tombé hors du vaisseau est perdu aussi. Un porteur qui quitte la partie le fait réapparaître, sans pénalité.
+- **N'importe qui** peut le livrer, le garder, le perdre ou tuer son porteur : le porteur est à la fois l'escorté, la cible et le suspect.
+- **Réglages (ÉV. COLIS) :** « Temps pour livrer (s) » (150), « Gain au chrono (s) » (120), « Perte si échec (s) » (60) ; 0 : pas de gain, ou pas de perte.
+- **Rôles.** Une Fée doit se poser pour livrer. Un Clandestin caché ne livre pas, et sa lumière et son bip s'éteignent tant qu'il est caché. Le corps d'un Rêveur endormi dans la zone, colis en main, livre. Le Voleur peut prendre le colis dans la main de son porteur. Un dissident peut livrer pour paraître innocent : le gain profite aux employés.
+- **Seul :** l'évènement s'essaie seul (les conditions de chrono sont sautées).
+
+### Les morts savent
+
+À 2 vivants au moins et un mort, avec plus de 2 min 30 au chrono.
+
+- **Une capsule de secours** (un œuf cyan du jeu, qui ne sert à aucune tâche) est perdue dans le vaisseau, à 15 m au moins de tout vivant quand c'est possible (sinon 10 m, puis 5 m). **Seuls les morts** la voient : une colonne cyan, à travers les murs.
+- Les vivants lisent « CAPSULE DE SECOURS PERDUE », « LES MORTS SAVENT OÙ », « TROUVEZ-LA : +2:00 AU CHRONO ». Les morts lisent « LA CAPSULE BRILLE POUR VOUS », « B : BIPER OÙ TU ES ».
+- **Chaque fantôme** appuie sur sa touche de pouvoir pour faire sonner un bip là où il flotte, entendu de tous autour (pleinement jusqu'à 3 m, plus rien au-delà d'environ 18 m, à travers les murs). Un bip toutes les 4 s au plus ; trop tôt, le son d'échec. Les morts dissidents peuvent biper aux mauvais endroits.
+- **Le vivant qui la ramasse,** quel que soit son camp, donne 2 min au chrono : « CAPSULE TROUVÉE : +2:00 », « TROUVÉE PAR … » (visage vu). Un dissident ne peut donc pas la garder.
+- **Pas trouvée à temps :** « LA CAPSULE S'EST ÉTEINTE », sans pénalité.
+- **Réglages (ÉV. MORTS) :** « Durée (s) » (120), « Gain au chrono (s) » (120), « Attente entre deux bips (s) » (4).
+- **Rôles.** Un Revenant mort qui a encore des apparitions bipe avec la touche « consommer » : sa touche de pouvoir garde l'apparition. Un joueur qui meurt pendant l'évènement peut biper 2,5 s plus tard ; un relevé ne bipe plus (« TU ES VIVANT : PLUS DE BIP »). Un mort sans le mod ne voit pas la colonne et ne peut pas biper. Le récapitulatif dit combien de fois chaque mort a bipé.
+- **Seul :** impossible, il faut un mort qui a le mod (« TEST : AUCUN MORT AVEC LE MOD »).
+
+### Patate chaude
+
+À 3 joueurs présents au moins (dans leur corps), dont 2 qui ont le mod, pas avant 1 min de partie, ni sous 1 min 30 au chrono.
+
+- **Un joueur tiré au sort reçoit une bombe :** une lumière orange pulse sur lui, un bip s'entend autour de lui, son écran se voile d'orange. « PATATE CHAUDE ! », « … A LA BOMBE », « COLLEZ-LA À QUELQU'UN ! ».
+- **La passer :** s'approcher à 1,5 m d'un autre joueur, au même étage, sans mur entre les deux. Une passe par seconde au plus, et pas de retour immédiat à celui qui vient de la donner (5 s). « TU AS LA BOMBE ! », « BOMBE PASSÉE », et chacun lit qui l'a.
+- **Elle explose** sur celui qui la tient au bout d'un délai secret, tiré entre 45 et 75 s ; le bip et la lumière accélèrent dans les 10 dernières secondes. « BOUM SUR … ! », avec la boule de feu et le bruit d'une C4 du jeu (pas sa vraie explosion) : le porteur prend 50 PV, est arrêté net et épuisé ; ceux qui sont à 8 m au plus et en vue en prennent moins, d'autant moins qu'ils sont loin, et sont repoussés.
+- **Par défaut, elle ne tue pas :** chacun garde au moins 10 PV.
+- **Un porteur qui ne peut plus la porter** (mort, endormi, envolé, caché, parti) la perd aussitôt au profit du joueur le plus proche (« LA BOMBE SAUTE ! ») ; s'il n'y a plus personne, « BOMBE DÉSAMORCÉE ».
+- **Réglages (ÉV. PATATE) :** « Explose après : minimum (s) » (45), « Explose après : maximum (s) » (75), « Dégâts au centre (PV) » (50), « Peut tuer » (NON).
+- **Rôles.** Seuls les joueurs présents qui ont le mod la portent : pas un mort, un Rêveur endormi, une Fée en vol ni un Clandestin caché. Une Fée qui s'envole s'en débarrasse, c'est permis. Le Voleur vole l'objet en main, pas la bombe. Avec « Peut tuer », une mort par la bombe n'a pas de tueur.
+- **Seul :** l'hôte reçoit la bombe, qui explose sur lui.
+
+### 1, 2, 3, soleil !
+
+À 3 vivants au moins, dont 2 présents qui ont le mod, pas sous 1 min 30 au chrono. Il faut une radio qui ne joue pas de cassette.
+
+- « 1, 2, 3, SOLEIL ! », « BOUGEZ PENDANT LA MUSIQUE », « FIGEZ-VOUS AU SILENCE ! ». Toutes les radios qui ne jouent pas de cassette jouent la même musique du jeu, fort. Chaque machine qui a le mod la joue aussi, doucement, pour ceux qui sont loin d'une radio.
+- **Chaque manche :** 6 à 15 s de musique, au hasard. Une voix dit « un, deux, trois… soleil ! » et la musique s'arrête net sur « soleil » : « SOLEIL ! » en haut de l'écran.
+- **Puis il faut se figer 3 s,** jugées après 0,8 s de battement (les coups et les tirs comptent dès 0,3 s). Est pris celui qui se déplace de plus de 40 cm (sauter sur place est permis), **qui frappe quelqu'un ou qui tire**. Un coup dans le vide ne compte pas. Le joueur pris est épuisé (« TU AS BOUGÉ : ÉPUISÉ ») ; à la fin de la manche, « PRIS : … » (visages vus). Puis « BOUGEZ ! » et la manche suivante. 4 manches.
+- **Excusés :** celui qu'un coup repousse, et celui qu'un pouvoir déplace (Échangeur, Écho, Rêveur qui se réveille).
+- **Réglages (ÉV. SOLEIL) :** « Manches » (4), « Durée de l'arrêt (s) » (3), « Mouvement toléré (cm) » (40).
+- **Rôles.** Seuls les vivants présents qui ont le mod sont jugés : pas un Rêveur endormi, ni une Fée en vol (elle peut voler pendant « SOLEIL »), ni un Clandestin caché. Un joueur sans le mod n'est jamais pris. Les radios qui jouent déjà une cassette sont laissées tranquilles ; un joueur qui appuie sur Lecture d'une radio de l'évènement la récupère avec sa cassette. À la fin, chaque radio est remise selon sa cassette du moment (titre, temps, volume), sans rien relancer.
+- **« Sons des évènements » sur NON** coupe la voix et la copie douce de la musique, pas les radios.
+- **Seul :** l'hôte est jugé.
+
+### Fuite de gaz
+
+Choisie par l'utilisateur à la place d'un séisme : « on est dans un vaisseau spatial ». Un joueur présent au moins, pas dans la dernière minute.
+
+- **Le gaz fuit** dans un secteur où se trouve un joueur, au point d'apparition le plus proche des joueurs de ce secteur ; jamais dans un secteur où une bouteille de gaz est en surpression. « FUITE DE GAZ : MACHINES », « EXPLOSION DANS 30 S ».
+- **Le préavis.** Les boîtiers d'alarme du secteur sonnent sans arrêt, le gaz siffle autour de la fuite, une boule et une lumière vertes la marquent (pas à travers les murs), et un léger voile vert prévient qui s'en approche à 6 m. Les 5 dernières secondes sont comptées en haut de l'écran. La sirène réveille un Rêveur endormi dont le corps est à portée (« LA SIRÈNE TE RÉVEILLE »).
+- **L'explosion** est celle du jeu, calculée par la machine de chacun : les murs protègent ; 60 PV au centre, de moins en moins jusqu'à rien à 15 m ; le souffle et les effets de l'explosion de gaz du jeu. Elle peut tuer un joueur déjà affaibli : mort sans tueur, « meurt (fuite de gaz) ».
+- **Après,** l'air reste vicié 60 s (« MACHINES IRRESPIRABLE ») : à 12 m au plus de la fuite, on se fatigue chaque seconde jusqu'à l'épuisement, avec un voile vert, une toux entendue autour et « GAZ : TU T'ÉPUISES ». Puis « MACHINES RESPIRABLE ».
+- **Réglages (ÉV. GAZ) :** « Préavis avant l'explosion (s) » (30), « Gaz après l'explosion (s) » (60 ; 0 = pas de gaz après), « Dégâts au centre (PV) » (60), « Vraie explosion du jeu (100 PV) » (NON). Sur OUI, c'est l'explosion d'une bouteille de gaz du jeu : jusqu'à 100 PV, mortelle de près, portée 30 m.
+- **Rôles.** Ni les morts, ni une Fée en vol, ni un Clandestin caché ne sont touchés par l'explosion par défaut, le voile ou l'air vicié (la vraie explosion du jeu frappe comme le jeu le décide). Un Rêveur endormi près de la fuite n'y échappe pas : la sirène le réveille et l'explosion le touche dans son corps. Un joueur sans le mod prend l'explosion, mais l'air vicié ne le fatigue pas. Un bâillonné tousse quand même (la toux est un son du mod). Les blessés qui survivent sont notés au récapitulatif. Arrêtée avant l'explosion : « FUITE DE GAZ COLMATÉE ».
+- **Seul :** l'évènement s'essaie seul, dans le secteur de l'hôte.
+
+### Dernière navette
+
+**Sur NON par défaut : elle peut décider de la partie.** Une fois par partie, seulement dans les 3 dernières minutes du chrono et avec encore 1 min 20 au moins (l'attente + 20 s), à 2 vivants au moins dont 2 employés, jamais en entraînement. Allumée, elle passe avant les autres : dans les 30 s qui précèdent sa fenêtre, aucun autre évènement ne commence, et elle part dès que la fenêtre s'ouvre (après la fin d'un évènement en cours).
+
+- **Une navette s'arrête à un quai,** avec deux places marquées de colonnes cyan (deux points d'apparition d'un secteur tiré au hasard ; aucune navette n'est dessinée, seules les colonnes montrent le quai). « DERNIÈRE NAVETTE : HÔPITAL », « 2 EMPLOYÉS : ILS GAGNENT », « UN SEUL DISSIDENT : IL GAGNE », et en haut de l'écran « MONTER : TOUCHE B ». La règle complète est sur la tablette.
+- **Monter :** se tenir sur une place libre et appuyer sur la touche de pouvoir (« À BORD : … », la colonne passe à l'orange). À bord, on ne marche plus, mais on peut regarder, parler, se servir de ses objets et se défendre. Un nouvel appui fait descendre (« … DESCEND »). Ailleurs que sur une place, la touche garde le pouvoir du rôle.
+- **10 s avant le départ,** « PORTES FERMÉES » : plus personne ne monte ni ne descend, et la sirène du quai sonne. Compte à rebours 3, 2, 1 en haut de l'écran.
+- **Au départ** (au bout de 60 s), les deux passagers décident :
+  - deux non-dissidents : **les employés gagnent** ;
+  - un dissident et un non-dissident : **les dissidents gagnent** ;
+  - deux dissidents : ils **quittent le vaisseau** (ils meurent, sans tueur, sans corps, et ne sont jamais relevés) et la partie continue ;
+  - personne ou un seul passager : « LA NAVETTE PART À VIDE ».
+- **Une victoire** est une vraie fin de partie du jeu, 3 s plus tard. L'écran de fin affiche « VICTOIRE PAR LA NAVETTE » ou « DÉFAITE PAR LA NAVETTE », et elle compte comme une victoire ordinaire dans les statistiques.
+- Un passager tué, parti, ou déplacé à plus de 2,5 m de sa place la libère (« PLACE LIBÉRÉE »).
+- **Réglages (ÉV. NAVETTE) :** « Attente au quai (s) » (60), « Seulement dans les dernières (s) » (180). La fenêtre doit dépasser l'attente d'au moins 20 s, sinon la navette ne vient jamais.
+- **Rôles.** Le Bouffon et l'Amnésique (tant qu'il n'a pas pris de rôle) montent comme des non-dissidents : rien n'est révélé. Le Bouffon ne gagne pas avec un camp : il lit « DÉFAITE PAR LA NAVETTE », sauf s'il avait déjà gagné par sa mort dans cette partie. Les camps sont lus au départ : la Taupe et une recrue convertie pendant l'attente sont dissidentes. Un Métamorphe déguisé est annoncé sous le visage porté, mais c'est son vrai camp qui compte. Un Rêveur peut s'endormir à bord : son corps reste assis et compte. Un dissident parti entraîne son Lié. Un joueur sans le mod ne peut pas monter.
+- **Seul :** l'hôte peut monter, descendre et voir les portes se fermer. S'il est le seul vivant et seul à bord au départ, il décide pour deux (« TEST : UN SEUL PASSAGER ») : la partie se termine, ce qui montre l'écran de fin.
+
+### Aimantés
+
+À 3 joueurs présents au moins, pas dans la dernière minute.
+
+- **Pendant 40 s,** les joueurs se repoussent comme des aimants de même pôle. « AIMANTÉS : 40 S », « GARDEZ VOS DISTANCES ! ».
+- **Deux joueurs à 2,5 m l'un de l'autre,** au même étage et en vue, pendant 0,3 s : chacun reçoit une décharge, une poussée faible qui l'écarte de l'autre (de tous les autres s'ils sont plusieurs), un éclair bleu, « DÉCHARGE ! », un claquement et un peu de fatigue. Puis la paire est tranquille 1,5 s.
+- **Trois décharges en 10 s** épuisent le joueur : « SURCHARGE : ÉPUISÉ ».
+- Pas de décharge à travers un mur, ni quand l'un des deux est en l'air : personne n'est poussé au-dessus d'un vide.
+- Chaque machine prévient son joueur quand un autre joueur aimanté est à moins de 4 m : un léger voile bleu et un grésillement.
+- « VOUS POUVEZ VOUS RAPPROCHER » à la fin. Le récapitulatif dit qui a été le plus repoussé.
+- **Réglages (ÉV. AIMANTÉS) :** « Durée (s) » (40), « Distance de répulsion (cm) » (250), « Force de la poussée (faible) » (0,3, de 0,1 à 1). La poussée est faible exprès, pour éviter les chutes mortelles : 0,3 pousse à environ 3,4 m/s, 1 à 8 m/s.
+- **Rôles.** Seuls les vivants présents sont aimantés : ni les morts, ni le corps d'un Rêveur endormi, ni une Fée en vol, ni un Clandestin caché, ni les cadavres. Les pouvoirs à courte portée deviennent plus durs à utiliser : on est repoussé avant d'arriver. Un joueur sans le mod est repoussé aussi (c'est le jeu qui pousse), sans le reste, sauf qu'une surcharge lui fait lâcher son objet.
+- **Seul :** l'évènement part, mais il faut un second joueur pour une décharge.
+
+### Jamais essayé en jeu : quoi regarder d'abord
+
+1. **Le voile de couleur** (gaz, patate chaude, aimantés) : tient-il, ou clignote-t-il ?
+2. **Les machines bloquées** (réunion, panne) : refusent-elles de prendre et de rendre chez les autres joueurs, et une machine en plein cycle repart-elle ensuite ?
+3. **Les sirènes des boîtiers d'alarme :** entendues depuis le couloir, et chaque boîtier remis comme avant à la fin.
+4. **Le chrono :** figé sans saut pendant la réunion ; le temps gagné ou perdu (colis, capsule) affiché chez tous dans la seconde.
+5. **La poussée** (aimantés, explosions) : dans le bon sens, et 0,3 vraiment faible.
+6. **L'épuisement :** l'objet tombe, le joueur titube, sans perdre de vie.
+7. **La fouille et la confiscation :** le sac vidé une seule fois, des deux côtés, l'arme avec ses munitions.
+8. **Les colonnes qui suivent un objet** (cassette, colis, capsule) : elles le retrouvent, le suivent, et s'effacent quand on le ramasse.
+9. **Les morts :** un fantôme qui bipe avec B, un Revenant mort avec la touche « consommer » ; un mort qui ouvre sa tablette voit-il la ligne de l'évènement ?
+10. **Le micro :** la voix entendue partout avec un son de haut-parleur, puis remise exactement comme avant.
+11. **Les radios et les écrans** (soleil, panne) : musique lancée et coupée chez tous, écrans des caméras noirs puis revenus, chaque radio remise comme elle était.
+12. **La navette :** l'écran de fin « VICTOIRE PAR LA NAVETTE » reste affiché ; un dissident parti ne laisse pas de corps.
+13. **Un empoisonné pendant une réunion ou une panne :** le temps restant reste figé sur sa page et sur celle de l'Empoisonneur, puis repart.
+14. **« FUSIL À POMPE »** sur un bandeau : les espaces s'affichent bien.
 
 ## Statistiques
 
 Dans l'onglet LPROLES, sous le récapitulatif : le nombre de parties enregistrées (dont ce soir), puis pour chaque joueur présent ses victoires sur ses parties (et le pourcentage), ses éliminations, ses survies, et sa soirée ; enfin les victoires par rôle.
 
-- **Qui gagne :** les employés quand les employés gagnent, les dissidents (Taupe, Vampire, recrutés compris) quand les dissidents gagnent ; le Bouffon seulement s'il a été tué par un employé, même si sa victoire n'a pas terminé la partie ; l'Amnésique compte avec son camp à la fin (employé tant qu'il n'a rien pris).
-- **Éliminations :** chaque mort dont un joueur a porté le dernier coup (dans les 3 s), même si la victime a été relevée ensuite. Poison, chute et explosion ne comptent pour personne.
+- **Qui gagne :** les employés quand les employés gagnent, les dissidents (Taupe, Vampire, recrutés compris) quand les dissidents gagnent ; le Bouffon seulement s'il a été tué par un employé, même si sa victoire n'a pas terminé la partie ; l'Amnésique compte avec son camp à la fin (employé tant qu'il n'a rien pris). Une victoire par la navette (0.16.0) compte comme une victoire ordinaire de son camp.
+- **Éliminations :** chaque mort dont un joueur a porté le dernier coup (dans les 3 s), même si la victime a été relevée ensuite. Poison, chute, explosion et départ en navette ne comptent pour personne.
 - **Ne comptent pas :** une partie arrêtée par l'hôte ou dont la fin est inconnue, une partie d'entraînement, une partie jouée avec une aide du groupe TEST (rôle forcé, joueurs minimum ignorés, victoire simulée, évènement déclenché), une partie à moins de deux joueurs, une partie jouée avec « Récapitulatif de fin de partie » sur NON.
 - **Où :** dans `statistiques.txt`, dans le dossier du mod **de l'hôte** (une ligne par partie, une par joueur). Les mises à jour et `tools\deploy.py` ne le touchent pas. Pour repartir de zéro : le supprimer, jeu fermé. Un autre hôte a ses propres statistiques ; le fichier se copie d'une machine à l'autre.
 - Les joueurs sont reconnus par leur **nom Steam** : un changement de nom recommence ses statistiques.
@@ -557,6 +756,7 @@ Ce qu'il faut regarder en priorité, à plusieurs :
 - **Bouffon et grenades :** une mort par explosion n'a pas de tueur connu du mod ; un employé qui tue le Bouffon à la grenade ne le fait pas gagner.
 - **Voleur :** l'objet volé arrive dans la main avec l'animation de ramassage du jeu.
 - **Médecin :** le nombre au-dessus des têtes est éclairé comme un objet du décor : dans une pièce sombre il se lit moins bien. Il se tourne vers le Médecin dix fois par seconde, ce qui peut se voir quand on court autour de quelqu'un.
+- **Évènements aléatoires :** jamais lancés en jeu (ce qu'il faut regarder d'abord est à la fin de leur section). Un joueur sans le mod, ou avec une version plus ancienne, subit ce que fait le jeu (chrono, machines bloquées, explosions, poussées) sans rien voir ni pouvoir s'en servir avec les touches. Les pièces fermées par une carte ne sont pas écartées : une cassette, un colis ou une capsule peut y apparaître.
 - **Mise à jour du jeu :** elle peut casser le mod. `python tools\lp\bp.py --all analysis\bp` puis `python tools\lp\verify_mod.py` revérifient tout le code contre les nouveaux fichiers du jeu.
 
 ## Autres fichiers du projet
