@@ -45,7 +45,8 @@ FUNCTIONS = [
     ("Mec", "Net Set Item State", 1, "Server"), ("Mec", "Add Buff", 2, "Server"),
     ("Mec", "Request Net Interaction", 3, "Server"),
     ("GM", "Select Game Roles", 1, ""), ("GM", "End Game", 2, ""), ("GM", "Set HackerSphere", 1, ""),
-    ("HUD", "Death Hidders", 1, ""), ("Notif", "Show Message", 2, ""), ("UpperNotif", "Show Message", 2, ""),
+    ("HUD", "Death Hidders", 1, ""), ("HUD", "Game Start", 1, ""), ("HUD", "Force End", 0, ""),
+    ("Notif", "Show Message", 2, ""), ("UpperNotif", "Show Message", 2, ""),
     ("PlayerStateW", "Set HP", 0, ""),
     ("Mec", "Check Eyes State", 0, ""), ("Mec", "Net Switch Item", 1, "Server"), ("Mec", "Set Bag Item", 1, "Client"),
     ("Selection", "Rename", 1, ""), ("Selection", EV_RIGHT, 0, ""), ("Selection", EV_LEFT, 0, ""),
@@ -72,7 +73,7 @@ PROPERTIES = [
     ("Mec", "Body FX"), ("Mec", "Hand FX"), ("Mec", "Net Aim Target"), ("Mec", "Net Orientation"),
     ("Mec", "EyesState"),
     ("GM", "In Game"), ("GM", "Difficulty"), ("GM", "Innocents"), ("GM", "Hackers"),
-    ("HUD", "W_MainNotif"), ("HUD", "W_UpperNotif"), ("HUD", "PlayerState"),
+    ("HUD", "W_MainNotif"), ("HUD", "W_UpperNotif"), ("HUD", "PlayerState"), ("HUD", "Black_Subtitle"), ("HUD", "End_Title"),
     ("Mec", "WinkL"), ("Mec", "WinkR"), ("Mec", "WinkLock"), ("Mec", "Net Bag ItemNew"), ("Mec", "Hand Item"), ("Mec", "Hand State"),
     ("Mec", "New Menu"), ("Mec", "Net Stance"),
     ("Selection", "SelectionText"), ("Value", "SpinBox_115"), ("Title", "Text"),
@@ -242,6 +243,7 @@ def main():
                       ("W_Menu_MainTabButton_C", "/game/ui/menu2/w_menu_maintabbutton"),
                       ("W_Player_List_C", "/game/ui/game/w_player_list"),
                       ("W_PlayerState_C", "/game/ui/game/w_playerstate"),
+                      ("W_inGame_C", "/game/ui/game/w_ingame"),
                       ("Vent_C", "/game/world/tasks/task_vents/vent"),
                       ("DeadBody_C", "/game/character/ghost/deadbody")):
         if cls not in g.pub.get(path, {}).values(): err(f"classe absente : {path}.{cls}")

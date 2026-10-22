@@ -8,7 +8,11 @@ local G = require("lpr_game")
 local N = require("lpr_net")
 local S = require("lpr_strings")
 local RT = require("lpr_roletext")
-local SND = require("lpr_sound")
+local A = require("lpr_audio")
+local K = require("lpr_marks")
+local MD = require("lpr_medic")
+local SC = require("lpr_screens")
+local RC = require("lpr_recap")
 
 local Cl = {}
 
@@ -28,11 +32,7 @@ local showing_dead = false   -- true while the Médium trick itself calls the ga
 local hiding = nil           -- Clandestin: { ends, first_person }
 local cleaned = {}           -- Nettoyeur: player index -> { mec, hidden = { components } }
 local end_hiding, restore_bodies   -- defined below (used at the end of a game)
-local play_sound, stop_sound       -- defined below (custom sounds)
-local power_sfx                    -- defined below: the short sound of a power that starts ("ok") or does not ("fail")
-local role_sound                   -- defined below: a role's own sound; true when it plays
-local sound_around_on, sound_around_off
-local is_local                     -- defined below: true for the local player's character
+local is_local = G.is_local       -- true for the local player's character
 local skin_backup = nil      -- Métamorphe: this player's own appearance
 local disguised = false
 local disguise_gen = 0       -- so that an old "stop protecting" timer cannot end a newer disguise
@@ -41,8 +41,6 @@ local poisoned = false       -- the host said so: the "consume" key may then ser
 local gag = nil              -- Bâillonneur: this player's microphone is held off: { ends, next }
 local vamp = nil             -- Vampire: life above the game's maximum: { max, reserve, acc, at }
 local wolf = nil             -- Loup-garou: the game's own regeneration values, to give back: { asset, min, max, hp }
-local vitals = nil           -- a Médecin plays: this machine tells the host its character's life: { last, at }
-local tags = {}              -- Médecin: player index -> { life, mec, comp, shown, visible, yaw }: the life written above a head
 
 -- ---------------------------------------------------------------- notifications
 local function say(id, color, ...)
@@ -225,9 +223,6 @@ local BODY_PARTS = { "SkM Body", "SkM Head", "Charm Mesh", "FishMesh" }
 local BODY_SOLIDS = { "SkM Body", "SkM Head", "Body Collider", "Head Collider", "Head Hitbox" }
 
 -- ---------------------------------------------------------------- fairy effect seen by the others
--- The engine's ball shape (the game's sphere over dissidents is made of it; so is the
--- Traqueur's silhouette, further down).
-local BALL_MESH = "/Engine/BasicShapes/Sphere.Sphere"
 -- While she flies, the others see a purple ball where the Fée's body was: a ball like the one
 -- the game shows over dissidents (same shape, same material, another colour, 25 cm across
 -- for the game's 10), at chest height (a character's position is at its feet). It is a part added to her
@@ -235,12 +230,11 @@ local BALL_MESH = "/Engine/BasicShapes/Sphere.Sphere"
 -- the game shows and hides it as it pleases.
 -- small: when the host only wants a light, a ball the size of the game's own, so that the
 -- light has something to come from.
-local ORB_MATERIAL = "/Game/Items/Melee/ProcessedSample/Materials/M_HackerSphere.M_HackerSphere"
 local FAIRY_BALL = { z = 110.0, scale = 0.25, small = 0.12, color = { R = 0.75, G = 0.10, B = 1.0 } }
 
 local function fairy_ball(mec, small)
     local cls = StaticFindObject("/Script/Engine.StaticMeshComponent")
-    local mesh, mat = G.asset(BALL_MESH), G.asset(ORB_MATERIAL)
+    local mesh, mat = G.asset(G.BALL_MESH), G.asset(G.ORB_MATERIAL)
     if not (U.valid(cls) and mesh and mat) then return nil end
     local s = small and FAIRY_BALL.small or FAIRY_BALL.scale
     local function placed(at)
@@ -364,7 +358,7 @@ fairy_fx_off = function(idx)
     local rec = fx[idx]
     if not rec then return end
     fx[idx] = nil
-    sound_around_off(rec.sound)
+    A.around_off(rec.sound)
     for _, c in ipairs(rec.hidden) do
         if U.valid(c) then U.try("réafficher", function() c:SetVisibility(true, false) end) end
     end
@@ -412,7 +406,7 @@ local function on_medium(on, secs)
         local d = tonumber(secs) or 10
         vision = { ends = U.now() + d, next = 0 }
         say("MEDIUM_START", "role", d)
-        power_sfx("ok")
+        A.power_sfx("ok")
     else
         end_vision(true)
     end
@@ -462,8 +456,8 @@ local function on_hypno(tenths)
     hold_eyes_shut(mec)
     -- the sound of the hypnosis that strikes, then the one heard for as long as the eyes are
     -- held shut, each on a player of its own
-    role_sound("hypnosis")
-    U.try("son de l'hypnose", play_sound, "hypnotized", "role_sounds", secs, "hypno", HYPNO_FADE_IN)
+    A.role_sound("hypnosis")
+    U.try("son de l'hypnose", A.play, "hypnotized", "role_sounds", secs, "hypno", HYPNO_FADE_IN)
 end
 
 local function tick_hypno(now)
@@ -472,7 +466,7 @@ local function tick_hypno(now)
     if not mec then hypno = nil return end
     if now >= hypno.ends or not G.is_alive(mec) then
         -- over before its time (a death): the sound with it; otherwise it ends by itself
-        if now < hypno.ends then U.try("son de l'hypnose", stop_sound, "hypno") end
+        if now < hypno.ends then U.try("son de l'hypnose", A.stop, "hypno") end
         hypno = nil
         open_eyes(mec)
         return
@@ -541,210 +535,6 @@ local function tick_spirits(now)
             spirit_next = math.min(spirit_next, rec.ends)    -- hidden again right on time
         end
     end
-end
-
--- ---------------------------------------------------------------- Traqueur: seen through walls
--- The game has nothing that shows through walls, but the engine ships a material drawn over
--- everything (the one its editor uses for control handles). Three stretched balls with that
--- material are attached to the tracked player, on the tracker's machine only: legs, chest and
--- head. They follow the player and are removed when the tracking ends.
-local XRAY_MATERIAL = "/ControlRig/Controls/ControlRigXRayMaterial.ControlRigXRayMaterial"
--- Heights above the character's position, which is at its feet.
-local XRAY_PARTS = {
-    { z = 42.0,  scale = { X = 0.26, Y = 0.34, Z = 0.84 } },      -- legs
-    { z = 112.0, scale = { X = 0.30, Y = 0.46, Z = 0.62 } },      -- chest (wider across the shoulders)
-    { z = 158.0, scale = { X = 0.27, Y = 0.27, Z = 0.29 } },      -- head
-}
-local tracked = nil          -- { mec, parts = { components } }
-
-local function track_off()
-    local t = tracked
-    tracked = nil
-    if not t then return end
-    for _, c in ipairs(t.parts) do
-        if U.valid(c) and U.valid(t.mec) then
-            U.try("fin de traque", function() c:K2_DestroyComponent(t.mec) end)
-        end
-    end
-end
-
-local function on_track(idx, tenths)
-    track_off()
-    idx = tonumber(idx) or -1
-    local secs = (tonumber(tenths) or 0) / 10
-    if idx < 0 or secs <= 0 then return end
-    local mec = G.mec_by_index(idx)
-    local cls = StaticFindObject("/Script/Engine.StaticMeshComponent")
-    local ball, mat = G.asset(BALL_MESH), G.asset(XRAY_MATERIAL)
-    if not mec or not U.valid(cls) or not ball or not mat then
-        U.log("Traqueur : silhouette impossible (%s)", (not mat) and "matériau introuvable" or "élément introuvable")
-        return
-    end
-    local rec = { mec = mec, parts = {} }
-    tracked = rec
-    -- the part of the character that turns with the player (its position never turns)
-    local turning = U.get(mec, "Orientation", nil)
-    for _, part in ipairs(XRAY_PARTS) do
-        U.try("silhouette", function()
-            -- put where the player stands, then tied to the turning part: place kept, direction
-            -- taken from it (wherever that part itself sits inside the character)
-            local at = U.valid(turning) and G.location(mec) or nil
-            local t = { Rotation = { X = 0.0, Y = 0.0, Z = 0.0, W = 1.0 },
-                        Translation = at and { X = at.X, Y = at.Y, Z = at.Z + part.z } or { X = 0.0, Y = 0.0, Z = part.z },
-                        Scale3D = part.scale }
-            local c = mec:AddComponentByClass(cls, at ~= nil, t, false)
-            if not U.valid(c) then return end
-            rec.parts[#rec.parts + 1] = c         -- noted first: always removed with the others
-            c:SetCollisionEnabled(0)              -- before it has a shape: never in anybody's way
-            if at then
-                pcall(function() c:SetMobility(2) end)
-                local ok, attached = pcall(function()
-                    return c:K2_AttachToComponent(turning, FName("None"), 1, 2, 1, false)
-                end)
-                if not ok or attached == false then
-                    rec.parts[#rec.parts] = nil
-                    c:K2_DestroyComponent(mec)    -- never a still shape left where the target stood
-                    return
-                end
-            end
-            pcall(function() c:SetCastShadow(false) end)
-            c:SetStaticMesh(ball)
-            local mid = c:CreateDynamicMaterialInstance(0, mat, FName("None"))
-            if U.valid(mid) then
-                mid:SetVectorParameterValue(FName("Color"), { R = 1.0, G = 0.25, B = 0.1, A = 1.0 })
-                mid:SetScalarParameterValue(FName("Opacity"), 0.45)
-            else
-                c:SetMaterial(0, mat)
-            end
-        end)
-    end
-    U.after(secs + 0.5, "fin de traque", function()
-        if tracked == rec then track_off() end
-    end)
-    U.log("Traqueur : silhouette posée sur %s (%d éléments)", G.player_name(mec), #rec.parts)
-end
-
--- ---------------------------------------------------------------- Shérif: a green sphere
--- The safe person is marked with the game's own sphere, red like the one dissidents see over
--- each other. On the Shérif's machine it gets a green copy of its material for as long as the
--- marker lasts, then its own material back.
-local safe_orb = nil         -- { orb, original }
-
-local function orb_restore()
-    local rec = safe_orb
-    safe_orb = nil
-    if rec and U.valid(rec.orb) and U.valid(rec.original) then
-        U.try("sphère", function() rec.orb:SetMaterial(0, rec.original) end)
-    end
-end
-
-local function orb_green(mec, secs)
-    orb_restore()
-    local orb = U.get(mec, "HackerSphere", nil)
-    if not U.valid(orb) then return end
-    U.try("sphère verte", function()
-        local original = orb:GetMaterial(0)
-        if not U.valid(original) then return end
-        local mid = orb:CreateDynamicMaterialInstance(0, original, FName("None"))
-        if not U.valid(mid) then return end
-        local rec = { orb = orb, original = original }
-        safe_orb = rec
-        U.after(secs + 1, "sphère verte", function()
-            if safe_orb == rec then orb_restore() end
-        end)
-        for _, name in ipairs({ "Color", "eColor" }) do
-            local param = FName(name)
-            local v = mid:K2_GetVectorParameterValue(param)
-            local strength = math.max(v.R + 0.0, v.G + 0.0, v.B + 0.0)
-            if strength > 0.001 then
-                mid:SetVectorParameterValue(param, { R = 0.08 * strength, G = strength, B = 0.2 * strength, A = v.A + 0.0 })
-            end
-        end
-    end)
-end
-
--- ---------------------------------------------------------------- Shérif: an access card shown
--- The host says where one access card lies. On the Shérif's machine only, a ball around the
--- card and a column above it are drawn there, in yellow: with the engine's material drawn over
--- everything (the Traqueur's silhouette is made of it) when the host lets it be seen through
--- the walls, else with the glowing material of the game's spheres. The shapes belong to this
--- player's character but are tied to nothing, so they stay where they are put; the host says
--- when the card has been picked up.
-local CARD_COLOR = { R = 1.0, G = 0.78, B = 0.08 }
-local CARD_SHAPES = {
-    { z = 0.0,   scale = { X = 0.40, Y = 0.40, Z = 0.40 } },      -- around the card
-    { z = 160.0, scale = { X = 0.12, Y = 0.12, Z = 3.0 } },       -- a column above it, to be found from afar
-}
-local card_mark = nil        -- { mec, parts = { components } }
-
-local function card_off()
-    local m = card_mark
-    card_mark = nil
-    if not m then return end
-    for _, c in ipairs(m.parts) do
-        if U.valid(c) and U.valid(m.mec) then
-            pcall(function() c:SetVisibility(false, false) end)   -- unseen even if it cannot be removed
-            U.try("carte en surbrillance : retrait", function() c:K2_DestroyComponent(m.mec) end)
-        end
-    end
-end
-
-local function on_card(on, x, y, z, walls)
-    card_off()
-    if on ~= "1" then return end
-    local mec = G.local_mec()
-    local cls = StaticFindObject("/Script/Engine.StaticMeshComponent")
-    local through = walls == "1"
-    local ball, mat = G.asset(BALL_MESH), G.asset(through and XRAY_MATERIAL or ORB_MATERIAL)
-    if not mec or not U.valid(cls) or not ball or not mat then
-        U.log("Shérif : carte en surbrillance impossible (%s)", (not mat) and "matériau introuvable" or "élément introuvable")
-        return
-    end
-    local at = { X = (tonumber(x) or 0) + 0.0, Y = (tonumber(y) or 0) + 0.0, Z = (tonumber(z) or 0) + 0.0 }
-    local rec = { mec = mec, parts = {} }
-    card_mark = rec
-    for _, shape in ipairs(CARD_SHAPES) do
-        local c = nil
-        local dressed = U.try("carte en surbrillance", function()
-            local t = { Rotation = { X = 0.0, Y = 0.0, Z = 0.0, W = 1.0 },
-                        Translation = { X = at.X, Y = at.Y, Z = at.Z + shape.z },
-                        Scale3D = shape.scale }
-            -- "true": tied to nothing, so placed in the building and left there
-            c = mec:AddComponentByClass(cls, true, t, false)
-            if not U.valid(c) then return false end
-            c:SetCollisionEnabled(0)              -- before it has a shape: never in anybody's way
-            pcall(function() c:SetCastShadow(false) end)
-            if c:SetStaticMesh(ball) == false then error("forme refusée") end
-            local mid = c:CreateDynamicMaterialInstance(0, mat, FName("None"))
-            if not U.valid(mid) then error("matière non modifiable") end
-            if through then
-                mid:SetVectorParameterValue(FName("Color"),
-                    { R = CARD_COLOR.R, G = CARD_COLOR.G, B = CARD_COLOR.B, A = 1.0 })
-                mid:SetScalarParameterValue(FName("Opacity"), 0.55)
-            else
-                -- the material's own brightness is kept, only the hue changes
-                for _, name in ipairs({ "Color", "eColor" }) do
-                    local param = FName(name)
-                    local v = mid:K2_GetVectorParameterValue(param)
-                    local strength = math.max(v.R + 0.0, v.G + 0.0, v.B + 0.0)
-                    if strength > 0.001 then
-                        mid:SetVectorParameterValue(param, { R = CARD_COLOR.R * strength, G = CARD_COLOR.G * strength,
-                                                             B = CARD_COLOR.B * strength, A = v.A + 0.0 })
-                    end
-                end
-            end
-            return true
-        end)
-        if dressed then
-            rec.parts[#rec.parts + 1] = c
-        elseif U.valid(c) then
-            -- no shape rather than one in the material's own colour (red: the dissidents')
-            pcall(function() c:SetVisibility(false, false) end)
-            U.try("carte en surbrillance : retrait", function() c:K2_DestroyComponent(mec) end)
-        end
-    end
-    U.log("Shérif : carte d'accès en surbrillance (%d éléments, %s)", #rec.parts,
-        through and "vue à travers les murs" or "sans traverser les murs")
 end
 
 -- ---------------------------------------------------------------- Vampire: life above the game's maximum
@@ -872,143 +662,6 @@ local function on_wolf(_, pct)
     U.log("Loup-garou : régénération accélérée de %d %%", total)
 end
 
--- ---------------------------------------------------------------- Médecin
--- Every machine: while the host asks for it, tells its character's life each time it changes
--- (and every few seconds, for a Médecin who came late). A Vampire's reserve counts.
-local function on_vitals(on)
-    if on == "1" then vitals = vitals or { at = 0 } else vitals = nil end
-end
-
-local function my_life()
-    local mec = G.local_mec()
-    if not mec then return nil end
-    if ghost then return ghost.health end              -- flying or dreaming: the life it had on leaving
-    if U.get(mec, "Alive", true) ~= true then return 0 end
-    local health = U.get(mec, "Health", nil)
-    if type(health) ~= "number" then return nil end
-    return math.max(0, health) + (vamp and vamp.reserve or 0)
-end
-
-local function tick_vitals(now)
-    if not vitals then return end
-    local life = my_life()
-    if not life then return end
-    local since = now - vitals.at
-    if (life ~= vitals.last and since >= 0.25) or since >= 3 then
-        vitals.last, vitals.at = life, now
-        N.report(life)
-    end
-end
-
--- The Médecin's power, on the machine of the player healed: the whole life back, through the
--- game's own healing (the call its regeneration makes, for one point at a time).
-local function on_heal()
-    local mec = G.local_mec()
-    if not mec then return end
-    if ghost then
-        ghost.health = 100                             -- given back on landing or on waking up
-        if ghost.kind == "dream" then U.set(mec, "Health", 100) end
-    elseif U.get(mec, "Alive", true) == true then
-        U.tcall(mec, "Hit Health", -100, 0.0, 1000.0)
-    end
-    if vitals then vitals.at = 0 end                   -- told to the host at once
-end
-
--- The Médecin's machine: the life of each player, written above its head. A text standing in
--- the building like any object: a wall hides it. It is turned towards the Médecin at every
--- tick, and coloured by how much life is left.
-local TAG = { class = "/Script/Engine.TextRenderComponent", height = 215.0, size = 30.0 }
-
-local function tag_drop(rec)
-    local c = rec.comp
-    rec.comp, rec.shown, rec.visible, rec.yaw = nil, nil, nil, nil
-    if not U.valid(c) then return end
-    pcall(function() c:SetVisibility(false, false) end)        -- unseen even if it cannot be removed
-    if U.valid(rec.mec) then U.try("vie affichée : retrait", function() c:K2_DestroyComponent(rec.mec) end) end
-end
-
-local function tags_clear()
-    for _, rec in pairs(tags) do tag_drop(rec) end
-    tags = {}
-end
-
-local function tag_make(mec)
-    local cls = StaticFindObject(TAG.class)
-    if not U.valid(cls) then return nil end
-    local c = mec:AddComponentByClass(cls, false, { Rotation = { X = 0.0, Y = 0.0, Z = 0.0, W = 1.0 },
-        Translation = { X = 0.0, Y = 0.0, Z = TAG.height }, Scale3D = { X = 1.0, Y = 1.0, Z = 1.0 } }, false)
-    if not U.valid(c) then return nil end
-    U.try("vie affichée : aspect", function()
-        c:SetCollisionEnabled(0)                       -- never in anybody's way
-        pcall(function() c:SetCastShadow(false) end)
-        c:SetHorizontalAlignment(1)                    -- centred on the head
-        c:SetWorldSize(TAG.size)
-    end)
-    return c
-end
-
-local function tag_color(life)
-    if life >= 70 then return { R = 60, G = 230, B = 90, A = 255 } end
-    if life >= 30 then return { R = 255, G = 170, B = 30, A = 255 } end
-    return { R = 255, G = 50, B = 40, A = 255 }
-end
-
-local function on_hp(idx, life)
-    local i, n = tonumber(idx), tonumber(life)
-    if not i or not n then return end
-    tags[i] = tags[i] or {}
-    tags[i].life = n
-end
-
-local tags_failed = false
-local function tick_tags()
-    if my_role ~= "medic" or not my_status or (my_status.vitals or 0) == 0 then
-        if next(tags) then tags_clear() end
-        return
-    end
-    local me = G.local_mec()
-    local eye = me and G.location(me)
-    if not eye then return end
-    for _, mec in ipairs(G.all_mecs()) do
-        local rec = mec:GetAddress() ~= me:GetAddress() and tags[G.player_index(mec)] or nil
-        if rec and rec.life then
-            if rec.comp and (not U.valid(rec.comp) or not U.valid(rec.mec) or rec.mec:GetAddress() ~= mec:GetAddress()) then
-                tag_drop(rec)                          -- another character for this player: made again
-            end
-            local shown = rec.life > 0 and G.is_alive(mec)
-            if shown and not rec.comp and not tags_failed then
-                rec.comp, rec.mec = U.try("vie affichée", tag_make, mec), mec
-                if not rec.comp then
-                    tags_failed = true                 -- said once, not at every tick
-                    U.log("Médecin : la vie ne peut pas être écrite au-dessus des têtes")
-                end
-            end
-            local c = rec.comp
-            if c then
-                if rec.visible ~= shown then
-                    pcall(function() c:SetVisibility(shown, false) end)
-                    rec.visible = shown
-                end
-                if shown then
-                    if rec.shown ~= rec.life then
-                        G.text_call(c, "K2_SetText", tostring(rec.life))
-                        pcall(function() c:SetTextRenderColor(tag_color(rec.life)) end)
-                        rec.shown = rec.life
-                    end
-                    local at = G.location(mec)
-                    if at then
-                        local yaw = math.deg(math.atan(eye.Y - at.Y, eye.X - at.X))
-                        if not rec.yaw or math.abs(yaw - rec.yaw) > 0.5 then
-                            pcall(function() c:K2_SetWorldRotation({ Pitch = 0.0, Yaw = yaw, Roll = 0.0 }, false, {}, false) end)
-                            rec.yaw = yaw
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
 -- ---------------------------------------------------------------- Bâillonneur: the microphone held off
 -- The game only sends the voice of a character whose "Can Talk" is true (a sleeping Rêveur's
 -- is switched off the same way, see enter_ghost): held false for as long as the host says.
@@ -1064,15 +717,15 @@ local function on_end()
     end)
     if hypno then
         hypno = nil
-        U.try("son de l'hypnose", stop_sound, "hypno")
+        U.try("son de l'hypnose", A.stop, "hypno")
         local mec = G.local_mec()
         if mec then open_eyes(mec) end
     end
     for i in pairs(spirits) do spirit_off(i) end
     for i in pairs(fx) do fairy_fx_off(i) end
-    track_off()
-    orb_restore()
-    card_off()
+    K.track_off()
+    K.orb_restore()
+    K.card_off()
     end_hiding()
     restore_bodies()
     end_gag(true)
@@ -1082,9 +735,7 @@ local function on_end()
         U.try("vie affichée", show_health)     -- the game's own number again
     end
     wolf_reset()
-    vitals = nil
-    tags_clear()
-    tags_failed = false
+    MD.reset()
     -- no role any more until the next game
     my_role, my_status, safe_idx = nil, nil, nil
     for _, fn in ipairs(role_listeners) do U.try("rôle", fn, nil) end
@@ -1288,7 +939,7 @@ local function on_msg(id, a)
         U.after(0.1, "rappel de la touche", function() say("USE_HINT", "info", C.format("use_key")) end)
     end
     local spec = MSG[id] or { "warn" }
-    if not (spec.own and role_sound(spec.own)) and spec.sfx then power_sfx(spec.sfx) end
+    if not (spec.own and A.role_sound(spec.own)) and spec.sfx then A.power_sfx(spec.sfx) end
     local arg = nil
     if spec[2] == "item" then
         arg = S.ITEM_SHORT[tonumber(a) or 0] or "?"
@@ -1320,7 +971,7 @@ local function on_safe(idx, tenths)
     local mec = G.mec_by_index(tonumber(idx) or -1)
     say("SAFE_PERSON", "good", mec and G.player_name(mec) or "?")
     local secs = (tonumber(tenths) or 0) / 10
-    if mec and secs > 0 then orb_green(mec, secs) end
+    if mec and secs > 0 then K.orb_green(mec, secs) end
 end
 
 local function on_dream(on, a, x, y, z, yaw)
@@ -1329,7 +980,7 @@ local function on_dream(on, a, x, y, z, yaw)
         local duration = tonumber(a) or 20
         if enter_ghost("dream", body, (tonumber(yaw) or 0) + 0.0, duration) then
             say("DREAM_START", "role", duration)
-            power_sfx("ok")
+            A.power_sfx("ok")
         end
     elseif ghost and ghost.kind == "dream" then
         exit_ghost(true)
@@ -1343,12 +994,12 @@ local function on_fairy(on, tenths)
         if enter_ghost("fairy", nil, nil, secs) then
             -- the sound of a power that starts, and under it the flight's own sound, which comes
             -- in with a fade and lasts as long as the flight (each on a player of its own)
-            power_sfx("ok")
-            U.try("son de l'envol", play_sound, "fairy", "fairy_sound", secs, "flight")
+            A.power_sfx("ok")
+            U.try("son de l'envol", A.play, "fairy", "fairy_sound", secs, "flight")
         end
     elseif ghost and ghost.kind == "fairy" then
         exit_ghost(false)
-        U.try("son de l'envol", stop_sound, "flight")     -- a flight ended early: the sound with it
+        U.try("son de l'envol", A.stop, "flight")     -- a flight ended early: the sound with it
     end
 end
 
@@ -1363,7 +1014,7 @@ local function on_fx(idx, on, light, tenths, ball)
         local rec = fx[idx]
         local secs = (tonumber(tenths) or 30) / 10
         -- the flight's sound, heard around her by those who are near
-        if rec then rec.sound = U.try("son de l'envol", sound_around_on, mec, "fairy", "fairy_sound", secs) end
+        if rec then rec.sound = U.try("son de l'envol", A.around_on, mec, "fairy", "fairy_sound", secs) end
         -- Safety net: restore the body even if the "off" message never comes.
         U.after(secs + 2, "fin d'effet fée", function()
             if fx[idx] == rec then fairy_fx_off(idx) end
@@ -1402,11 +1053,11 @@ local function on_hide(on, secs)
         U.set(mec, "Lock Movements", true)
         U.set(mec, "Local Can Interact", false)
         say("HIDE_START", "role", d)
-        if not role_sound("vent_in") then power_sfx("ok") end
+        if not A.role_sound("vent_in") then A.power_sfx("ok") end
     elseif hiding then
         end_hiding()
         say("HIDE_END", "info")
-        role_sound("vent_out")
+        A.role_sound("vent_out")
     end
 end
 
@@ -1526,225 +1177,6 @@ local function body_to_death_spot(mec)
     end)
 end
 
--- ---------------------------------------------------------------- custom sound
--- Sounds are files in the mod's "sounds" folder (WAV or MP3), played by the engine's own media
--- player (Windows Media Foundation, the one the tablet videos use), on this machine only.
--- A player serves one sound at a time, a new sound replacing the one it plays: the short
--- sounds share one ("sfx"), the Fée's flight has its own ("flight") so that both are heard;
--- so have the sound of a hypnosis ("hypno") and the sounds that come from somebody else's
--- deed ("event"), which a power used meanwhile must not cut.
-local medias = {}            -- channel -> { owner, comp, player }
-
--- The player's own volume for the mod's sounds, given to a sound component (and to the
--- engine's sound source inside it) before each sound.
-local function set_volume(comp)
-    local v = (C.get("sound_volume") or 100) / 100
-    pcall(function() comp:SetVolumeMultiplier(v) end)
-    local inner = U.get(comp, "AudioComponent", nil)
-    if U.valid(inner) then pcall(function() inner:SetVolumeMultiplier(v) end) end
-end
-
-local function sound_file(name)
-    for _, ext in ipairs({ ".mp3", ".wav" }) do
-        local path = U.MOD_DIR .. "/sounds/" .. name .. ext
-        local f = io.open(path, "rb")
-        if f then
-            f:close()
-            return (path:gsub("/", "\\"))
-        end
-    end
-    return nil
-end
-
--- name: the file in "sounds"; setting: the personal setting that switches this sound on;
--- seconds (optional): how long it must last (see lpr_sound.lua); channel (optional): the
--- player that plays it, "sfx" when not given; fade_in (optional): seconds of fade-in of a
--- sound made to last `seconds`, when not the usual one. Returns true when the sound plays.
-play_sound = function(name, setting, seconds, channel, fade_in)
-    if not C.get(setting) then return false end
-    channel = channel or "sfx"
-    local path = sound_file(name)
-    local mec = G.local_mec()
-    if not path or not mec then return false end
-    -- a player and a sound component on the local character (new character: new ones)
-    local media = medias[channel]
-    if not media or media.owner ~= mec:GetAddress() or not U.valid(media.comp) or not U.valid(media.player) then
-        if media and media.owner == mec:GetAddress() and U.valid(media.comp) then
-            U.try("son", function() media.comp:K2_DestroyComponent(mec) end)
-        end
-        medias[channel] = nil
-        local player_class = StaticFindObject("/Script/MediaAssets.MediaPlayer")
-        local comp_class = StaticFindObject("/Script/MediaAssets.MediaSoundComponent")
-        if not (U.valid(player_class) and U.valid(comp_class)) then return end
-        local t = { Rotation = { X = 0.0, Y = 0.0, Z = 0.0, W = 1.0 }, Translation = { X = 0.0, Y = 0.0, Z = 0.0 },
-                    Scale3D = { X = 1.0, Y = 1.0, Z = 1.0 } }
-        local comp = mec:AddComponentByClass(comp_class, false, t, false)
-        if not U.valid(comp) then return end
-        local player = StaticConstructObject(player_class, comp)
-        U.set(comp, "MediaPlayer", player)       -- a real reference: keeps the player alive
-        comp:SetMediaPlayer(player)
-        pcall(function() comp:SetActive(true, false) end)
-        media = { owner = mec:GetAddress(), comp = comp, player = player }
-        medias[channel] = media
-    end
-    -- a new source each time: it only has to live until the player has opened it
-    local source_class = StaticFindObject("/Script/MediaAssets.FileMediaSource")
-    if not U.valid(source_class) then return end
-    local source = StaticConstructObject(source_class, media.comp)
-    source:SetFilePath(SND.playable(path, seconds, fade_in))    -- a copy with silence at the end: nothing cut
-    set_volume(media.comp)
-    if media.player:OpenSource(source) == false then   -- plays as soon as it is open
-        U.log("Son %s : le fichier n'a pas pu être ouvert (%s)", name, path)
-        return false
-    end
-    return true
-end
-
--- Stops the sound a player is playing.
-stop_sound = function(channel)
-    local media = medias[channel or "sfx"]
-    if media and U.valid(media.player) then media.player:Close() end
-end
-
--- The short sound that answers an attempt to use a power: "ok" when it starts, "fail" when
--- it does not, whatever the reason.
-power_sfx = function(kind)
-    if kind == "fail" then
-        U.try("son d'échec", play_sound, "fail", "fail_sound")
-    else
-        U.try("son de démarrage", play_sound, "success", "start_sound")
-    end
-end
-
--- A role's own sound (a file of the "sounds" folder), heard as it is by the player it is
--- about. Those that come from somebody else's deed play on a player of their own. Returns
--- whether it plays: not when the player switched the roles' sounds off, or without the file.
-local OWN_CHANNEL = { martyr = "event", recruit = "event", angel = "event", hypnosis = "event" }
-
-role_sound = function(name)
-    return U.try("son de rôle", play_sound, name, "role_sounds", nil, OWN_CHANNEL[name]) == true
-end
-
--- A sound heard around another player (the flying Fée): a sound component of its own on that
--- player's character, which it follows. It is heard from where the character is and fades
--- with the distance: full within "inner" cm, silent beyond "inner + falloff". The engine
--- takes these settings when the component starts, and the component starts by itself when it
--- is added: it is stopped, set, then started again. The settings are written on the
--- component and on the engine's own sound source inside it, whichever one the engine reads.
--- A sound can also be placed at a spot of the building instead (`spot`): the component is
--- then left unattached, at that spot, and belongs to the local character.
-local SOUND_AROUND = { inner = 300.0, falloff = 1800.0 }
-
--- Raises an error if the two switches cannot be set. Returns whether the distances were set
--- too: otherwise the engine's own apply (full within 4 m, silent beyond 40 m).
-local function fades_with_distance(c)
-    c.bAllowSpatialization = true
-    c.bOverrideAttenuation = true
-    return (pcall(function()
-        local a = c.AttenuationOverrides
-        a.FalloffDistance = SOUND_AROUND.falloff
-        a.AttenuationShapeExtents = { X = SOUND_AROUND.inner, Y = 0.0, Z = 0.0 }
-    end))
-end
-
--- Returns what sound_around_off needs, or nil when nothing plays. mec: the character the
--- sound is hung on; with `spot` (a place of the building), the character it belongs to.
-sound_around_on = function(mec, name, setting, seconds, spot)
-    if not C.get(setting) then return nil end
-    local path = sound_file(name)
-    local player_class = StaticFindObject("/Script/MediaAssets.MediaPlayer")
-    local comp_class = StaticFindObject("/Script/MediaAssets.MediaSoundComponent")
-    local source_class = StaticFindObject("/Script/MediaAssets.FileMediaSource")
-    if not path or not (U.valid(player_class) and U.valid(comp_class) and U.valid(source_class)) then return nil end
-    local at = spot and { X = spot.X + 0.0, Y = spot.Y + 0.0, Z = spot.Z + 0.0 } or { X = 0.0, Y = 0.0, Z = 100.0 }
-    local t = { Rotation = { X = 0.0, Y = 0.0, Z = 0.0, W = 1.0 }, Translation = at,
-                Scale3D = { X = 1.0, Y = 1.0, Z = 1.0 } }
-    -- not attached (second argument) when it is placed at a spot: it then stays there
-    local comp = mec:AddComponentByClass(comp_class, spot ~= nil, t, false)
-    if not U.valid(comp) then return nil end
-    local rec = { mec = mec, comp = comp }
-    local set, tuned = { false, false }, { false, false }   -- for the component, for its sound source
-    local playing = U.try("son autour d'un joueur", function()
-        pcall(function() comp:SetActive(false, false) end)
-        set[1], tuned[1] = pcall(fades_with_distance, comp)
-        local inner = U.get(comp, "AudioComponent", nil)
-        if U.valid(inner) then set[2], tuned[2] = pcall(fades_with_distance, inner) end
-        local player = StaticConstructObject(player_class, comp)
-        rec.player = player
-        U.set(comp, "MediaPlayer", player)       -- a real reference: keeps the player alive
-        comp:SetMediaPlayer(player)
-        comp:SetActive(true, true)               -- started again: the settings above are taken now
-        set_volume(comp)
-        local source = StaticConstructObject(source_class, comp)
-        source:SetFilePath(SND.playable(path, seconds))
-        return player:OpenSource(source) ~= false
-    end)
-    -- never a sound heard everywhere: without the distance settings, no sound at all
-    local where = spot and "un endroit" or G.player_name(mec)
-    if not playing or not (set[1] or set[2]) then
-        sound_around_off(rec)
-        U.log("Son %s autour de %s : non joué (%s)", name, where,
-            playing and "réglages de distance refusés" or "lecture impossible")
-        return nil
-    end
-    local function word(i) return set[i] and (tuned[i] == true and "réglé" or "portée du moteur") or "refusé" end
-    U.log("Son %s autour de %s : s'éteint avec la distance, jusqu'à %d m (composant : %s ; source : %s)", name,
-        where, math.floor((SOUND_AROUND.inner + SOUND_AROUND.falloff) / 100), word(1), word(2))
-    return rec
-end
-
-sound_around_off = function(rec)
-    if not rec then return end
-    if U.valid(rec.player) then pcall(function() rec.player:Close() end) end
-    if U.valid(rec.comp) and U.valid(rec.mec) then
-        U.try("son autour d'un joueur : retrait", function() rec.comp:K2_DestroyComponent(rec.mec) end)
-    end
-end
-
--- An Échangeur has just swapped places with somebody (a, b: their indexes). The swap's sound
--- takes the place of the usual "power started" sound: the two of them hear it as it is, the
--- others hear it around each of the two, fading with the distance.
-local SWAP_SOUND_SECONDS = 3     -- the sound lasts half a second: what was placed around them is then removed
-
-local function on_swap_fx(a, b)
-    local mine = G.local_mec()
-    local first, second = G.mec_by_index(tonumber(a) or -1), G.mec_by_index(tonumber(b) or -1)
-    local function is_mine(mec) return mine ~= nil and mec ~= nil and mec:GetAddress() == mine:GetAddress() end
-    if is_mine(first) or is_mine(second) then
-        U.try("son de l'échange", play_sound, "swap", "swap_sound")
-        return
-    end
-    local function around(mec)
-        if not mec then return end
-        local rec = U.try("son de l'échange", sound_around_on, mec, "swap", "swap_sound")
-        if rec then U.after(SWAP_SOUND_SECONDS, "son de l'échange", function() sound_around_off(rec) end) end
-    end
-    around(first)
-    around(second)
-end
-
--- A role's sound for the players around (the host's "SND" message, sent to all). The players
--- it is about (a, and b when there is one) hear it as it is, with their own message; the
--- others hear it around player a, fading with the distance. With a spot (x, y, z), it is
--- heard around that spot instead: the Clandestin's character is sent far away while it hides.
--- What was placed is removed once the sound is over.
-local AROUND_SECONDS = 10    -- when the length of the sound cannot be told
-
-local function on_sound(name, a, b, x, y, z)
-    if type(name) ~= "string" or not name:match("^[%w_]+$") then return end
-    local mine = G.local_mec()
-    local who = G.mec_by_index(tonumber(a) or -1)
-    if not mine or is_local(who) or is_local(G.mec_by_index(tonumber(b) or -1)) then return end
-    local spot = (tonumber(x) and tonumber(y) and tonumber(z)) and U.vec(tonumber(x), tonumber(y), tonumber(z)) or nil
-    local on = spot and mine or who
-    if not on then return end
-    local rec = U.try("son de rôle", sound_around_on, on, name, "role_sounds", nil, spot)
-    if not rec then return end
-    local path = sound_file(name)
-    local secs = (path and SND.seconds(path) or AROUND_SECONDS) + 2      -- the silence added at the end, and a margin
-    U.after(secs, "son de rôle", function() sound_around_off(rec) end)
-end
-
 -- The plant was consumed: the jar is left dirty, as the game's centrifuge leaves it after
 -- taking the sample out (content -1; the jar cleaner turns it back into 0, a clean jar).
 -- Only if the jar is still in hand: a jar holding the plant the host saw (plant: its number),
@@ -1764,13 +1196,13 @@ local function on_empty_jar(plant)
         if not read or held ~= wanted then return end
     end
     U.tcall(mec, "Set Sample", G.DIRTY_JAR)
-    U.try("son de consommation", play_sound, "consume", "consume_sound")
+    U.try("son de consommation", A.play, "consume", "consume_sound")
 end
 
 -- The fish was consumed: the host has taken it out of the hand (the game's own calls), only
 -- the sound is left to play.
 local function on_eaten()
-    U.try("son de consommation", play_sound, "consume", "consume_sound")
+    U.try("son de consommation", A.play, "consume", "consume_sound")
 end
 
 local function on_reveal(list)
@@ -1840,7 +1272,7 @@ local function use_power()
     if my_role == "dreamer" then
         if not ghost then
             say("POWER_EYES", "info")
-            power_sfx("fail")
+            A.power_sfx("fail")
         end
         return
     end
@@ -1871,11 +1303,6 @@ local function install_keys()
 end
 
 -- ---------------------------------------------------------------- hooks on the local character
-is_local = function(mec)
-    local mine = G.local_mec()
-    return mine ~= nil and U.valid(mec) and mec:GetAddress() == mine:GetAddress()
-end
-
 local function on_hit_health(mec, amount)
     if not is_local(mec) then return end
     if vamp and not ghost then vamp_absorb(mec, amount) end
@@ -1921,11 +1348,11 @@ function Cl.install()
     N.on("STATUS", on_status)
     N.on("HIDE", on_hide)
     N.on("CLEAN", on_clean)
-    N.on("TRACK", on_track)
-    N.on("CARD", on_card)
-    N.on("SFX", function(kind) power_sfx(kind) end)
-    N.on("SWAPFX", on_swap_fx)
-    N.on("SND", on_sound)
+    N.on("TRACK", K.track)
+    N.on("CARD", K.card)
+    N.on("SFX", function(kind) A.power_sfx(kind) end)
+    N.on("SWAPFX", A.on_swap_fx)
+    N.on("SND", A.on_sound)
     N.on("GAG", on_gag)
     N.on("POISON", on_poison)
     N.on("VAMP", on_vamp)
@@ -1936,14 +1363,23 @@ function Cl.install()
         if U.valid(mec) and is_local(mec) then U.try("vie du vampire", vamp_number, ps, mec) end
     end)
     N.on("WOLF", on_wolf)
-    N.on("VITALS", on_vitals)
-    N.on("HP", on_hp)
-    N.on("HEAL", on_heal)
+    N.on("VITALS", MD.on_vitals)
+    MD.setup({
+        ghost = function() return ghost end,
+        reserve = function() return vamp and vamp.reserve or 0 end,
+        role = function() return my_role, my_status end,
+    })
+    N.on("HP", MD.on_hp)
+    N.on("HEAL", MD.on_heal)
     N.on("HELLO", function()
         G.clear_messages()                     -- a new game: nothing left to show of the one before
+        SC.new_game()
+        RC.clear()
         U.log("L'hôte demande qui a le mod (début de partie)")
         send_hello()
     end)
+    SC.install()                               -- the role on the start screen, the Bouffon's end screen
+    RC.install_client()                        -- the summary of the last game
     N.on("ACK", function(version)
         local mec = G.local_mec()
         acked_for = mec and mec:GetAddress() or nil
@@ -1993,8 +1429,8 @@ function Cl.install()
     U.every_tick("hypnose", tick_hypno)
     U.every_tick("bâillon", tick_gag)
     U.every_tick("vampire", tick_vamp)
-    U.every_tick("vie dite à l'hôte", tick_vitals)
-    U.every_tick("vie au-dessus des têtes", tick_tags)
+    U.every_tick("vie dite à l'hôte", MD.tick_vitals)
+    U.every_tick("vie au-dessus des têtes", MD.tick_tags)
     -- Tell the host we have the mod: once per character, every 2 s until the host has answered
     -- (ten times at most: the host only answers the first time it hears of a player), then
     -- again now and then in case the host has changed.
@@ -2007,7 +1443,7 @@ function Cl.install()
             if ghost then ghost = nil end
             vamp = nil
             wolf_reset()                           -- the game was left: its values go back as they were
-            vitals, tags = nil, {}
+            MD.reset()
             hello_sent_for, acked_for, tries = nil, nil, 0   -- the next character says it again at once
             return
         end

@@ -11,6 +11,14 @@ _oodle = None
 def oodle_decompress(buf, raw_len):
     global _oodle
     if _oodle is None:
+        if not os.path.exists(OODLE):
+            # Windows empties its temporary folder now and then: copied again from FModel's own
+            import glob, shutil
+            found = sorted(glob.glob(os.path.join(HERE, "..", "FModel*", "Output", ".data", "oodle-data-shared.dll")))
+            if not found:
+                raise RuntimeError("oodle-data-shared.dll introuvable : lancer FModel une fois (tools/FModel*)")
+            os.makedirs(os.path.dirname(OODLE), exist_ok=True)
+            shutil.copyfile(found[-1], OODLE)
         _oodle = ctypes.CDLL(os.path.abspath(OODLE))
         _oodle.OodleLZ_Decompress.restype = ctypes.c_ssize_t
         _oodle.OodleLZ_Decompress.argtypes = [ctypes.c_char_p, ctypes.c_ssize_t, ctypes.c_char_p, ctypes.c_ssize_t,

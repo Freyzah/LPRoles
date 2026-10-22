@@ -37,6 +37,13 @@ G.ASSET_FISH = "/Game/Items/Melee/Fish/DA_Fish.DA_Fish"
 -- its state time is 0, or 1 for the red plant. The mixer makes one sample of two: the value
 -- of a plant from 1 to 4 with a time above 0.
 G.ASSET_SAMPLE = "/Game/Items/Melee/ProcessedSample/DA_Sample.DA_Sample"
+-- The engine's ball shape: the game's sphere over dissidents is made of it, and so are the
+-- Fée's ball, the Traqueur's silhouette and the Shérif's card.
+G.BALL_MESH = "/Engine/BasicShapes/Sphere.Sphere"
+-- The glowing material of the game's sphere over dissidents.
+G.ORB_MATERIAL = "/Game/Items/Melee/ProcessedSample/Materials/M_HackerSphere.M_HackerSphere"
+-- A material the engine draws over everything (its editor's control handles).
+G.XRAY_MATERIAL = "/ControlRig/Controls/ControlRigXRayMaterial.ControlRigXRayMaterial"
 
 -- Recharge items are numbered: the plants first (1 to PLANT_KINDS, the plant's own number in
 -- the game), then the fish (the fish machine's number, after the plants). lpr_config.lua
@@ -121,6 +128,12 @@ end
 
 function G.player_index(mec)
     return U.get(mec, "Player Index", -1)
+end
+
+-- True for the local player's character.
+function G.is_local(mec)
+    local mine = G.local_mec()
+    return mine ~= nil and U.valid(mec) and mec:GetAddress() == mine:GetAddress()
 end
 
 function G.mec_by_index(idx)

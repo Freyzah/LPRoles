@@ -388,6 +388,61 @@ S.DIAG_BACK          = "LPROLES %s : ONGLET ET PAGE REMIS"
 S.INSTALL_BROKEN     = "LPROLES : INSTALLATION INCOMPLÈTE, RECOPIER LE MOD"
 S.UPDATED            = "LPROLES MIS À JOUR : %s"
 
+-- The title of the game's end screen, written by the mod in place of the game's own when a
+-- game ends for a reason the game does not know (lpr_screens.lua).
+S.END_TITLE = {
+    jester = "LE BOUFFON GAGNE",
+}
+
+-- Summary of the last game, in the LPROLES tab (lpr_recap.lua). Names are filled in by each
+-- machine; a sentence too long for a row goes on over the next.
+S.RECAP_TITLE        = "DERNIÈRE PARTIE"
+S.RECAP_END = {
+    employees  = "Victoire des employés",
+    dissidents = "Victoire des dissidents",
+    jester     = "Victoire du Bouffon %s",
+    stopped    = "Partie arrêtée",
+    unknown    = "Fin de la partie",
+}
+S.RECAP_LENGTH       = "%s (%d min %02d s)"
+S.RECAP_PLAYER       = "%s : %s, %s, %s"          -- name : role, camp, fate
+S.RECAP_NO_ROLE      = "sans rôle"
+S.RECAP_HEIR         = "%s puis %s"               -- the Amnésique's role, then the one taken
+S.RECAP_CAMP = { employee = "employé", dissident = "dissident", neutral = "neutre" }
+-- %s: the other player of that fate (killer, or the one it was linked to)
+S.RECAP_FATE = {
+    alive  = "survit",
+    kill   = "meurt (%s)",
+    poison = "meurt (poison)",
+    link   = "meurt (lié à %s)",
+    dead   = "meurt",
+}
+-- Events, by kind: the first %s is the player who acted (or the one it is about), the second
+-- the one it was done to.
+S.RECAP_EVENT = {
+    kill        = "%s a tué %s",
+    death       = "Mort de %s",
+    poisondeath = "Mort de %s (poison)",
+    linkdeath   = "Mort de %s (lié à %s)",
+    recruit     = "%s a recruté %s",
+    angel       = "%s (Ange gardien) a relevé %s",
+    clean       = "%s a fait disparaître le corps de %s",
+    swap        = "%s a échangé sa place avec %s",
+    poison      = "%s a empoisonné %s",
+    cure        = "%s a bu l'antidote",
+    gag         = "%s a bâillonné %s",
+    steal       = "%s a volé l'objet de %s",
+    inherit     = "%s a pris le rôle de %s",
+    jester      = "Victoire du Bouffon %s",
+    vamp        = "%s a vampirisé %s",
+    wolf        = "%s a dévoré %s",
+    heal        = "%s a soigné %s",
+    mimic       = "%s a pris l'apparence de %s",
+    hypno       = "%s a hypnotisé %s",
+    track       = "%s a traqué %s",
+    spirit      = "Apparition du Revenant %s",
+}
+
 S.MENU_TAB           = "LPROLES"
 S.MENU_ROLE          = "TON RÔLE"
 S.MENU_NO_ROLE       = "AUCUN"

@@ -63,6 +63,7 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.13.0** : dix sons de plus et deux sons refaits, tous de la même amie (Clandestin, Métamorphe, hypnose, Nettoyeur, recrutement, Revenant, Ange gardien, Martyr ; envol et échange). **Jamais lancée en jeu.** Installée le 9 octobre, pas publiée.
 - **0.13.1** : correction demandée par l'utilisateur : le son « Hypnose Proc » est pour l'hypnotisé, au moment où ses yeux se ferment, et le son de l'hypnose s'enchaîne. **Jamais lancée en jeu.** Installée le 9 octobre.
 - **Publication de la 0.13.1** (10 octobre, à la demande de l'utilisateur), avec tout ce qui s'était accumulé depuis la 0.11.4 : bandeaux, portée du Voleur, groupe RÔLE FORCÉ, Médecin, sons des rôles. Mise à jour vérifiée contre la vraie page depuis une copie exacte de la 0.11.4. **Rien de tout cela n'a encore tourné en jeu.**
+- **0.14.0** : le rôle sur l'écran de début de partie, l'écran de fin du Bouffon, le récapitulatif de la dernière partie dans l'onglet LPROLES ; le plus gros script découpé en plusieurs fichiers. **Jamais lancée en jeu.** Installée le 22 octobre, pas publiée.
 
 ## Ce qui est installé
 
@@ -213,7 +214,7 @@ Ce que fait la touche de pouvoir selon le rôle :
 ### Bouffon (neutre)
 
 - Il n'a pas de pouvoir. Il **gagne seul si un employé le tue**. Tué par un dissident, par le poison, une explosion ou une chute, il a perdu.
-- Sa victoire est annoncée à tous (« LE BOUFFON … GAGNE »), puis la partie s'arrête 3 s plus tard, comme quand l'hôte l'arrête lui-même : le jeu n'affiche ni victoire ni défaite. L'annonce est répétée au retour dans le lobby.
+- Sa victoire est annoncée à tous (« LE BOUFFON … GAGNE »), puis la partie s'arrête 3 s plus tard, comme quand l'hôte l'arrête lui-même : aucun camp n'est déclaré gagnant, et l'écran de fin affiche « LE BOUFFON GAGNE » (depuis la 0.14.0 ; « SESSION STOPPED » avant). L'annonce est répétée au retour dans le lobby.
 - Réglage « Sa victoire termine la partie » sur NON : la victoire est seulement annoncée, la partie continue sans lui.
 - Pour le reste du jeu, il compte comme un employé : les dissidents doivent aussi l'éliminer pour gagner.
 - Le tueur est celui qui l'a frappé dans les 3 s avant sa mort, comme pour le Martyr.
@@ -436,6 +437,25 @@ Si l'onglet n'apparaît pas (le journal contient alors « Onglet LPROLES incompl
 | F9 | Nombre de joueurs dont le mod a répondu à l'hôte (pour repérer une installation qui ne marche pas) |
 | F10 | Diagnostic (tout joueur), détail dans le journal. Remet aussi en route l'onglet LPROLES et la page de la tablette s'ils étaient coupés |
 
+## Début et fin de partie
+
+**Écran de début.** Quand la partie commence, le jeu affiche le camp (« EMPLOYEE » ou « DISSIDENT ») et une phrase d'explication. Depuis la 0.14.0, cette phrase est remplacée par le rôle du mod : « TU ES MÉDECIN », ou deux lignes pour la Taupe, l'Amnésique et le Bouffon (les mêmes que leurs bandeaux). Un joueur sans rôle garde le texte du jeu.
+
+- L'hôte tire les rôles une seconde environ après l'apparition de l'écran et les dit aussitôt à chacun ; les bandeaux, eux, attendent toujours « Annonce des rôles après » (7 s par défaut).
+- La Taupe garde le titre « EMPLOYEE » : le jeu l'affiche comme employé, c'est voulu. La ligne du dessous dit qu'elle est la Taupe.
+
+**Écran de fin du Bouffon.** Quand la victoire du Bouffon termine la partie, le jeu affiche son écran d'arrêt de partie ; le mod remplace son titre « SESSION STOPPED » par « LE BOUFFON GAGNE ». Un vrai arrêt de la partie par l'hôte garde « SESSION STOPPED ». Le logo reste celui du jeu.
+
+**Récapitulatif.** À la fin de chaque partie, l'onglet LPROLES (menu Échap) affiche pour tous, sous « TON RÔLE », un groupe « DERNIÈRE PARTIE » :
+
+- comment la partie s'est terminée, et sa durée ;
+- pour chaque joueur : son rôle (« AMNÉSIQUE puis MÉDECIN » s'il en a hérité), son camp à la fin (« neutre » pour le Bouffon et l'Amnésique sans héritage) et son sort : « survit », « meurt (son tueur) », « meurt (poison) », « meurt (lié à …) » ;
+- puis, minute par minute : morts et tueurs, recrutements (au moment où le recruté devient dissident), sauvetages de l'Ange gardien, corps nettoyés, échanges, empoisonnements et antidotes, bâillons, vols, héritages de l'Amnésique, victoire du Bouffon, Vampire et Loup-garou, soins, métamorphoses, hypnoses, traques, apparitions du Revenant.
+
+Les pouvoirs qui ne touchent que celui qui les lance (Fée, Médium, Rêveur, Écho, Clandestin) n'y figurent pas, pour que la liste reste lisible. Le récapitulatif reste affiché dans le lobby et disparaît quand la partie suivante commence. Il dit le rôle de chacun : il n'est envoyé que si le réglage « Révéler les rôles à la fin » (groupe GÉNÉRAL) est sur OUI.
+
+**Jamais essayé en jeu.** À vérifier : que l'écran de début est encore là quand le rôle arrive, que la phrase tient sur deux lignes, que les noms sont bien lus à la fin de la partie.
+
 ## Tester les nouveaux rôles
 
 **À deux ou trois joueurs :** chaque rôle a un réglage « Joueurs minimum » (4 à 6 par défaut). En dessous, le rôle n'est donné à personne, même activé. Pour tester à peu de joueurs, baissez ce réglage rôle par rôle, ou activez « Ignorer les joueurs minimum » dans le groupe TEST. L'hôte voit le message « N RÔLE(S) NON ATTRIBUÉ(S) : RÉGLAGE JOUEURS MINIMUM » au début de la partie quand c'est le cas.
@@ -493,4 +513,4 @@ Ce qu'il faut regarder en priorité, à plusieurs :
 - `tools\FModel-dec2025\FModel.exe` : FModel, déjà configuré pour le jeu (hors du dépôt).
 - `tools\dossier-du-jeu.txt` : le dossier du jeu sur cette machine (hors du dépôt), lu par les outils.
 
-Deux éléments ont été créés hors de ce dossier : `%APPDATA%\FModel\AppSettings.json` (configuration de FModel) et `%LOCALAPPDATA%\Temp\lp\` (bibliothèque de décompression et cache de mes outils).
+Deux éléments ont été créés hors de ce dossier : `%APPDATA%\FModel\AppSettings.json` (configuration de FModel) et `%LOCALAPPDATA%\Temp\lp\` (bibliothèque de décompression et cache de mes outils ; Windows vide parfois ce dossier : la bibliothèque est alors recopiée toute seule depuis FModel).

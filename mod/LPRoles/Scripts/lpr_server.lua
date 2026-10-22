@@ -4,6 +4,7 @@ local U = require("lpr_util")
 local C = require("lpr_config")
 local G = require("lpr_game")
 local N = require("lpr_net")
+local RC = require("lpr_recap")
 
 local Sv = {}
 
@@ -45,6 +46,9 @@ local function fresh_game_fields(P)
     P.tracking, P.marker = nil, nil
     P.hypno_until = nil
     P.link, P.died_at = nil, nil
+    P.first_role = nil             -- the role drawn at the start (for the summary of the game)
+    P.end_state = nil              -- how the last death came, for the summary: { kind, other }
+    P.death_cause = nil            -- "poison" or "link": what is about to kill this player
     P.link_done = false            -- Liés: the bond has already taken its toll (it acts once)
     P.vision_until, P.spirit_until = nil, nil
     P.last_hit = nil
@@ -522,6 +526,7 @@ local function start_spirit(P, now)
     broadcast("SPIRIT", idx(P), U.round(secs * 10))
     tell(P, "MSG", "SPIRIT_START")
     sound_around("revenant", P)
+    RC.add("spirit", idx(P))
     U.log("%s se manifeste", G.player_name(P.mec))
     return true
 end
@@ -565,6 +570,7 @@ local function cured(T)
     local by = end_poison(T)
     tell(T, "MSG", "POISON_CURED")
     if by then tell(by, "MSG", "POISON_LOST") end
+    RC.add("cure", idx(T))
     U.log("Empoisonneur : %s prend l'antidote", G.player_name(T.mec))
 end
 
@@ -625,6 +631,7 @@ local function tick_poison(T, now)
     if T.fairy then end_fairy(T) end
     end_hide(T, "poison")
     tell(T, "MSG", "POISON_DEAD")
+    T.death_cause = "poison"
     U.log("Empoisonneur : le poison tue %s", G.player_name(T.mec))
     -- as for the Liés: asked a second time if the first request found the player still a ghost
     -- on their machine, never once they have died of it
@@ -694,6 +701,7 @@ local function tick_cleaner(P, now)
     broadcast("CLEAN", idx(T))
     tell(P, "MSG", "CLEAN_DONE", idx(T))
     sound_around("clean", P)                    -- around the Nettoyeur, who stands by the body
+    RC.add("clean", idx(P), idx(T))
     U.log("Nettoyeur : %s fait disparaître le corps de %s", G.player_name(P.mec), G.player_name(T.mec))
 end
 
@@ -709,6 +717,7 @@ local FEED = {
         done = function(P, T)
             tell(P, "VAMP", P.meals, C.get("vampire_hp"))
             tell(P, "MSG", "VAMP_DONE", C.get("vampire_hp"))
+            RC.add("vamp", idx(P), idx(T))
             U.log("Vampire : %s vampirise le corps de %s (%d fois)", G.player_name(P.mec), G.player_name(T.mec), P.meals)
         end,
     },
@@ -718,6 +727,7 @@ local FEED = {
         done = function(P, T)
             tell(P, "WOLF", P.meals, P.meals * C.get("werewolf_percent"))
             tell(P, "MSG", "WOLF_DONE", C.get("werewolf_percent"))
+            RC.add("wolf", idx(P), idx(T))
             U.log("Loup-garou : %s dévore le corps de %s (%d fois)", G.player_name(P.mec), G.player_name(T.mec), P.meals)
         end,
     },
@@ -831,6 +841,10 @@ local function convert(T, msg)
     if T.dreaming then end_dream(T, "infected") end
     T.camp = "dissident"
     game.converted = true
+    if not msg then
+        local by = by_key(T.infected_by)
+        RC.add("recruit", by and idx(by) or -1, idx(T))
+    end
     U.tcall(T.mec, "Set Player Role", G.ROLE_DISSIDENT)
     G.array_remove(gm, "Innocents", T.mec)
     if not G.array_add(gm, "Hackers", T.mec) then
@@ -977,6 +991,7 @@ local function tracker_done(P, T, now)
     send_spheres(P)
     tell(P, "TRACK", idx(T), U.round(C.get("tracker_duration") * 10))
     tell(P, "MSG", "TRACK_START", idx(T))
+    RC.add("track", idx(P), idx(T))
     U.log("Traqueur : %s traque %s", G.player_name(P.mec), G.player_name(T.mec))
 end
 
@@ -991,6 +1006,7 @@ local function hypnotist_done(P, T, now)
     T.closed_since = nil
     tell(T, "HYPNO", U.round(secs * 10))
     tell(P, "MSG", "HYPNO_DONE", idx(T))
+    RC.add("hypno", idx(P), idx(T))
     U.log("Hypnotiseur : %s ferme les yeux de %s", G.player_name(P.mec), G.player_name(T.mec))
 end
 
@@ -1009,6 +1025,7 @@ local function swapper_done(P, T)
     tell(T, "MSG", "SWAP_YOU")
     -- the swap's own sound: heard by the two of them, and around each of them by those nearby
     broadcast("SWAPFX", idx(P), idx(T))
+    RC.add("swap", idx(P), idx(T))
     U.log("Échangeur : %s et %s échangent leurs places", G.player_name(P.mec), G.player_name(T.mec))
 end
 
@@ -1027,6 +1044,7 @@ local function mimic_done(P, T, now)
     if C.get("mimic_keep_list_color") then broadcast("LOOK", idx(P), 1) end
     tell(P, "MSG", "MIMIC_START", idx(T))
     sound_around("shapeshift", P)
+    RC.add("mimic", idx(P), idx(T))
     U.log("Métamorphe : %s prend l'apparence de %s%s", G.player_name(P.mec), G.player_name(T.mec),
         G.is_alive(T.mec) and "" or " (cadavre)")
     U.after(0.5, "métamorphose", function()
@@ -1053,6 +1071,7 @@ local function poisoner_done(P, T, now)
     local cure = C.get("poison_cure") and math.random(G.PLANT_KINDS) or 0
     T.poison = { by = P.key, at = now + delay, warn_at = warning > 0 and (now + delay - warning) or nil, cure = cure }
     tell(P, "MSG", "POISON_DONE", idx(T))
+    RC.add("poison", idx(P), idx(T))
     U.log("Empoisonneur : %s empoisonne %s (mort dans %d s, antidote : %s)", G.player_name(P.mec), G.player_name(T.mec),
         delay, cure > 0 and ("échantillon raffiné de la plante " .. cure) or "aucun")
 end
@@ -1068,6 +1087,7 @@ local function gagger_done(P, T, now)
     T.gag_until = now + secs
     tell(T, "GAG", U.round(secs * 10))
     tell(P, "MSG", "GAG_DONE", idx(T))
+    RC.add("gag", idx(P), idx(T))
     U.log("Bâillonneur : %s coupe le micro de %s (%d s)", G.player_name(P.mec), G.player_name(T.mec), U.round(secs))
 end
 
@@ -1091,6 +1111,7 @@ local function thief_done(P, T)
     G.put_in_hand(P.mec, data, value, time)
     tell(P, "MSG", "STEAL_DONE", idx(T))
     tell(T, "MSG", "STEAL_YOU")
+    RC.add("steal", idx(P), idx(T))
     U.log("Voleur : %s prend à %s : %s", G.player_name(P.mec), G.player_name(T.mec), tostring(name))
 end
 
@@ -1139,6 +1160,7 @@ local function medic_done(P, T)
     tell(T, "HEAL")
     tell(P, "MSG", "MEDIC_DONE", idx(T))
     tell(T, "MSG", "MEDIC_YOU")
+    RC.add("heal", idx(P), idx(T))
     U.log("Médecin : %s soigne %s (vie connue avant : %s)", G.player_name(P.mec), G.player_name(T.mec), tostring(T.life))
 end
 
@@ -1363,6 +1385,7 @@ local function angel_save(V)
     tell(saver, "MSG", "ANGEL_SAVED")
     tell(V, "MSG", "ANGEL_SAVED_YOU")
     sound_around("angel", V, saver)             -- around the protégé who gets up
+    RC.add("angel", idx(saver), idx(V))
     U.log("Ange gardien : %s est sauvé", G.player_name(V.mec))
     return true
 end
@@ -1454,6 +1477,7 @@ local function link_death(P)
     if Q.dreaming then end_dream(Q, "link") end
     if Q.fairy then end_fairy(Q) end
     tell(Q, "MSG", "LINK_DEAD")
+    Q.death_cause = "link"
     U.log("Liés : %s meurt, %s le suit", G.player_name(P.mec), G.player_name(Q.mec))
     -- A short wait lets a dreamer or a fairy get back into their body first.
     -- The game ignores the death while the player is still a ghost on their machine, so it is
@@ -1484,8 +1508,11 @@ local function jester_death(P)
     end
     game.jester = idx(P)
     broadcast("MSG", "JESTER_WIN", game.jester)
+    RC.add("jester", game.jester)
     U.log("Bouffon : %s tué par %s, un employé : il gagne", G.player_name(P.mec), G.player_name(K.mec))
     if not C.get("jester_ends_game") then return end
+    -- the game's end screen will say so, in place of "SESSION STOPPED" (lpr_screens.lua)
+    broadcast("ENDTITLE", "jester")
     local started = game.started_at
     U.after(3, "victoire du bouffon", function()
         local gm = G.gm()
@@ -1501,6 +1528,15 @@ local function on_death(P)
     -- whose blow it was (as for the Martyr: the last one, if recent), for the Vampire
     local blow = P.last_hit
     P.killed_by = (blow and P.died_at - blow.at <= MARTYR_WINDOW) and blow.by or nil
+    -- for the summary of the game: how this death came (a later one replaces it)
+    local K = by_key(P.killed_by)
+    local cause = P.death_cause
+    P.death_cause = nil
+    if K and K ~= P then
+        P.end_state = { kind = "kill", other = K }
+    else
+        P.end_state = { kind = cause or "dead", other = cause == "link" and by_key(P.link) or nil }
+    end
     P.jar_wait = nil
     if P.dreaming then end_dream(P, "death", true) end
     if P.fairy then end_fairy(P) end
@@ -1529,6 +1565,16 @@ local function on_death(P)
     if P.undoing then                          -- a cleaned body's revival undone: nothing else
         P.undoing = nil
         return
+    end
+    local st = P.end_state
+    if st.kind == "kill" then
+        RC.add("kill", idx(st.other), idx(P))
+    elseif st.kind == "poison" then
+        RC.add("poisondeath", idx(P))
+    elseif st.kind == "link" then
+        RC.add("linkdeath", idx(P), st.other and idx(st.other) or -1)
+    else
+        RC.add("death", idx(P))
     end
     U.try("bouffon", jester_death, P)
     if angel_save(P) then return end          -- comes back: a pending recruitment still applies
@@ -1725,6 +1771,7 @@ inherit = function(P, T)
         tell(P, "MSG", "AMNESIA_NO_ROLE")
         return
     end
+    RC.add("inherit", idx(P), idx(T))
     U.log("Amnésique : %s prend le rôle de %s (%s, %s)", G.player_name(P.mec), G.player_name(T.mec), T.role, tostring(T.camp))
     if T.camp == "dissident" and P.camp ~= "dissident" then convert(P, "AMNESIA_DISSIDENT") end
     give_role(P, spec)
@@ -1881,6 +1928,11 @@ local function assign_roles()
         end
     end)
     if game.mole then correct_spheres() end
+    -- each player's role, at once, for the game's start screen (the banners wait for the announce)
+    each_player(function(P)
+        P.first_role = P.role
+        if P.role then tell(P, "START", P.role) end
+    end)
 end
 
 local function announce_roles()
@@ -1928,6 +1980,7 @@ end
 
 local function on_game_start()
     game.active, game.started_at, game.announced, game.converted = true, U.now(), false, false
+    RC.start(game.started_at)
     game.assigned, game.short, game.jester, game.vitals = false, 0, nil, nil
     standins, game.guard_now = nil, nil        -- the game empties its list of employees at every start
     each_player(function(P) reset_for_game(P) end)
@@ -1967,7 +2020,24 @@ local function reveal_roles()
     if #parts > 0 then broadcast("REVEAL", table.concat(parts, ",")) end
 end
 
-local function on_game_end()
+-- The players of the game, for its summary.
+local function recap_players()
+    local list = {}
+    each_player(function(P)
+        if not P.camp then return end                    -- not in this game
+        local camp = P.camp
+        if (P.role == "jester" or P.role == "amnesiac") and camp ~= "dissident" then camp = "neutral" end
+        local st = P.end_state
+        local other = st and st.other and U.valid(st.other.mec) and idx(st.other) or -1
+        list[#list + 1] = { idx = idx(P), first = P.first_role, role = P.role, camp = camp,
+                            state = st and st.kind or "alive", other = other }
+    end)
+    table.sort(list, function(a, b) return a.idx < b.idx end)
+    return list
+end
+
+-- win, force: the game's own "End Game" values (nil when they could not be read)
+local function on_game_end(win, force)
     if not game.active then return end
     game.active = false
     U.log("Fin de partie : remise à zéro des rôles")
@@ -1983,6 +2053,22 @@ local function on_game_end()
     -- no sphere left over anybody's head in the lobby (markers, recruits made dissidents)
     each_player(function(P) U.tcall(P.mec, "Clear Hacker Sphere") end)
     if C.get("reveal_roles_at_end") then U.try("révélation", reveal_roles) end
+    -- the summary of the game, for the LPROLES tab of every machine (it tells every role: only
+    -- when the host lets the roles be revealed at the end)
+    U.try("récapitulatif", function()
+        if not C.get("reveal_roles_at_end") then return end
+        local ending = "unknown"
+        if force == true then
+            ending = game.jester and "jester" or "stopped"
+        elseif win == true then
+            ending = "employees"
+        elseif win == false then
+            ending = "dissidents"
+        end
+        for _, m in ipairs(RC.messages(ending, game.jester, recap_players())) do
+            broadcast("RECAP", table.unpack(m))
+        end
+    end)
     -- said again in the lobby: the players' machines drop the banners of the game with "END"
     if game.jester then broadcast("MSG", "JESTER_WIN", game.jester) end
     game.jester = nil
@@ -2357,6 +2443,7 @@ function Sv.install()
     hook(G.PATH_MEC, "Net Rez", function(ctx)
         local P = player(ctx:get(), false)
         if not P then return end
+        P.end_state = nil                          -- alive again, for the summary of the game
         if P.spirit_until then                     -- a Revenant raised while showing itself: that is over
             P.spirit_until = nil
             broadcast("SPIRIT", idx(P), 0)
@@ -2387,7 +2474,13 @@ function Sv.install()
         if P then U.try("vie des joueurs", on_vitals, P, v - N.REPORT) end
     end)
     hook(G.PATH_GM, "Select Game Roles", function() on_game_start() end)
-    hook(G.PATH_GM, "End Game", function() on_game_end() end)
+    hook(G.PATH_GM, "End Game", function(_, win, force)
+        local ok_w, w = pcall(function() return win:get() end)
+        local ok_f, f = pcall(function() return force:get() end)
+        if not ok_w then w = nil end              -- (a value of false must stay false)
+        if not ok_f then f = nil end
+        on_game_end(w, f)
+    end)
     -- Only when the game shows the spheres: when it clears them (end of the game), putting
     -- them back left red spheres over the heads in the lobby.
     hook(G.PATH_GM, "Set HackerSphere", function(_, clear)

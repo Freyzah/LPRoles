@@ -59,6 +59,8 @@ local ok, err = pcall(function()
     Client.install()
     Server.install()
     Menu.install(Client.role, Client.on_role_change, Client.status)
+    local Recap = require("lpr_recap")
+    Menu.show_recap(Recap.lines, Recap.on_change)
     Tablet.install(Client.role, Client.on_role_change, Client.status)
     Lobby.install(Server, { Menu, Tablet })
     if problem then

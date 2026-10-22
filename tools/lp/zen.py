@@ -96,6 +96,7 @@ class Game:
                 for e in k.exports:
                     if e.hash: d[e.hash] = k.export_path(e)
                 self._pk.pop(p, None)
+            os.makedirs(os.path.dirname(CACHE), exist_ok=True)     # Windows may have emptied its temporary folder
             pickle.dump(self.pub, open(CACHE, "wb"))
 
     def load(self, path):

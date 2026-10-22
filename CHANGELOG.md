@@ -2,6 +2,13 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
+## 0.14.0
+
+- **Ton rôle sur l'écran de début de partie :** sous « EMPLOYEE » ou « DISSIDENT », l'écran d'ouverture du jeu affiche le rôle du mod (« TU ES MÉDECIN »). Les bandeaux habituels suivent comme avant.
+- **Écran de fin du Bouffon :** quand sa victoire termine la partie, l'écran de fin affiche « LE BOUFFON GAGNE » au lieu de « SESSION STOPPED ».
+- **Récapitulatif de la dernière partie,** dans l'onglet LPROLES (menu Échap), pour tous, juste sous « TON RÔLE » : comment elle s'est terminée, le rôle, le camp et le sort de chaque joueur, puis qui a fait quoi à qui, minute par minute (morts et tueurs, recrutements, sauvetages, empoisonnements, vols, soins…). Il reste affiché dans le lobby jusqu'à la partie suivante, et suit le réglage « Révéler les rôles à la fin ».
+- **Sous le capot :** le plus gros script est découpé (sons, Traqueur et Shérif, Médecin dans des fichiers à part), pour pouvoir encore ajouter des rôles.
+
 ## 0.13.1
 
 - **Hypnose :** le son « Hypnose Proc » est pour l'hypnotisé, au moment où ses yeux se ferment ; le son de l'hypnose s'enchaîne par-dessous. L'Hypnotiseur retrouve le son de démarrage ordinaire.

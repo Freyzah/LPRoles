@@ -1575,3 +1575,49 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
   - Une seconde copie où `swap.wav` avait été remplacé par un son personnel : mise à jour faite, son personnel gardé et signalé.
 - **Non vérifié :** rien de ce qui est publié depuis la 0.11.4 n'a tourné en jeu. Le premier lancement à deux sera le premier essai du Médecin et des sons des rôles.
 - **Chez l'utilisateur :** sa copie était déjà en 0.13.1 (installée à la main le 9 octobre) : son prochain lancement ne télécharge rien.
+
+## D117 — Pistes d'amélioration (22 octobre 2026)
+
+- **Demande :** « j'aimerais que tu me donnes des pistes d'améliorations pour le mod, je pensais par exemple à trouver si c'est possible de faire un affichage personnalisé pour la fin de partie due à la victoire du bouffon, car actuellement ça affiche l'écran de "Session stopped" ».
+- **Pistes proposées :** l'écran du Bouffon ; la liste des rôles en jeu montrée à tous au début ; un récapitulatif de fin de partie ; le rôle sur l'écran de début du jeu ; des préréglages ; un poids par rôle au tirage ; les nouveautés montrées après une mise à jour ; découper le plus gros script ; un journal plus détaillé côté hôte pour le gel et la déconnexion encore inexpliqués.
+- **Retenues par l'utilisateur :** le rôle sur l'écran de début, l'écran du Bouffon, le récapitulatif, le découpage (D118 à D121). Les autres restent des pistes.
+
+## D118 — Le plus gros script découpé (version 0.14.0)
+
+- **Pourquoi :** `lpr_client.lua` déclarait 167 noms locaux au premier niveau ; Lua refuse un fichier qui en déclare plus de 200, et il ne se chargerait plus en jeu. Chaque rôle en ajoute quelques-uns.
+- **Options :**
+  1. **Sortir les parties qui dépendent peu du reste (retenu) :** les sons (`lpr_audio.lua`), ce qui est dessiné pour le Traqueur et le Shérif (`lpr_marks.lua`), le Médecin (`lpr_medic.lua`).
+  2. Un fichier par rôle. La plupart des rôles partagent l'état du joueur (le fantôme du Rêveur et de la Fée, la vision, la cachette, l'hypnose) : il faudrait réécrire chaque accès à cet état, sans pouvoir lancer le jeu pour vérifier.
+  3. Regrouper tout l'état dans une table partagée : le même risque, partout à la fois.
+- **Comment :** le code est déplacé tel quel, par un script qui vérifie chaque remplacement. Ce que le Médecin savait du reste (le fantôme, la réserve du Vampire, le rôle) lui est donné par trois fonctions. Les éléments du jeu que plusieurs parties utilisent (la forme de boule, deux matières) et le test « ce personnage est-il le mien » passent dans `lpr_game.lua`.
+- **Résultat :** `lpr_client.lua` passe de 2041 à 1478 lignes et de 167 à 126 noms, nouveautés de la 0.14.0 comprises. La vérification de syntaxe et de portée, qui signale tout nom resté sans définition, passe sur tous les fichiers ; la vérification des noms du jeu retrouve, après le découpage, exactement les mêmes 488 usages qu'avant.
+- **Pas découpé cette fois :** `lpr_server.lua`, à 163 noms. À faire avant d'y ajouter beaucoup.
+- **Outils réparés au passage :** Windows avait vidé son dossier temporaire, où les outils gardaient la bibliothèque de décompression de FModel et l'index des noms du jeu. `iostore.py` recopie la bibliothèque depuis FModel quand elle manque, `zen.py` recrée le dossier.
+
+## D119 — Le rôle sur l'écran de début (version 0.14.0)
+
+- **Ce que fait le jeu :** au début de la partie, son interface de jeu (`W_inGame`, fonction « Game Start ») écrit le camp en titre (« EMPLOYEE », « DISSIDENT ») et une phrase d'explication en dessous (`Black_Subtitle`).
+- **Décision :** la phrase est remplacée par les lignes d'annonce du rôle du mod, les mêmes que ses bandeaux. Le titre garde le camp. Un joueur sans rôle garde le texte du jeu.
+- **Le moment :** l'hôte tire les rôles 0,5 à 1,5 s après le début. Il les dit maintenant aussitôt à chacun (message `START`), sans attendre « Annonce des rôles après », qui ne règle plus que les bandeaux. Les deux peuvent arriver dans les deux ordres : le mod écrit le rôle pendant les 10 s qui suivent l'apparition de l'écran, et le réécrit chaque seconde au cas où le jeu remettrait sa phrase.
+- **Options écartées :** remplacer le titre (le camp disparaîtrait) ; ajouter un texte ailleurs (le mod ne peut qu'écrire dans les textes qui existent) ; garder seulement les bandeaux (ce que l'utilisateur voulait changer).
+- **Taupe :** le titre reste « EMPLOYEE » (le jeu l'affiche ainsi exprès), la ligne dit « TU ES LA TAUPE ».
+- **Non vérifiable sans le jeu :** que l'écran est encore affiché quand le rôle arrive, et que la phrase a la place pour deux lignes.
+
+## D120 — L'écran de fin du Bouffon (version 0.14.0)
+
+- **Ce qu'on a trouvé :** l'interface de jeu a deux fins. « Game End » écrit « EMPLOYEES WIN / LOSE » ou « DISSIDENTS WIN / LOSE » avec le logo du camp ; « Force End » écrit « SESSION STOPPED » avec le logo employé. Le mod termine la partie du Bouffon par une fin forcée, pour qu'aucun camp ne soit déclaré gagnant : d'où « SESSION STOPPED ».
+- **Décision :** le titre devient « LE BOUFFON GAGNE ». Seulement quand l'hôte l'a dit (message `ENDTITLE`, envoyé avec l'annonce de la victoire, 3 s avant la fin) : un vrai arrêt de la partie garde son titre.
+- **Options écartées :** une fin normale (elle déclare un camp gagnant) ; le nom du Bouffon dans le titre (longueur variable, et la bannière le dit déjà) ; son nom sur une seconde ligne, dans la phrase du dessous : le jeu la vide à cet instant, rien ne dit qu'elle est visible sur l'écran de fin. À essayer une fois l'écran vu.
+- **Le logo** reste celui du jeu : le mod ne peut pas ajouter d'image.
+
+## D121 — Récapitulatif de la dernière partie (version 0.14.0)
+
+- **Où :** dans l'onglet LPROLES, pour tous, juste sous « TON RÔLE ». Vide (et replié) pendant une partie ; rempli à la fin ; gardé dans le lobby jusqu'à la partie suivante.
+- **Contenu :** la fin et la durée ; pour chaque joueur, son rôle (et celui dont il a hérité), son camp à la fin, son sort ; puis les évènements datés : morts et tueurs, recrutements (au moment où ils prennent effet), sauvetages, corps nettoyés, échanges, empoisonnements et antidotes, bâillons, vols, héritages, victoire du Bouffon, Vampire, Loup-garou, soins, métamorphoses, hypnoses, traques, apparitions du Revenant. 60 évènements au plus.
+- **Laissés de côté :** les pouvoirs qui ne touchent que celui qui les lance (Fée, Médium, Rêveur, Écho, Clandestin), pour que la liste reste lisible.
+- **Comment :** l'hôte note les évènements au fil de la partie ; à la fin il envoie à toutes les machines des nombres seulement (numéros de joueurs, rôles, secondes). Chaque machine écrit les phrases avec les noms qu'elle connaît ; elle note les noms pendant la partie, pour qu'un joueur parti avant la fin garde le sien.
+- **Le réglage « Révéler les rôles à la fin » :** le récapitulatif dit le rôle de chacun ; il n'est envoyé que si ce réglage est sur OUI.
+- **Formulation :** des tournures qui ne dépendent pas du genre (« a tué », « meurt », « Mort de … ») ; les noms des rôles en capitales, comme dans le reste de l'onglet.
+- **Non vérifiable sans le jeu :** l'aspect des rangées, et que les noms se lisent encore au moment de la fin (la révélation des rôles s'y fie déjà).
+- **Contrôles :** syntaxe, noms du jeu (dont « Game Start », « Force End », `Black_Subtitle`, `End_Title`), pages, bandeaux, essais de la mise à jour. **Jamais lancé en jeu ; pas de relecture indépendante.**
+- **Version :** 0.14.0, avec D118 à D120. Installée (jeu fermé), archive complète refaite. Pas publiée.
