@@ -469,8 +469,7 @@ S.STATS = {
     role   = "%s %d/%d",
 }
 
--- The encyclopedia of the roles, on the lobby's tutorial screen (lpr_book.lua). {pkey} and
--- {key}: this player's own keys.
+-- The encyclopedia of the roles, on the lobby's tutorial screen (lpr_book.lua).
 S.BOOK = {
     head = "RÔLES %d/%d",
     camp = { [0] = "Camp : employé ou dissident, au hasard", [1] = "Camp : employé", [2] = "Camp : dissident",
@@ -478,7 +477,7 @@ S.BOOK = {
     on = "Activé par l'hôte, à partir de %d joueurs",
     off = "Désactivé par l'hôte",
     mod_off = "Le mod est désactivé par l'hôte",
-    keys = "{pkey} : rôle suivant - {key} : rôle précédent",
+    arrows = "Flèches de l'ordinateur : changer de rôle",
     linked_title = "LIÉS",
     linked = { "Deux joueurs sont *liés*, quels que soient leurs rôles : chacun sait à qui.",
                "Au premier des deux qui *meurt*, l'autre *meurt aussi*, une seule fois." },

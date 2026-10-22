@@ -1275,11 +1275,10 @@ local function install_keys()
         local code = Key[C.KEY_NAME[name] or name]
         if code then
             local ok, err = U.on_key(code, name, function()
-                -- in the lobby, near the tutorial screen, the two keys turn the encyclopedia's pages
                 if C.get("power_key") == name then
-                    if not U.try("encyclopédie", BK.turn, 1) then use_power() end
+                    use_power()
                 elseif C.get("use_key") == name then
-                    if not U.try("encyclopédie", BK.turn, -1) then use_item() end
+                    use_item()
                 end
             end)
             if not ok then U.log("Touche %s non enregistrée : %s", name, tostring(err)) end
@@ -1366,7 +1365,8 @@ function Cl.install()
         send_hello()
     end)
     SC.install()                               -- the role on the start screen, the Bouffon's end screen
-    N.on("BOOK", BK.on_book)                   -- the encyclopedia of the lobby
+    N.on("BOOK", BK.on_book)                   -- the encyclopedia of the lobby: the pages
+    N.on("BOOKPAGE", BK.on_page)               -- and the one the host shows
     BK.install()
     RC.install_client()                        -- the summary of the last game
     N.on("ACK", function(version)

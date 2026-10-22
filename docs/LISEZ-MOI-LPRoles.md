@@ -67,7 +67,9 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.14.1** : groupe TEST, « Simuler la victoire du Bouffon », pour voir sa fin de partie sans personne pour le tuer. Installée le 22 octobre.
 - **Essai seul de l'utilisateur (22 octobre, 0.14.0 et 0.14.1)** : le rôle s'écrit sur l'écran de début (Rêveur, Bouffon, Amnésique), l'écran de fin affiche « LE BOUFFON GAGNE », le récapitulatif arrive à chaque fin de partie où son réglage est sur OUI. « Ça marche nickel. »
 - **0.14.2** : plus de bandeaux avec les rôles à la fin de la partie (le retour au lobby les effaçait), le récapitulatif les remplace. **Jamais lancée en jeu.** Installée le 22 octobre, une fois le jeu fermé ; pas publiée.
-- **0.15.0** : encyclopédie des rôles sur l'écran des tutoriels du lobby, évènements aléatoires (groupe ÉVÈNEMENTS), statistiques dans l'onglet LPROLES. **Jamais lancée en jeu.** Pas publiée.
+- **0.15.0** : encyclopédie des rôles sur l'écran des tutoriels du lobby, évènements aléatoires (groupe ÉVÈNEMENTS), statistiques dans l'onglet LPROLES. Installée le 22 octobre, pas publiée.
+- **Essai seul de l'utilisateur (0.15.0)** : l'encyclopédie s'affiche sur le grand écran, mais le texte est beaucoup trop grand (coupé à gauche, à droite et en haut). L'utilisateur la veut commune à tous, tournée avec les boutons de l'ordinateur et non avec des touches.
+- **0.15.1** : encyclopédie commune à tous, tournée avec les flèches de l'ordinateur des tutoriels ; police adaptée à l'écran. **Jamais lancée en jeu.** Pas publiée.
 
 ## Ce qui est installé
 
@@ -471,16 +473,16 @@ La rangée revient seule sur NON : elle agit une fois par clic. Hors d'une parti
 
 ## Encyclopédie des rôles (lobby)
 
-Dans le lobby, près de l'**ordinateur des tutoriels** ou de son **grand écran** (8 m au plus) :
+Dans le lobby, sur l'**ordinateur des tutoriels**, les **flèches gauche et droite** (les boutons de l'ordinateur, qu'on presse comme les autres) changent de rôle sur le **grand écran**. **Tout le monde voit la même page** : on peut présenter les rôles à tout le monde.
 
-- **touche de pouvoir** (B par défaut) : rôle suivant ; **touche « consommer »** (G par défaut) : rôle précédent ;
 - le grand écran affiche le nom du rôle, son camp, s'il est activé par l'hôte (et à partir de combien de joueurs), puis son fonctionnement avec **les réglages de l'hôte** ; l'ordinateur affiche « RÔLES 3/25 » ;
-- 24 rôles plus les Liés, par ordre alphabétique.
+- 24 rôles plus les Liés, par ordre alphabétique ; la première pression montre le premier rôle (flèche droite) ou le dernier (flèche gauche), puis la page montrée en dernier quand on y revient ;
+- une vidéo en cours s'arrête pour tout le monde (dans le jeu, ces flèches avançaient ou reculaient la vidéo de 10 secondes) ; les autres boutons de l'ordinateur relancent les vidéos comme avant, et l'écran redevient celui du jeu ;
+- la taille du texte s'adapte à chaque page pour tenir sur l'écran.
 
-Chacun feuillette sur sa machine : les autres ne voient pas vos pages, et les vidéos du jeu, communes à tous, ne sont pas touchées. Le mod remet les textes du jeu en place quand vous vous éloignez (10 m), quand une vidéo commence ou quand une partie commence.
+C'est l'hôte qui tient la page et l'envoie aux machines qui ont le mod (messages `BOOK` pour le contenu des pages, `BOOKPAGE` pour la page montrée) ; un joueur qui arrive reçoit la page en cours. **Il faut que l'hôte ait le mod** ; un joueur sans le mod voit l'écran du jeu. Le mod remet les textes du jeu en place quand une vidéo commence ou quand une partie commence.
 
-- Les pages arrivent de l'hôte (message `BOOK`) dans le lobby, et de nouveau à chaque changement de ses réglages.
-- **Jamais essayé en jeu** : la taille du texte sur le grand écran (le mod coupe les lignes à 46 caractères, à ajuster), que le titre de l'ordinateur se redessine bien, que la vidéo derrière disparaît. Le journal dit ce que l'écran affichait avant (« Encyclopédie ouverte… ») et la taille du texte.
+- **Jamais essayé en jeu** : la nouvelle taille du texte (le journal note « Encyclopédie ouverte… » avec la taille d'une lettre et la place disponible, puis la police choisie), les flèches de l'ordinateur captées par l'hôte, l'arrêt de la vidéo chez tout le monde.
 
 ## Évènements aléatoires
 

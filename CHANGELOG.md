@@ -2,7 +2,12 @@
 
 La section d'une version est reprise telle quelle sur sa page GitHub.
 
-## 0.15.0
+## 0.15.1
+
+- **Encyclopédie des rôles commune à tous :** les **flèches gauche et droite de l'ordinateur des tutoriels** (ses propres boutons, que chacun peut presser) changent de rôle, et tout le monde voit la même page sur le grand écran : on peut présenter les rôles devant tout le monde. Une vidéo en cours s'arrête (dans le jeu, ces flèches avançaient ou reculaient la vidéo de 10 secondes) ; les autres boutons de l'ordinateur relancent les vidéos comme avant. Les touches du mod ne tournent plus les pages. Il faut que l'hôte ait le mod.
+- **Le texte tient sur le grand écran :** la taille de la police s'adapte à chaque page (elle était beaucoup trop grande, et la page coupée).
+
+## 0.15.0 (non publiée)
 
 - **Encyclopédie des rôles dans le lobby :** près de l'ordinateur des tutoriels ou de son grand écran, la touche de pouvoir affiche le rôle suivant et la touche « consommer » le précédent : nom, camp, activé ou non par l'hôte, et fonctionnement avec les réglages de l'hôte. Chacun feuillette de son côté ; les vidéos du jeu ne sont pas touchées.
 - **Évènements aléatoires** (groupe ÉVÈNEMENTS de l'onglet LPROLES, actifs par défaut) : de temps en temps pendant une partie, une panne de radio (micros coupés), un grand échange (deux joueurs au hasard changent de place), des soins pour tous, les morts qui se montrent, ou une fuite d'informations (le nombre de dissidents en vie). Chacun se coupe ou se règle ; le groupe TEST peut en déclencher un.

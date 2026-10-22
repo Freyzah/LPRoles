@@ -33,6 +33,10 @@ EV_RIGHT = "BndEvt__W_Settings_Selection_ButtonR_K2Node_ComponentBoundEvent_5_On
 EV_LEFT = "BndEvt__W_Settings_Selection_ButtonL_K2Node_ComponentBoundEvent_4_OnButtonPressedEvent__DelegateSignature"
 EV_COMMIT = "BndEvt__W_Settings_Value_SpinBox_115_K2Node_ComponentBoundEvent_1_OnSpinBoxValueCommittedEvent__DelegateSignature"
 
+# the tutorial computer's arrows (lpr_book.lua hooks them on the host)
+TUTO_LEFT = "BndEvt__PC_tuto_Button Left_K2Node_ComponentBoundEvent_5_Button Push__DelegateSignature"
+TUTO_RIGHT = "BndEvt__PC_tuto_Button Right_K2Node_ComponentBoundEvent_4_Button Push__DelegateSignature"
+
 # (owner, name, parameter count, required flags)
 FUNCTIONS = [
     ("Mec", "Net Eye State", 1, "Server"), ("Mec", "Net Set Stance", 1, "Server"),
@@ -50,6 +54,8 @@ FUNCTIONS = [
     ("HUD", "Death Hidders", 1, ""), ("HUD", "Game Start", 1, ""), ("HUD", "Force End", 0, ""),
     ("Notif", "Show Message", 2, ""), ("UpperNotif", "Show Message", 2, ""),
     ("PlayerStateW", "Set HP", 0, ""), ("TutoScreenW", "Show Video", 1, ""),
+    ("TutoScreen", "Waiting Video", 0, "Multicast"), ("TutoPC", TUTO_LEFT, 1, ""), ("TutoPC", TUTO_RIGHT, 1, ""),
+    ("TutoScreen", "Play Video", 1, "Multicast"), ("TutoPC", "Video End", 0, ""),
     ("Mec", "Check Eyes State", 0, ""), ("Mec", "Net Switch Item", 1, "Server"), ("Mec", "Set Bag Item", 1, "Client"),
     ("Selection", "Rename", 1, ""), ("Selection", EV_RIGHT, 0, ""), ("Selection", EV_LEFT, 0, ""),
     ("Value", "Rename", 1, ""), ("Value", "Set Range", 4, ""), ("Value", "Set Value", 2, ""),
@@ -64,7 +70,7 @@ FUNCTIONS = [
     ("Selection", "Update Name", 0, ""), ("TabButton", "Set Selection", 1, ""), ("MainTab", "Select Tab", 1, ""),
     ("ItemSpawner", "Spawn Item", 1, ""), ("GM", "End on Death", 0, ""),
 ]
-FIRST_PARAM = {("Mec", "Net Deal Damage"): "Victim", ("Mec", "Hit Health"): "Health", ("Mec", "Net Eye State"): "Eyes State",
+FIRST_PARAM = {("TutoPC", TUTO_LEFT): "Source", ("TutoPC", TUTO_RIGHT): "Source", ("Mec", "Net Deal Damage"): "Victim", ("Mec", "Hit Health"): "Health", ("Mec", "Net Eye State"): "Eyes State",
                ("Value", EV_COMMIT): "InValue"}
 
 PROPERTIES = [
@@ -99,12 +105,12 @@ PROPERTIES = [
     ("PlayerData", "Min Regen"), ("PlayerData", "Max Regen"), ("PlayerData", "Regen HP Speed"),
     ("TutoPC", "PC Screen"), ("TutoPC", "World Screen"), ("TutoPC", "Widget"), ("TutoScreen", "Screen"),
     ("TutoScreen", "Widget"), ("TutoScreenW", "Text_Tutorial"), ("TutoScreenW", "BlackScreen"),
-    ("TutoScreenW", "Video_Image"), ("TutoPCW", "HeadText"),
+    ("TutoScreenW", "Video_Image"), ("TutoPCW", "HeadText"), ("TutoScreen", "Waiting"),
 ]
 # Native functions whose first parameter is a text.
 TEXT_NATIVES = {"SetText", "K2_SetText"}
 # Engine properties (not Blueprint variables): checked by name only against this list.
-ENGINE_PROPERTIES = {"Screen", "Controller", "Pawn", "PlayerState", "RelativeScale3D", "WidgetTree", "Slot", "bHidden", "Font", "ColorAndOpacity", "Preset", "Color", "bAlwaysRelevant", "MediaPlayer", "BrushColor", "AudioComponent"}
+ENGINE_PROPERTIES = {"DrawSize", "Screen", "Controller", "Pawn", "PlayerState", "RelativeScale3D", "WidgetTree", "Slot", "bHidden", "Font", "ColorAndOpacity", "Preset", "Color", "bAlwaysRelevant", "MediaPlayer", "BrushColor", "AudioComponent"}
 
 NATIVE_FUNCTIONS = [
     "/Script/Engine.Actor.K2_GetActorLocation", "/Script/Engine.Actor.SetActorHiddenInGame",
@@ -133,7 +139,8 @@ NATIVE_FUNCTIONS = [
     "/Script/UMG.PanelWidget.ClearChildren", "/Script/UMG.ContentWidget.SetContent", "/Script/UMG.WrapBox.SetInnerSlotPadding",
     "/Script/UMG.Border.SetBrushColor", "/Script/UMG.Border.SetPadding",
     "/Script/MediaAssets.MediaSoundComponent.SetMediaPlayer", "/Script/MediaAssets.FileMediaSource.SetFilePath",
-    "/Script/MediaAssets.MediaPlayer.OpenSource", "/Script/MediaAssets.MediaPlayer.Close", "/Script/Engine.Actor.K2_DestroyActor",
+    "/Script/MediaAssets.MediaPlayer.OpenSource", "/Script/MediaAssets.MediaPlayer.Close", "/Script/MediaAssets.MediaPlayer.IsPlaying",
+    "/Script/MediaAssets.MediaPlayer.Pause", "/Script/UMG.Widget.ForceLayoutPrepass", "/Script/Engine.Actor.K2_DestroyActor",
     "/Script/Engine.Actor.K2_TeleportTo", "/Script/Engine.PrimitiveComponent.GetCollisionEnabled",
     "/Script/Engine.ActorComponent.SetActive", "/Script/UMG.Widget.GetParent", "/Script/UMG.VerticalBoxSlot.SetPadding",
     "/Script/UMG.VerticalBoxSlot.SetHorizontalAlignment", "/Script/UMG.VerticalBoxSlot.SetVerticalAlignment",
@@ -268,6 +275,10 @@ def main():
             if name.startswith("/Script/"):
                 if name.replace(":", ".") not in NATIVE_FUNCTIONS: err(f"{mod}.lua : fonction native non couverte : {name}")
             elif name not in known_fn and name not in native_short: err(f"{mod}.lua : fonction du jeu non couverte par la vérification : {name}")
+        # Blueprint event names written whole, and functions hooked with a path built in the script (CLASS .. ":Name")
+        for name in re.findall(r'"(BndEvt__[^"]+)"', src) + re.findall(r'\.\.\s*":([^"]+)"', src):
+            seen += 1
+            if name not in known_fn: err(f"{mod}.lua : évènement du jeu non couvert par la vérification : {name}")
         # A text parameter must receive an engine text made by G.text_call (a Lua string crashes UE4SS).
         for name in re.findall(r'U\.t?call\(\s*[\w.]+\s*,\s*"([^"]+)"', src):
             takes_text = name in TEXT_NATIVES or any(

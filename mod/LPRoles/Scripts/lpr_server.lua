@@ -7,6 +7,7 @@ local N = require("lpr_net")
 local RC = require("lpr_recap")
 local EV = require("lpr_events")
 local ST = require("lpr_stats")
+local BK = require("lpr_book")
 
 local Sv = {}
 
@@ -2004,6 +2005,7 @@ local function on_game_start()
     game.active, game.started_at, game.announced, game.converted = true, U.now(), false, false
     RC.start(game.started_at)
     EV.start(game.started_at)
+    BK.host_close()                            -- the tutorial screen is the game's again
     game.assigned, game.short, game.jester, game.vitals = false, 0, nil, nil
     -- a game played with the test aids is not counted in the statistics
     game.ending, game.tested = nil, nil
@@ -2539,6 +2541,7 @@ local function tick(now)
                 N.send(me.mec, "ACK", U.VERSION)       -- as a hello from that machine would get
             end
             U.try("encyclopédie", send_books, now)
+            U.try("encyclopédie", BK.host_sync)        -- after the pages: the page shown, to who has come
             U.try("statistiques", send_stats)
         end
         return
@@ -2666,6 +2669,7 @@ function Sv.install()
     end)
     EV.setup({ each_player = each_player, tell = tell, broadcast = broadcast, idx = idx,
                swap_places = swap_places, game = game })
+    BK.setup({ each_player = each_player, tell = tell, game = game, pages = function() return book.pages end })
     U.every_tick("hôte", tick)
     U.log("Partie hôte prête")
 end
