@@ -1884,4 +1884,4 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
   - la touche « consommer » d'un empoisonné, rendue pendant la trêve pour l'antidote, rechargeait aussi le pouvoir de son rôle : seul l'antidote passe maintenant ;
   - avec « Consigne du fouillé » à 0, le secours de l'hôte pour vider un sac reconnaissait l'objet à son seul type : un objet du même type remis dans le sac dans la seconde et demie retombait. Il regarde maintenant si un nouvel objet de ce type est apparu au sol.
 - **Contrôles :** syntaxe et portée (`luacheck.py`), noms du jeu (`verify_mod.py`), bandeaux (`banners.py`, qui refuse aussi « bâtiment »), pages, essais de la mise à jour, construction de l'archive. **Jamais lancé en jeu.**
-- **Version :** 0.16.0. Pas installée, pas publiée.
+- **Version :** 0.16.0. Installée le 22 octobre (jeu fermé), copie identique aux sources (68 fichiers). Pas publiée.
