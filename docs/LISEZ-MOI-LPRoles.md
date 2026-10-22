@@ -69,7 +69,7 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.14.2** : plus de bandeaux avec les rôles à la fin de la partie (le retour au lobby les effaçait), le récapitulatif les remplace. **Jamais lancée en jeu.** Installée le 22 octobre, une fois le jeu fermé ; pas publiée.
 - **0.15.0** : encyclopédie des rôles sur l'écran des tutoriels du lobby, évènements aléatoires (groupe ÉVÈNEMENTS), statistiques dans l'onglet LPROLES. Installée le 22 octobre, pas publiée.
 - **Essai seul de l'utilisateur (0.15.0)** : l'encyclopédie s'affiche sur le grand écran, mais le texte est beaucoup trop grand (coupé à gauche, à droite et en haut). L'utilisateur la veut commune à tous, tournée avec les boutons de l'ordinateur et non avec des touches.
-- **0.15.1** : encyclopédie commune à tous, tournée avec les flèches de l'ordinateur des tutoriels ; police adaptée à l'écran. **Jamais lancée en jeu.** Pas publiée.
+- **0.15.1** : encyclopédie commune à tous, tournée avec les flèches de l'ordinateur des tutoriels ; police adaptée à l'écran. **Jamais lancée en jeu.** Installée le 22 octobre (jeu fermé), pas publiée.
 
 ## Ce qui est installé
 
