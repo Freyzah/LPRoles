@@ -44,6 +44,11 @@ EV.RESERVED = { say = true, note = true, sfx = true }
 -- An event kept for the last moments of a game (M.only_last, the shuttle): from this long before
 -- its window opens, no other event starts.
 EV.RESERVE = 30
+-- How far ctx.aimed looks when the module gives no reach (cm): about the length of a room.
+EV.AIM_CM = 300
+-- The shortest beat of a light's pulse (ctx.glow, s): the machines draw it at each tick, ten
+-- times a second.
+EV.MIN_PULSE = 0.3
 
 EV.mods = {}                 -- id -> module, the ones loaded
 
@@ -100,6 +105,13 @@ local function refused(M, id)
     end
     for name in pairs((M.client) or {}) do
         if EV.RESERVED[name] then return "M.client." .. name .. " : nom réservé" end
+    end
+    -- the names of its sound files (sounds/<name>.wav or .mp3), made ready on every machine at EVON
+    if M.SOUNDS ~= nil and type(M.SOUNDS) ~= "table" then return "M.SOUNDS : une liste de noms attendue" end
+    for _, name in ipairs(M.SOUNDS or {}) do
+        if type(name) ~= "string" or not name:match("^[a-z0-9_]+$") then
+            return "M.SOUNDS : nom de son refusé (a-z, 0-9, _) : " .. tostring(name)
+        end
     end
     for _, h in ipairs(M.hooks or {}) do
         if type(h.path) ~= "string" or type(h.fn) ~= "function" then return "M.hooks : chemin ou fonction manquant" end
@@ -207,7 +219,11 @@ local function wire(kind, v)
     elseif kind == "names" then
         if type(v) == "table" then
             local t = {}
-            for _, x in ipairs(v) do t[#t + 1] = wire("name", x) end
+            for _, x in ipairs(v) do
+                -- a player who left (-1, or no index) is left out: "3--1-5" would read as 3, 1, 5
+                local w = wire("name", x)
+                if (tonumber(w) or -1) >= 0 then t[#t + 1] = w end
+            end
             return #t > 0 and table.concat(t, "-") or "-"
         end
         return ascii(v)
@@ -447,7 +463,10 @@ local function new_ctx(M, now, test)
         if p then p.Z = p.Z + 160 end
         return p
     end
-    function ctx.aimed(P, cm) return env.aimed(P, cm) end
+    function ctx.aimed(P, cm)
+        if not valid(P) then return nil end
+        return env.aimed(P, cm or EV.AIM_CM)
+    end
     function ctx.sees(P, Q, h)
         local a, b = where(P), where(Q)
         if not (a and b) then return false end
@@ -500,10 +519,11 @@ local function new_ctx(M, now, test)
             return
         end
         if who == "dead" or who == "living" then
+            -- a player's own line stays until the module takes it off (ctx.line(P, nil)): only a
+            -- line to everyone replaces it
             L[who] = rec
             for _, P in ipairs(targets(who)) do
-                L.per[P.key] = nil
-                put(P, "EVLINE", line_msg(ctx, line_of(ctx, P), t))
+                if L.per[P.key] == nil then put(P, "EVLINE", line_msg(ctx, line_of(ctx, P), t)) end
             end
             return
         end
@@ -551,7 +571,11 @@ local function new_ctx(M, now, test)
     end
     function ctx.glow(slot, P, color, radius, pulse, intensity)
         if ctx.over or not valid(P) or not free_slot(ctx, slot, "lights") then return nil end
-        put(nil, "EVGLOW", slot, 1, env.idx(P), ascii(color or "white"), U.round(radius or 300), U.round((pulse or 0) * 10),
+        -- the machines draw the pulse at each tick (ten times a second): a shorter beat would be
+        -- caught at the same point of its wave every time, a steady light or an odd flicker
+        pulse = pulse or 0
+        if pulse > 0 and pulse < EV.MIN_PULSE then pulse = EV.MIN_PULSE end
+        put(nil, "EVGLOW", slot, 1, env.idx(P), ascii(color or "white"), U.round(radius or 300), U.round(pulse * 10),
             U.round(intensity or 5000))
         return handle(ctx, function() ctx.glow_off(slot) end, true)
     end
@@ -591,10 +615,12 @@ local function new_ctx(M, now, test)
         if not ctx.over then put(nil, "EVSND", slot, "-") end
     end
     function ctx.siren(slot, alarm, on_s, off_s, total_s, who)
-        if ctx.over or not free_slot(ctx, slot, "sirens") then return nil end
+        if ctx.over then return nil end
+        -- the box first: a slot taken for a box that is not there would never be given back
         local at = nil
         if type(alarm) == "table" then at = alarm.at or G.location(alarm.actor) else at = G.location(alarm) end
         if not at then return warn(ctx, "sirène sans boîtier") end
+        if not free_slot(ctx, slot, "sirens") then return nil end
         put(who, "EVSIREN", slot, 1, U.round(at.X), U.round(at.Y), U.round(at.Z), U.round((on_s or 1) * 10),
             U.round((off_s or 0) * 10), U.round((total_s or 10) * 10))
         return handle(ctx, function() ctx.siren_off(slot) end, true)
@@ -668,8 +694,9 @@ local function new_ctx(M, now, test)
         if ctx.over or not valid(P) then return nil end
         opts = opts or {}
         local move, act = opts.move ~= false, opts.act ~= false
-        B.freeze(P, secs or 1, move, act)
-        local h = handle(ctx, function() B.unfreeze(P, act) end, false, "freezes", P.key)
+        -- B counts the freezes on each player: the end of one leaves the others in place
+        local f = B.freeze(P, secs or 1, move, act)
+        local h = handle(ctx, function() B.unfreeze(P, f) end, false, "freezes", P.key)
         ctx.at((secs or 1) + 0.1, function() undo(ctx, h) end)
         return h
     end
@@ -802,9 +829,17 @@ local function new_ctx(M, now, test)
 end
 
 -- ---------------------------------------------------------------- host: starting and stopping
+-- A stop's reason as it travels in EVOFF: a short word [a-z0-9_] (a module's own reason with an
+-- accent or a "|" would break the message), "done" for anything else.
+local function reason_word(reason)
+    if type(reason) == "string" and #reason <= 24 and reason:match("^[a-z0-9_]+$") then return reason end
+    return "done"
+end
+
 stop_run = function(ctx, reason)
     if ctx.over or ctx._.stopping then return end
     ctx._.stopping = true
+    reason = reason_word(reason)          -- the same word for M.stop, the undos, every machine and the log
     local M = ctx.M
     if M.stop then U.try("évènement " .. ctx.id .. " : arrêt", M.stop, ctx, reason) end
     ctx.over = true
@@ -924,13 +959,17 @@ local function schedule(now)
     local c = counts(now)
     -- An event kept for the last moments (the shuttle), switched on and able to come: from
     -- EV.RESERVE s before its window nothing else starts, and it comes first as soon as the window
-    -- opens, whatever the pause. If it cannot start then, the others may (as usual).
+    -- opens, whatever the pause. If it cannot start then, the others may (as usual). Never before
+    -- the first delay, nor while the clock reads 0 (not started yet, or already run out: a short
+    -- game must not open with the shuttle).
     local reserved = nil
-    for _, id in ipairs(EV.IDS) do
-        local M = EV.mods[id]
-        if not reserved and M and M.only_last and C.get(M.switch) and eligible(M, c, now, clock, true)
-                and clock <= (C.get(M.only_last) or 0) + EV.RESERVE then
-            reserved = M
+    if now >= sched.started + C.get("event_first_delay") and clock > 0 then
+        for _, id in ipairs(EV.IDS) do
+            local M = EV.mods[id]
+            if not reserved and M and M.only_last and C.get(M.switch) and eligible(M, c, now, clock, true)
+                    and clock <= (C.get(M.only_last) or 0) + EV.RESERVE then
+                reserved = M
+            end
         end
     end
     if reserved then
@@ -999,7 +1038,11 @@ function EV.tick(now)
     local ctx = run
     if ctx then
         local M = ctx.M
-        if game.ending or not C.get("enabled") or not C.get("events_on") or not C.get(M.switch) then
+        -- a run started from TEST ignores the events' switches (the shuttle is off by default and
+        -- must still be testable): only the mod's own switch and the end of the game stop it
+        local switched_off = not C.get("enabled")
+            or (not ctx.test and not (C.get("events_on") and C.get(M.switch)))
+        if game.ending or switched_off then
             return stop_run(ctx, game.ending and "end" or "off")
         end
         if ctx.planned == 0 then return stop_run(ctx, "done") end
@@ -1065,8 +1108,11 @@ end
 
 -- A player pressed the power key ("act") or the "consume" key ("use"). True when the running
 -- event took it (the role's own power is then not run): only while the event routes that key of
--- that player (ctx.key). One press per 0.3 s; a player whose eyes the Hypnotiseur holds shut can
--- no more use an event's key than a power.
+-- that player (ctx.key). A press within 0.3 s of one the event took is taken too, and nothing
+-- more (a vote, a seat: never twice for one gesture); one the event gave back to the role leaves
+-- the next press free (the shuttle routes everyone's key for its whole wait: a quick double
+-- press elsewhere is the role's own business). A player whose eyes the Hypnotiseur holds shut
+-- can no more use an event's key than a power.
 function EV.on_key(P, kind)
     local ctx = run
     if not ctx or ctx.over or not P then return false end
@@ -1074,14 +1120,19 @@ function EV.on_key(P, kind)
     if not (r and r[kind]) then return false end
     local now = U.now()
     local k = P.key .. kind
-    if ctx._.pressed[k] and now - ctx._.pressed[k] < 0.3 then return true end
-    ctx._.pressed[k] = now
+    local last = ctx._.pressed[k]
+    if last and last.taken and now - last.at < 0.3 then return true end
+    local taken
     if P.hypno_until and now < P.hypno_until then
         env.tell(P, "SFX", "fail")
-        return true
+        taken = true
+    elseif not ctx.M.on_key then
+        taken = false
+    else
+        taken = U.try("évènement " .. ctx.id .. " : touche", ctx.M.on_key, ctx, P, kind) == true
     end
-    if not ctx.M.on_key then return false end
-    return U.try("évènement " .. ctx.id .. " : touche", ctx.M.on_key, ctx, P, kind) == true
+    ctx._.pressed[k] = { at = now, taken = taken }
+    return taken
 end
 
 -- TEST group: kind = an event's id (started at once, without its conditions and without

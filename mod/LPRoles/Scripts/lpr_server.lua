@@ -1531,14 +1531,15 @@ jester_win = function(P)
     broadcast("MSG", "JESTER_WIN", game.jester)
     RC.add("jester", game.jester)
     if not C.get("jester_ends_game") then return end
-    -- the game's end screen will say so, in place of "SESSION STOPPED" (lpr_screens.lua)
-    broadcast("ENDTITLE", "jester")
     game.ending = true                          -- the game ends in 3 s: no event any more
     local started = game.started_at
     U.after(3, "victoire du bouffon", function()
         local gm = G.gm()
         if gm and game.active and game.started_at == started and U.get(gm, "In Game", false) then
             U.log("Bouffon : fin de partie")
+            -- the game's end screen will say so, in place of "SESSION STOPPED" (lpr_screens.lua);
+            -- said only now: a game that ends by itself meanwhile keeps its own title
+            broadcast("ENDTITLE", "jester")
             U.tcall(gm, "End Game", false, true)
         end
     end)

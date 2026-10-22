@@ -72,6 +72,10 @@ function B.drop(P)
     U.tcall(P.mec, "Loose Item", 120.0)
 end
 
+-- What the host keeps on each player, emptied at each new game (B.reset_holds).
+local freezes = {}           -- player key -> list of { ends, move, act } (B.freeze)
+local causes = {}            -- player key -> { cause, ends, before }: the cause of death B wrote (B.cause, B.kill)
+
 -- "Net Can Interact": the game's half of "may act" that the host can hold (the other half,
 -- "Local Can Interact", is the player's machine's). Held by a truce and by a freeze of the
 -- actions: true is given back only when nothing holds it any more.
@@ -96,7 +100,7 @@ end
 
 -- A new game: nothing held any more.
 function B.reset_holds()
-    holds = {}
+    holds, freezes, causes = {}, {}, {}
 end
 
 -- A truce: no blow, shot, throw, pick-up, put-down or switch of item for secs (the game's
@@ -114,14 +118,49 @@ end
 
 -- Frozen in place on the player's own machine for secs (move: no walking; act: no action,
 -- "Net Can Interact" held too). Without the mod, only the actions are held.
-function B.freeze(P, secs, move, act)
-    tell(P, "EVBODY", "freeze", 1, move and 1 or 0, act and 1 or 0, U.round((secs or 0) * 10))
-    if act then B.hold_interact(P) end
+-- A player's machine knows one freeze at a time: the host keeps every freeze on that player and
+-- sends what they hold together (walking held if one of them holds it, the latest end), again
+-- each time one ends. "freeze 0" goes only when the last one ends.
+local function send_freeze(P)
+    local list = freezes[P.key]
+    if not list then
+        tell(P, "EVBODY", "freeze", 0)
+        return
+    end
+    local now = U.now()
+    local ends, move, act = now, false, false
+    for _, f in ipairs(list) do
+        if f.ends > now then              -- one over whose undo has not come yet holds nothing
+            ends = math.max(ends, f.ends)
+            move = move or f.move
+            act = act or f.act
+        end
+    end
+    tell(P, "EVBODY", "freeze", 1, move and 1 or 0, act and 1 or 0, U.round((ends - now) * 10))
 end
 
-function B.unfreeze(P, act)
-    tell(P, "EVBODY", "freeze", 0)
-    if act then B.release_interact(P) end
+-- Returns the freeze, to be given to B.unfreeze.
+function B.freeze(P, secs, move, act)
+    local f = { ends = U.now() + (secs or 0), move = move == true, act = act == true }
+    local list = freezes[P.key] or {}
+    freezes[P.key] = list
+    list[#list + 1] = f
+    send_freeze(P)
+    if f.act then B.hold_interact(P) end
+    return f
+end
+
+function B.unfreeze(P, f)
+    local list = freezes[P.key]
+    for i, g in ipairs(list or {}) do
+        if g == f then
+            table.remove(list, i)
+            if #list == 0 then freezes[P.key] = nil end
+            send_freeze(P)
+            if f.act then B.release_interact(P) end
+            return
+        end
+    end
 end
 
 -- Exhausted: the item in hand drops, the player staggers and cannot act for a moment (the
@@ -246,15 +285,39 @@ end
 
 -- ---------------------------------------------------------------- [H] deaths
 -- The cause of a death an event brings about, for the summary ("meurt (fuite de gaz)") and so
--- that no blow just before counts as a kill (lpr_server.lua reads EV.CAUSES). Written only when
--- the player has no cause already (a poison, a bond), and taken back after secs if the player
--- did not die meanwhile.
+-- that no blow just before counts as a kill (lpr_server.lua reads EV.CAUSES). B holds the cause
+-- it wrote until a time (causes[key].ends); each timer looks, and the one that finds that time
+-- passed takes the cause back (what was there before it, if the player is still alive).
+local function cause_over(P)
+    local c = causes[P.key]
+    if not c or U.now() + 0.05 < c.ends then return end          -- held longer by a later call
+    causes[P.key] = nil
+    if P.death_cause == c.cause and U.valid(P.mec) and G.is_alive(P.mec) then P.death_cause = c.before end
+end
+
+-- The cause B holds on P now, or nil (a death, a poison, a bond came over it meanwhile).
+local function cause_held(P)
+    local c = causes[P.key]
+    if c and P.death_cause == c.cause then return c end
+    return nil
+end
+
+-- Written when the player has no cause, or already this one (its time is then made longer: a gas
+-- cloud renews it every second without a gap); not over another (a poison, a bond, another
+-- event's). Taken back secs after the last call if the player did not die meanwhile.
 function B.cause(P, cause, secs)
-    if not U.valid(P.mec) or P.death_cause ~= nil then return false end
-    P.death_cause = cause
-    U.after(secs or 3, "cause de mort", function()
-        if P.death_cause == cause and U.valid(P.mec) and G.is_alive(P.mec) then P.death_cause = nil end
-    end)
+    if not U.valid(P.mec) then return false end
+    local ends = U.now() + (secs or 3)
+    local held = cause_held(P)
+    if held and held.cause == cause then
+        held.ends = math.max(held.ends, ends)
+    elseif P.death_cause == nil or P.death_cause == cause then
+        causes[P.key] = { cause = cause, ends = ends, before = nil }
+        P.death_cause = cause
+    else
+        return false
+    end
+    U.after(secs or 3, "cause de mort", function() cause_over(P) end)
     return true
 end
 
@@ -262,12 +325,21 @@ end
 -- body (false: no body left where the player was, the game puts it far away: Mec 0x64f5).
 -- The player is woken first (a dreaming Rêveur, a flying Fée, a hidden Clandestin: the game
 -- ignores a death asked while the player is a ghost on its machine), then the death is asked at
--- 0.6 s and again at 1.8 s (as for the Liés). Still alive at 3 s: the cause and no_save go.
+-- 0.6 s and again at 1.8 s (as for the Liés). The cause is written whatever the player had: a
+-- poisoned or Lié passenger who leaves by the shuttle has no killer either. Still alive at 3 s:
+-- no_save goes, and the cause the player had before (a poison, a bond, or none) is put back.
 function B.kill(P, cause, opts)
     opts = opts or {}
     if not (env and U.valid(P.mec) and G.is_alive(P.mec)) then return false end
     if opts.no_save then P.no_save = true end
-    if P.death_cause == nil then P.death_cause = cause end
+    -- under an event's cause B holds, what lies beneath it; else the player's own (or nil)
+    local held = cause_held(P)
+    local before = held and held.before or P.death_cause
+    if before == cause then before = nil end
+    local ends = U.now() + 3
+    if held and held.cause == cause then ends = math.max(ends, held.ends) end
+    causes[P.key] = { cause = cause, ends = ends, before = before }
+    P.death_cause = cause
     if env.wake then U.try("réveil avant la mort", env.wake, P, "event") end
     local asked = U.now()
     local game = env.game
@@ -283,7 +355,7 @@ function B.kill(P, cause, opts)
     U.after(1.8, "mort (évènement, second essai)", death)
     U.after(3, "mort (évènement)", function()
         P.no_save = nil                         -- the death, if any, is over: the next one is an ordinary one
-        if P.death_cause == cause and U.valid(P.mec) and G.is_alive(P.mec) then P.death_cause = nil end
+        cause_over(P)
     end)
     return true
 end
@@ -375,8 +447,15 @@ end
 -- The host's "EVBODY what args...".
 function B.on_body(what, a, b, c, d, e, f, g)
     if what == "freeze" then
-        release_freeze()
-        if a == "1" then frozen = { ends = U.now() + num(d) / 10, move = b == "1", act = c == "1" } end
+        if a ~= "1" then return release_freeze() end
+        -- the host sends the freezes on this player together, again when one of them ends: what
+        -- the new one still holds is kept held (no moment of freedom), the rest is let go
+        local old, f = frozen, { ends = U.now() + num(d) / 10, move = b == "1", act = c == "1" }
+        frozen = f
+        if old and old.applied then
+            unlock(G.local_mec(), { move = old.move and not f.move, act = old.act and not f.act })
+            f.applied = true
+        end
         return
     end
     if what == "tint" then

@@ -12,7 +12,9 @@ mod does (U.wrap in lpr_util.lua, ported below). It fails when:
     never cut) does not fit in the width with the longest name, as a notice writes it (cut to
     EV.NOTICE_NAME characters, lpr_ev.lua);
   - an event's text is malformed: a kind of value the mod does not know, not as many values as
-    "%s", a colour that is not one of S.COLOR (also checked for M.LINES and M.RECAP).
+    "%s", a colour that is not one of S.COLOR (also checked for M.LINES and M.RECAP);
+  - an event's text (M.TEXT, M.LINES, M.RECAP) holds a sign the banner font is not known to have
+    ("→", "…", "×"), or the word "bâtiment" (the game takes place in a spaceship: "vaisseau").
 
 Usage: python banners.py [--all]      (--all: every banner, not only those cut in several)
 """
@@ -76,6 +78,10 @@ EVENT_SAMPLES = {'name': NAMES, 'names': [', '.join(NAMES[:i]) for i in (1, 2, 3
                  'room': [max(ROOMS, key=len)], 'weapon': [max(WEAPONS, key=len)], 'key': ['B', 'SOURIS 5']}
 NAMED = {'name', 'names'}
 NUMERIC = {'name', 'num', 'clock', 'sector', 'sector_low', 'room', 'weapon'}
+# Never in an event's text: signs the banner font may lack (named here: a Windows console cannot
+# print them), and the wrong setting (a spaceship).
+EVENT_BANNED_SIGNS = {'→': 'U+2192 flèche', '…': 'U+2026 points de suspension', '×': 'U+00D7 signe fois'}
+EVENT_BANNED_WORD = re.compile(r'b[âa]timent', re.I)
 
 def length(s): return len(s)
 
@@ -161,6 +167,9 @@ def event_texts(problems):
         for field in ('TEXT', 'LINES', 'RECAP'):
             for key, (fmt, kinds, colour, notice) in entries(src, field).items():
                 name = '%s.%s.%s' % (mod, field, key)
+                for sign, sign_name in EVENT_BANNED_SIGNS.items():
+                    if sign in fmt: problems.append('%s : signe interdit (%s, police du jeu) dans « %s »' % (name, sign_name, fmt))
+                if EVENT_BANNED_WORD.search(fmt): problems.append('%s : « bâtiment » : le jeu se passe dans un vaisseau, dans « %s »' % (name, fmt))
                 bad = [k for k in kinds if k not in EVENT_SAMPLES]
                 if bad: problems.append('%s : type de valeur inconnu %s' % (name, bad)); continue
                 if formats(fmt) != len(kinds): problems.append('%s : %d valeurs pour %d « %%s »' % (name, len(kinds), formats(fmt)))
@@ -182,6 +191,8 @@ def event_texts(problems):
     return out
 
 def main():
+    # a sign the console cannot write (a "→" in a module's text) is shown as "?" instead of stopping the tool
+    if hasattr(sys.stdout, 'reconfigure'): sys.stdout.reconfigure(errors='replace')
     show_all = '--all' in sys.argv
     problems, cut, count = [], 0, 0
     texts = [(name, t, named, False) for name, text in banners() for t, named in filled(name, text)]

@@ -17,7 +17,8 @@ local HUD_CLASS = "/Game/UI/Game/W_inGame.W_inGame_C"
 -- it appeared the role is written there (again every second: the game might write its own
 -- description once more after a moment).
 local START_SECONDS = 10
--- How long the host's word on how the game ends stays good: it comes 3 s before the end.
+-- How long the host's word on how the game ends stays good: it comes with the end itself (just
+-- before the host's "End Game"), but the network may bring the two in either order.
 local END_SECONDS = 15
 
 -- at, hud: when the start screen was last shown, and on which interface; role, role_at: the

@@ -45,10 +45,12 @@ W.NO_ROOMS = {}
 
 local cache = {}             -- actors read once per game (W.reset)
 local marker = 7000          -- the last marker given
+local switching = {}         -- mec address -> { since, last }: "Net Item Switching" seen set (W.switching)
 
 -- A new game: everything read again (and the markers start somewhere else).
 function W.reset()
     cache = {}
+    switching = {}
     marker = 7000 + math.random(0, 899)
 end
 
@@ -420,11 +422,35 @@ function W.drop_bag(mec, keep_item)
     return true, dropped
 end
 
+-- [H] Whether a player is swapping hand and bag ("Net Item Switching"): nothing is taken from it
+-- meanwhile. The host's flag may stay stuck true (seen in game): set on every look for more than
+-- SWITCH_STUCK s, it is taken as stuck and no longer counts. Looks further apart than SWITCH_GAP s
+-- start the count again (a new swap, not the old one still going on).
+local SWITCH_STUCK, SWITCH_GAP = 1.0, 1.5
+
+function W.switching(mec)
+    local key = U.key(mec)
+    if not key then return false end
+    if U.get(mec, "Net Item Switching", false) ~= true then
+        switching[key] = nil
+        return false
+    end
+    local now = U.now()
+    local s = switching[key]
+    if not s or now - s.last > SWITCH_GAP then
+        s = { since = now }
+        switching[key] = s
+    end
+    s.last = now
+    return now - s.since < SWITCH_STUCK
+end
+
 -- Takes away what a player holds, without dropping it: where = "hand" or "bag". Returns
 -- { data, value, time } (what was taken), or nil when there was nothing, when the player is
--- swapping hand and bag, or when it could not be done.
+-- swapping hand and bag (W.switching: a call again a second later takes it from a player whose
+-- flag is stuck), or when it could not be done.
 function W.take(mec, where)
-    if not U.valid(mec) or U.get(mec, "Net Item Switching", false) == true then return nil end
+    if not U.valid(mec) or W.switching(mec) then return nil end
     if where == "bag" then
         local data, value, time = G.bag_item_data(mec)
         if not data then return nil end
