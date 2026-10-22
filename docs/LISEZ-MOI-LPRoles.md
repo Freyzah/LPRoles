@@ -66,7 +66,7 @@ Version 0.12.0, installée le 8 octobre 2026. **Pas encore publiée** : la derni
 - **0.14.0** : le rôle sur l'écran de début de partie, l'écran de fin du Bouffon, le récapitulatif de la dernière partie dans l'onglet LPROLES ; le plus gros script découpé en plusieurs fichiers. **Jamais lancée en jeu.** Installée le 22 octobre, pas publiée.
 - **0.14.1** : groupe TEST, « Simuler la victoire du Bouffon », pour voir sa fin de partie sans personne pour le tuer. Installée le 22 octobre.
 - **Essai seul de l'utilisateur (22 octobre, 0.14.0 et 0.14.1)** : le rôle s'écrit sur l'écran de début (Rêveur, Bouffon, Amnésique), l'écran de fin affiche « LE BOUFFON GAGNE », le récapitulatif arrive à chaque fin de partie où son réglage est sur OUI. « Ça marche nickel. »
-- **0.14.2** : plus de bandeaux avec les rôles à la fin de la partie (le retour au lobby les effaçait), le récapitulatif les remplace. **Jamais lancée en jeu.** Pas encore installée (le jeu tournait), pas publiée.
+- **0.14.2** : plus de bandeaux avec les rôles à la fin de la partie (le retour au lobby les effaçait), le récapitulatif les remplace. **Jamais lancée en jeu.** Installée le 22 octobre, une fois le jeu fermé ; pas publiée.
 
 ## Ce qui est installé
 

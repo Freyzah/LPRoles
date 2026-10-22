@@ -1642,4 +1642,4 @@ L'utilisateur a retenu, parmi mes propositions : Médium, Ange gardien, Taupe, T
 - **Gardé :** l'annonce « LE BOUFFON … GAGNE » répétée au retour au lobby, que l'utilisateur n'a pas citée. Envoyée au même moment que les bandeaux retirés, elle est probablement effacée de la même façon ; l'écran de fin et le récapitulatif disent la même chose. À retirer aussi s'il le confirme.
 - **Vu dans le même journal :** l'utilisateur a cliqué deux fois sur « Simuler la victoire du Bouffon » à une seconde d'écart. Le second clic, refusé puisque la victoire était en cours, affichait « TEST : IL FAUT ÊTRE LE BOUFFON » avec le son d'échec : faux, il l'était. Ce cas ne dit plus rien (le journal le note toujours).
 - **Contrôles :** syntaxe, noms du jeu, pages, bandeaux, essais de la mise à jour. Pas de relecture indépendante.
-- **Version :** 0.14.2. **Pas installée** : le jeu tournait (à installer jeu fermé avec `python tools/deploy.py`). Archive complète refaite. Pas publiée.
+- **Version :** 0.14.2. Installée une fois le jeu fermé (22 octobre), copie identique aux sources ; archive complète refaite. Pas publiée.
