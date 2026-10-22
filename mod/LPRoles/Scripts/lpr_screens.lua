@@ -1,9 +1,10 @@
 -- LPRoles - the game's own screens at the start and at the end of a game, completed on this
--- machine: the mod's role on the screen that opens a game, the Bouffon's victory on the
--- screen that ends one.
+-- machine: the mod's role on the screen that opens a game, the Bouffon's victory or a random
+-- event's ending (the last shuttle) on the screen that ends one.
 -- Both are texts of the in-game interface (W_inGame). The game writes them when it shows the
 -- screen ("Game Start": camp and description; "Force End": "SESSION STOPPED", the way a game
--- ended by the host's own "stop" is shown); the mod writes its own in their place.
+-- ended by the host's own "stop" is shown; "Game End": who won); the mod writes its own in
+-- their place.
 local U = require("lpr_util")
 local G = require("lpr_game")
 local N = require("lpr_net")
@@ -84,6 +85,12 @@ function SC.install()
         U.try("écran de début", write_role, start.at)
     end)
     U.hook(HUD_CLASS .. ":Force End", function(ctx)
+        ending.at, ending.hud = U.now(), ctx:get()
+        U.try("écran de fin", write_end)
+    end)
+    -- A game ended with a winner: "EMPLOYEES WIN" and the like, written at 0x126e with no wait
+    -- before it. A random event may have its own title for it (the shuttle's departure).
+    U.hook(HUD_CLASS .. ":Game End", function(ctx)
         ending.at, ending.hud = U.now(), ctx:get()
         U.try("écran de fin", write_end)
     end)

@@ -372,14 +372,9 @@ S.JESTER_LOST        = "TUÉ PAR UN DISSIDENT : PERDU"
 S.TEST_JESTER_NO     = "TEST : IL FAUT ÊTRE LE BOUFFON"
 S.TEST_EVENT_NO      = "TEST : PAS DE PARTIE EN COURS"
 S.TEST_EVENT_NONE    = "TEST : ÉVÈNEMENT IMPOSSIBLE"
--- Random events (lpr_events.lua), announced to everyone
-S.EV_RADIO           = "PANNE DE RADIO (%d S)"
-S.EV_SWAP            = "GRAND ÉCHANGE DE PLACES"
-S.EV_SWAP_YOU        = "TU AS CHANGÉ DE PLACE"
-S.EV_HEAL            = "SOINS POUR TOUS"
-S.EV_GHOSTS          = "LES MORTS SE MONTRENT (%d S)"
-S.EV_LEAK_TITLE      = "FUITE D'INFORMATIONS"
-S.EV_LEAK            = "DISSIDENTS EN VIE : %d"
+S.TEST_EVENT_STOP    = "TEST : ÉVÈNEMENT ARRÊTÉ"
+S.TEST_EVENT_IDLE    = "TEST : RIEN À ARRÊTER"
+S.TEST_EVENT_MISSING = "TEST : ÉVÈNEMENT NON CHARGÉ"
 S.VAMP_DONE          = "SANG BU : +%d PV MAX"
 S.VAMP_NOT_YOURS     = "CE N'EST PAS TA VICTIME"
 S.FEED_USED          = "CE CADAVRE A DÉJÀ SERVI"
@@ -402,7 +397,27 @@ S.UPDATED            = "LPROLES MIS À JOUR : %s"
 -- game ends for a reason the game does not know (lpr_screens.lua).
 S.END_TITLE = {
     jester = "LE BOUFFON GAGNE",
+    -- the random event "Dernière navette": each player reads whether its side won (lpr_ev.lua, ctx.end_game)
+    shuttle_won  = "VICTOIRE PAR LA NAVETTE",
+    shuttle_lost = "DÉFAITE PAR LA NAVETTE",
 }
+
+-- The random events (lpr_ev.lua and the lpr_evm_*.lua modules). The building's sectors, by the
+-- game's number (FunctionLibrary "Sector Name": 1 to 7; 0 is no sector and never drawn): in
+-- capitals for the banners, in small letters for the summary's sentences.
+S.SECTOR = { [1] = "CAMÉRAS", [2] = "BUREAUX", [3] = "BOTANIQUE", [4] = "RESTAURANT", [5] = "HÔPITAL",
+             [6] = "STOCKAGE", [7] = "MACHINES" }
+S.ROOM   = { [1] = "caméras", [2] = "bureaux", [3] = "botanique", [4] = "restaurant", [5] = "hôpital",
+             [6] = "stockage", [7] = "machines" }
+-- Weapons, by the code W.weapon_code gives (lpr_ev_world.lua); 0 is any other item. In the
+-- banners the words of a name are tied with non-breaking spaces: a banner too long is never cut
+-- in the middle of "FUSIL À POMPE" (U.wrap only cuts at plain spaces).
+S.WEAPON = { [0] = "OBJET", [1] = "COUTEAU", [2] = "PISTOLET", [3] = "REVOLVER", [4] = "SHORTY",
+             [5] = "FUSIL\u{A0}À\u{A0}POMPE", [6] = "SMG", [7] = "FUSIL", [8] = "C4", [9] = "DÉTONATEUR",
+             [10] = "GRENADE", [11] = "SCALPEL" }
+S.WEAPON_LOW = { [0] = "objet", [1] = "couteau", [2] = "pistolet", [3] = "revolver", [4] = "shorty",
+                 [5] = "fusil à pompe", [6] = "SMG", [7] = "fusil", [8] = "C4", [9] = "détonateur",
+                 [10] = "grenade", [11] = "scalpel" }
 
 -- Summary of the last game, in the LPROLES tab (lpr_recap.lua). Names are filled in by each
 -- machine; a sentence too long for a row goes on over the next.
@@ -426,9 +441,14 @@ S.RECAP_FATE = {
     poison = "meurt (poison)",
     link   = "meurt (lié à %s)",
     dead   = "meurt",
+    -- deaths brought by a random event (P.death_cause, see lpr_ev.lua: ctx.cause, ctx.kill)
+    gas     = "meurt (fuite de gaz)",
+    bomb    = "meurt (bombe)",
+    shuttle = "part en navette",
 }
 -- Events, by kind: the first %s is the player who acted (or the one it is about), the second
--- the one it was done to.
+-- the one it was done to. The random events add theirs when they are loaded (lpr_ev.lua: each
+-- module's M.RECAP), with what each value is in S.RECAP_ARGS.
 S.RECAP_EVENT = {
     kill        = "%s a tué %s",
     death       = "Mort de %s",
@@ -451,14 +471,11 @@ S.RECAP_EVENT = {
     hypno       = "%s a hypnotisé %s",
     track       = "%s a traqué %s",
     spirit      = "Apparition du Revenant %s",
-    ev_radio    = "Évènement : panne de radio",
-    ev_swap     = "Évènement : %s et %s ont échangé leurs places",
-    ev_heal     = "Évènement : soins pour tous",
-    ev_ghosts   = "Évènement : les morts se montrent",
-    ev_leak     = "Évènement : fuite, %s dissident(s) en vie",
 }
--- Events whose first value is a number, not a player.
-S.RECAP_COUNT = { ev_leak = true }
+-- What the two values of an event are, when they are not two players: kind -> { kind of the
+-- first, kind of the second } (the kinds of lpr_recap.lua, R.arg: "name", "num", "clock",
+-- "sector", "sector_low", "weapon"...). Filled by the random events' modules when they load.
+S.RECAP_ARGS = {}
 
 -- Statistics kept by the host (lpr_stats.lua), in the LPROLES tab under the summary.
 S.STATS = {

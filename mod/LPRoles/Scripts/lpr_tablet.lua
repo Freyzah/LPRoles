@@ -271,6 +271,30 @@ local function fill_line(view, wb, line)
     end
 end
 
+-- ---------------------------------------------------------------- the random event's band
+-- While a random event runs, the host may give it a line on the tablet (lpr_ev.lua): it takes
+-- the dark band, whatever the player's role (the role's own status line then comes first among
+-- the rows under it). "{t}" in it is the time left (m:ss), counted on this machine. A text of
+-- several rows ("\n"): the first in the band, the next ones (5 at most) before the role's rows,
+-- whose last ones may then not fit.
+local EVENT_ROWS = 5
+local event = nil                      -- { text, ends (U.now() time) or nil }
+
+-- The event's rows as they are to be shown now, or nil.
+local function event_rows(now)
+    if not event then return nil end
+    local t = ""
+    if event.ends then
+        local left = math.max(0, math.ceil(event.ends - now))
+        t = string.format("%d:%02d", left // 60, left % 60)
+    end
+    local rows = {}
+    for row in (event.text .. "\n"):gmatch("(.-)\n") do
+        if #rows <= EVENT_ROWS then rows[#rows + 1] = (row:gsub("{t}", t)) end
+    end
+    return rows
+end
+
 -- ---------------------------------------------------------------- the page
 local function show_role()
     if not page or not U.valid(page.ui) or not page.view or not U.valid(page.view.tree) then return end
@@ -288,6 +312,14 @@ local function show_role()
     -- the status line, light text in a dark band (no status without a role)
     local st = role and lines[1] or nil
     local first = role and 2 or 1
+    -- a random event running: its line in the band, the role's whole text under it
+    local rows = event_rows(U.now())
+    if rows then
+        local merged = {}
+        for i = 2, #rows do merged[#merged + 1] = rows[i] end
+        for i = 1, #lines do merged[#merged + 1] = lines[i] end
+        st, lines, first = rows[1], merged, 1
+    end
     if st ~= shown.status then
         if st then
             view.band:SetVisibility(VISIBLE)
@@ -576,6 +608,21 @@ local function on_pressed(ctx)
     end
 end
 
+-- The random event's line (lpr_ev.lua): text (rows separated by "\n", "{t}" for the time
+-- left) and when it ends (U.now() time, nil for no count), or nil to take it off.
+function T.event_line(text, ends_at)
+    if text == nil or text == "" then
+        if not event then return end
+        event = nil
+    else
+        event = { text = tostring(text), ends = ends_at }
+    end
+    if page and page.on_role then
+        page.checked = 0
+        guarded("tablette : évènement", show_role)
+    end
+end
+
 local last_report = nil
 function T.report(reason)
     if reason == last_report then return end
@@ -639,6 +686,12 @@ function T.install(get_role, on_role_change, get_status)
                 local t = page.tint
                 local mid = t and screen_material() or nil
                 local stale = t and (not mid or not U.valid(t.mid) or mid:GetAddress() ~= t.mid:GetAddress())
+                -- a random event's count: written again each time the second shown changes
+                local second = (event and event.ends) and math.ceil(event.ends - now) or nil
+                if second ~= page.event_second then
+                    page.event_second = second
+                    page.checked = 0
+                end
                 if stale or now - (page.checked or 0) >= 2 then
                     page.checked = now
                     local ok, e = pcall(show_role)

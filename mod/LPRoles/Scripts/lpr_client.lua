@@ -14,6 +14,7 @@ local MD = require("lpr_medic")
 local SC = require("lpr_screens")
 local RC = require("lpr_recap")
 local BK = require("lpr_book")
+local EV = require("lpr_ev")
 
 local Cl = {}
 
@@ -683,12 +684,11 @@ local function end_gag(quiet)
     if not quiet then say("GAG_END", "info") end
 end
 
--- quiet: "1" when the gag is a random event's (its own banner says so, not "BÂILLONNÉ")
-local function on_gag(tenths, quiet)
+local function on_gag(tenths)
     local secs = (tonumber(tenths) or 0) / 10
     if secs <= 0 then return end_gag(true) end
     gag = { ends = U.now() + secs, next = 0 }
-    if quiet ~= "1" then say("GAG_YOU", "bad", math.floor(secs + 0.5)) end
+    say("GAG_YOU", "bad", math.floor(secs + 0.5))
 end
 
 -- The game switches the microphone back on by itself now and then (a new character, a key):
@@ -710,6 +710,7 @@ end
 -- End of the game: stop everything that may still be running.
 local function on_end()
     G.clear_messages()                         -- banners still waiting belong to the finished game
+    EV.client_reset("end")                     -- a random event's marks, sounds, freeze... (its EVOFF came first)
     list_colors = {}                           -- the host gives every look back: the rows follow by themselves
     end_vision(true)
     disguise_gen = disguise_gen + 1
@@ -929,7 +930,8 @@ local MSG = {
     ECHO_DONE = { "good", sfx = OK }, ECHO_NOTHING = { "warn", sfx = FAIL },
     AMNESIA_DONE = { "good", "name", sfx = OK }, AMNESIA_NO_ROLE = { "warn", sfx = FAIL }, AMNESIA_DISSIDENT = { "bad" },
     JESTER_WIN = { "role", "name" }, JESTER_LOST = { "bad" }, TEST_JESTER_NO = { "warn", sfx = FAIL },
-    TEST_EVENT_NO = { "warn", sfx = FAIL }, TEST_EVENT_NONE = { "warn", sfx = FAIL },
+    TEST_EVENT_NO = { "warn", sfx = FAIL }, TEST_EVENT_NONE = { "warn", sfx = FAIL }, TEST_EVENT_STOP = { "warn" },
+    TEST_EVENT_IDLE = { "warn", sfx = FAIL }, TEST_EVENT_MISSING = { "warn", sfx = FAIL },
     VAMP_DONE = { "good", "num", sfx = OK }, VAMP_NOT_YOURS = { "warn", sfx = FAIL }, FEED_USED = { "warn", sfx = FAIL },
     WOLF_DONE = { "good", "num", sfx = OK },
     MEDIC_DONE = { "good", "name", sfx = OK }, MEDIC_FULL = { "warn", sfx = FAIL }, MEDIC_YOU = { "good" },
@@ -1226,12 +1228,15 @@ local last_use = 0
 local function use_item()
     local now = U.now()
     if now - last_use < 0.5 or ghost or hiding then return end
-    if not (poisoned or (my_role and my_status and (my_status.item or 0) ~= 0)) then return end
+    -- a random event may want the key too, whatever the role (a cassette to air, a dead player's beep)
+    local ev = EV.key_wanted("use")
+    if not (ev or poisoned or (my_role and my_status and (my_status.item or 0) ~= 0)) then return end
     local mec = G.local_mec()
     if not mec or U.get(mec, "On Tablet", false) then return end
     -- as for the game's own use of an item: not while the hands are busy (hand and bag being
-    -- swapped, an item just taken or put down)
-    if U.get(mec, "Local Can Interact", true) == false then return end
+    -- swapped, an item just taken or put down); not asked for an event's key (a dead player's,
+    -- a truce's: that test is false for them)
+    if not ev and U.get(mec, "Local Can Interact", true) == false then return end
     local menu = U.get(mec, "New Menu", nil)
     if U.valid(menu) and U.get(menu, "Menu Open", false) then return end
     last_use = now
@@ -1249,13 +1254,15 @@ local last_power = 0
 
 local function use_power()
     local now = U.now()
-    if now - last_power < 0.3 or not my_role then return end
+    -- a random event may want the key too, whatever the role (a vote, a seat, a dead player's beep)
+    local ev = EV.key_wanted("act")
+    if now - last_power < 0.3 or not (my_role or ev) then return end
     local mec = G.local_mec()
     if not mec then return end
     local menu = U.get(mec, "New Menu", nil)
     if U.valid(menu) and U.get(menu, "Menu Open", false) then return end
     last_power = now
-    if my_role == "dreamer" then
+    if my_role == "dreamer" and not ev then
         if not ghost then
             say("POWER_EYES", "info")
             A.power_sfx("fail")
@@ -1264,7 +1271,7 @@ local function use_power()
     end
     -- flying or dreaming: nothing to start (and the same message, from a sleeping Rêveur's
     -- machine, tells the host that the dream is over)
-    if ghost or not POWER_ROLES[my_role] then return end
+    if ghost or not (POWER_ROLES[my_role] or ev) then return end
     N.to_host(N.OP_ACT)
 end
 
@@ -1356,8 +1363,10 @@ function Cl.install()
     })
     N.on("HP", MD.on_hp)
     N.on("HEAL", MD.on_heal)
+    EV.client_setup({ ghost = function() return ghost end })      -- a Rêveur's or a Fée's own ghost
     N.on("HELLO", function()
         G.clear_messages()                     -- a new game: nothing left to show of the one before
+        EV.client_reset("new")
         BK.close()
         SC.new_game()
         RC.clear()
@@ -1446,6 +1455,7 @@ function Cl.install()
         local mec = G.local_mec()
         if not mec then
             if ghost then ghost = nil end
+            EV.client_reset("left")                -- the game was left: a random event's part goes too
             vamp = nil
             wolf_reset()                           -- the game was left: its values go back as they were
             MD.reset()

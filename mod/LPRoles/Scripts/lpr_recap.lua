@@ -4,27 +4,37 @@
 -- travel: each machine writes the summary out with the names it knows, and keeps it until the
 -- next game starts.
 local U = require("lpr_util")
+local C = require("lpr_config")
 local G = require("lpr_game")
 local N = require("lpr_net")
 local S = require("lpr_strings")
 
 local R = {}
 
-local MAX_EVENTS = 60        -- noted per game: more than a long game gives
+-- Noted per game, more than a long game gives. The random events' lines ("ev_..." kinds, a
+-- meeting's votes for instance) have a budget of their own, so that they never push out the
+-- deaths of the end of a game.
+local MAX_EVENTS, MAX_EV_EVENTS = 60, 60
 local PER_MESSAGE = 20       -- events per message
+local NAME_NAME = { "name", "name" }      -- the values of an event, when nothing else is said
 
 -- ---------------------------------------------------------------- host
 local events, started = {}, 0
+local counted = { other = 0, ev = 0 }
 
 function R.start(now)
     events, started = {}, now or U.now()
+    counted = { other = 0, ev = 0 }
 end
 
--- kind: one of S.RECAP_EVENT; a, b: player indexes (b when there is a second player).
+-- kind: one of S.RECAP_EVENT; a, b: integers, player indexes unless S.RECAP_ARGS says otherwise
+-- (b when there is a second value).
 function R.add(kind, a, b)
-    if #events >= MAX_EVENTS then return end
+    local budget = tostring(kind):sub(1, 3) == "ev_" and "ev" or "other"
+    if counted[budget] >= (budget == "ev" and MAX_EV_EVENTS or MAX_EVENTS) then return end
+    counted[budget] = counted[budget] + 1
     events[#events + 1] = string.format("%d.%s.%d.%d", math.max(0, math.floor(U.now() - started)), kind,
-        tonumber(a) or -1, tonumber(b) or -1)
+        math.floor(tonumber(a) or -1), math.floor(tonumber(b) or -1))
 end
 
 -- The messages carrying the summary: how the game ended, then the players, then the events.
@@ -67,6 +77,64 @@ end
 -- (also used by the statistics, lpr_stats.lua)
 R.name_of = name_of
 
+-- The first `width` characters of a text (an accented letter takes several bytes).
+local function cut(s, width)
+    if U.length(s) <= width then return s end
+    local out, n = {}, 0
+    for ch in s:gmatch("[\0-\x7F\xC2-\xF4][\x80-\xBF]*") do
+        n = n + 1
+        if n > width then break end
+        out[n] = ch
+    end
+    return table.concat(out)
+end
+
+-- How a value travels and is written, by kind (the random events' banners, notices, tablet
+-- lines and summary lines: lpr_ev.lua). v: what the message carried (a string or a number);
+-- low: inside a sentence of the summary (small letters where the kind has them); width: names
+-- cut to that many characters (the notice at the top of the screen has one line only).
+--   name   a player's index        -> its name, as this machine knows it (kept for a player who left)
+--   names  indexes "3-7-9"          -> "ANNA, PAUL, LÉA"
+--   num    an integer               -> the integer
+--   clock  seconds                  -> "2:05"
+--   sector a sector, 1 to 7         -> S.SECTOR ("RESTAURANT"), or S.ROOM with low
+--   sector_low (old name: room)     -> S.ROOM ("restaurant")
+--   weapon a code, 0 to 11          -> S.WEAPON ("COUTEAU"), or S.WEAPON_LOW with low
+--   key    "act" or "use"           -> this player's own key ("B", "SOURIS 5")
+local function arg(kind, v, low, width)
+    if kind == "room" or kind == "sector_low" then kind, low = "sector", true end
+    if kind == "name" then
+        local n = name_of(v)
+        return width and cut(n, width) or n
+    elseif kind == "names" then
+        local out = {}
+        for i in tostring(v or ""):gmatch("%d+") do out[#out + 1] = arg("name", i, low, width) end
+        return table.concat(out, ", ")
+    elseif kind == "num" then
+        return string.format("%d", math.floor((tonumber(v) or 0) + 0.5))
+    elseif kind == "clock" then
+        local s = math.max(0, math.floor(tonumber(v) or 0))
+        return string.format("%d:%02d", s // 60, s % 60)
+    elseif kind == "sector" then
+        return (low and S.ROOM or S.SECTOR)[tonumber(v) or -1] or "?"
+    elseif kind == "weapon" then
+        return (low and S.WEAPON_LOW or S.WEAPON)[tonumber(v) or -1] or "?"
+    elseif kind == "key" then
+        return C.format(v == "use" and "use_key" or "power_key")
+    end
+    return tostring(v or "?")
+end
+R.arg = arg
+
+-- A format with its values written by kind ("%d" taken as "%s": every value is a text by then).
+-- kinds: { kind of the first value, ... }; values: what the messages carried.
+function R.write(fmt, kinds, values, low, width)
+    local out = {}
+    for i, kind in ipairs(kinds) do out[i] = arg(kind, values[i], low, width) end
+    local ok, text = pcall(string.format, (tostring(fmt):gsub("%%d", "%%s")), table.unpack(out, 1, #kinds))
+    return ok and text or tostring(fmt)
+end
+
 local function role_name(id)
     if not id or id == "none" then return S.RECAP_NO_ROLE end
     return S.ROLE_NAME[id] or id
@@ -85,9 +153,9 @@ local function write_out(r)
     for _, e in ipairs(r.events) do
         local fmt = S.RECAP_EVENT[e.kind]
         if fmt then
-            -- a number rather than a player for some events (how many dissidents are alive)
-            local first = S.RECAP_COUNT[e.kind] and tostring(e.a) or name_of(e.a)
-            out[#out + 1] = string.format("%d:%02d  ", e.t // 60, e.t % 60) .. string.format(fmt, first, name_of(e.b))
+            -- two players, unless the kind says what its values are (a random event's sector, a count...)
+            local kinds = S.RECAP_ARGS[e.kind] or NAME_NAME
+            out[#out + 1] = string.format("%d:%02d  ", e.t // 60, e.t % 60) .. R.write(fmt, kinds, { e.a, e.b }, true)
         end
     end
     return out
@@ -108,7 +176,8 @@ local function on_recap(part, a, b, c)
         return
     elseif part == "P" then
         -- a player: index, role drawn, role at the end, camp, fate ("alive", "kill", "poison",
-        -- "link", "dead"), the other player of that fate (killer, or the one it was linked to)
+        -- "link", "dead", or a random event's "gas", "bomb", "shuttle"), the other player of that
+        -- fate (killer, or the one it was linked to)
         for rec in (a or ""):gmatch("[^;]+") do
             local f = fields(rec)
             incoming.players[#incoming.players + 1] = { idx = tonumber(f[1]) or -1, first = f[2], role = f[3],
@@ -116,6 +185,7 @@ local function on_recap(part, a, b, c)
         end
     elseif part == "E" then
         -- an event: seconds since the start, kind, the player who acted, the one it was done to
+        -- (or the values S.RECAP_ARGS names; a kind this machine does not know is left out)
         for rec in (a or ""):gmatch("[^;]+") do
             local f = fields(rec)
             incoming.events[#incoming.events + 1] = { t = tonumber(f[1]) or 0, kind = f[2],

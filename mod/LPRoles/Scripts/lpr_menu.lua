@@ -52,6 +52,7 @@ local members = {}                        -- group name -> { { w, vis }, ... }: 
 local selector = nil                      -- that row (nil for a player who is not the host: all is shown)
 local shown = nil                         -- the group on screen; kept from one menu to the next
 local FIRST_GROUPS = { "TEST", "GÉNÉRAL", "ÉVÈNEMENTS" }    -- right after the personal settings, before the roles
+local EVENT_GROUP = "ÉV. "                -- start of the name of a random event's group: they follow ÉVÈNEMENTS
 local FORCED = "force_host_role"          -- the test aid changed between every trial: it has a group of its own
 
 -- ---------------------------------------------------------------- crash guard
@@ -519,6 +520,13 @@ local function build(menu, mec)
                         member(S.MENU_FORCED, U.try("menu : rôle forcé " .. value, add_radio, page, mec, pc, value))
                     end
                 end
+            end
+        end
+        -- each random event's own settings, right after ÉVÈNEMENTS, in the order of lpr_config.lua
+        for _, group in ipairs(C.GROUPS) do
+            if not placed[group] and group:sub(1, #EVENT_GROUP) == EVENT_GROUP then
+                add_group(group, of_group(group))
+                placed[group] = true
             end
         end
         -- the roles in alphabetical order, here and in the row that chooses the group: with

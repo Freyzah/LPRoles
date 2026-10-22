@@ -17,8 +17,10 @@ G.ROLE_EMPLOYEE, G.ROLE_DISSIDENT, G.ROLE_DEAD = 3, 4, 5
 -- E_EyeState
 G.EYE_OPEN, G.EYE_LEFT, G.EYE_RIGHT, G.EYE_CLOSED, G.EYE_LOCK = 0, 1, 2, 3, 4
 
--- Enum_Stance
+-- Enum_Stance, as the game works it out (Mec 0x2d6da-0x2d849): 0 still, 1 walking, 2 trotting,
+-- 3 running, 4 off the ground, 5 dead. A sleeping Rêveur's body is given 4 (G.STANCE_SIT).
 G.STANCE_STAND, G.STANCE_SIT = 0, 4
+G.STANCE_AIR = 4             -- jumping or falling: what the random events look at
 
 -- Struct field names (Blueprint user structs carry a generated suffix)
 G.F_ALIVE = "Alive_1_FD4B56084F2C8B7E0C61E289ED8A12E8"
@@ -328,6 +330,20 @@ function G.hand_item_data(mec)
     return data, value or 0, time or 0
 end
 
+-- Host: the item in a player's bag, the same way (nil when the bag is empty).
+function G.bag_item_data(mec)
+    local item = U.get(mec, "Net Bag ItemNew", nil)
+    if item == nil then return nil end
+    local ok, data, value, time = pcall(function()
+        local d = item[G.F_ITEM_DATA]
+        if not U.valid(d) then return nil end
+        local st = item[G.F_ITEM_STATE]
+        return d, st[G.F_STATE_VALUE], st[G.F_STATE_TIME]
+    end)
+    if not ok or not data then return nil end
+    return data, value or 0, time or 0
+end
+
 -- Host: puts an item in a player's empty hand, in the given state (the two calls the game
 -- makes on pickup).
 function G.put_in_hand(mec, data, value, time)
@@ -445,6 +461,23 @@ end
 -- Drops what is still waiting (messages of a game that is over).
 function G.clear_messages()
     queue = {}
+end
+
+-- The notice at the top of the screen (the HUD's "W_UpperNotif", whose "Show Message" takes a
+-- plain string): shown at once, in place of the one before, never queued like the banners.
+-- One line only: the random events keep their notices short (tools/lp/banners.py checks them).
+function G.notice(text, rgb)
+    local mec = G.local_mec()
+    local hud = mec and U.get(mec, "HUD", nil)
+    local widget = U.valid(hud) and U.get(hud, "W_UpperNotif", nil) or nil
+    if not U.valid(widget) then
+        U.log("(avis) %s", tostring(text))
+        return false
+    end
+    local c = rgb or { 0.1, 0.45, 0.8 }
+    U.tcall(widget, "Show Message", tostring(text), { R = c[1], G = c[2], B = c[3], A = 1.0 })
+    U.dbg("avis : %s", tostring(text))
+    return true
 end
 
 function G.pump_messages(now)

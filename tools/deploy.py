@@ -132,7 +132,8 @@ def installed_sounds(dst):
 
 def source_files():
     """The mod's files as published: (full path, path relative to the mod folder with /)."""
-    for base, _, files in os.walk(MOD_SRC):
+    for base, dirs, files in os.walk(MOD_SRC):
+        dirs[:] = sorted(d for d in dirs if not d.startswith("."))     # a tool's own folder (".omc"...) is not the mod's
         for name in sorted(files):
             if name in RUNTIME_FILES or is_generated(name): continue
             full = os.path.join(base, name)

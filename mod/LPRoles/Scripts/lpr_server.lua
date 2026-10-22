@@ -5,7 +5,7 @@ local C = require("lpr_config")
 local G = require("lpr_game")
 local N = require("lpr_net")
 local RC = require("lpr_recap")
-local EV = require("lpr_events")
+local EV = require("lpr_ev")
 local ST = require("lpr_stats")
 local BK = require("lpr_book")
 
@@ -51,8 +51,8 @@ local function fresh_game_fields(P)
     P.link, P.died_at = nil, nil
     P.first_role = nil             -- the role drawn at the start (for the summary of the game)
     P.end_state = nil              -- how the last death came, for the summary: { kind, other }
-    P.death_cause = nil            -- "poison" or "link": what is about to kill this player
-    P.ghost_event_until = nil      -- a Revenant shown by the event "Les morts se montrent": until when
+    P.death_cause = nil            -- "poison", "link", or a random event's (EV.CAUSES): what is about to kill this player
+    P.no_save = nil                -- a random event's death the Ange gardien does not undo (the last shuttle's departure)
     P.kills = 0                    -- players this one killed in the game (for the statistics)
     P.link_done = false            -- Liés: the bond has already taken its toll (it acts once)
     P.vision_until, P.spirit_until = nil, nil
@@ -528,9 +528,7 @@ local function start_spirit(P, now)
     P.charges = P.charges - 1
     local secs = C.get("revenant_duration")
     P.spirit_until = now + secs
-    -- shown at least as long as the event "Les morts se montrent" still shows it
-    local shown = math.max(secs, (P.ghost_event_until or 0) - now)
-    broadcast("SPIRIT", idx(P), U.round(shown * 10))
+    broadcast("SPIRIT", idx(P), U.round(secs * 10))
     tell(P, "MSG", "SPIRIT_START")
     sound_around("revenant", P)
     RC.add("spirit", idx(P))
@@ -972,7 +970,7 @@ end
 local function aimed_player(P, spec, current)
     local sight = line_of_sight(P)
     if not sight then return nil end
-    local range = C.get(spec.range)
+    local range = spec.range_cm or C.get(spec.range)
     if current then
         local cos = aim_fit(P, current, sight, range, spec)
         if cos and cos >= AIM_KEEP then return current end
@@ -1019,7 +1017,7 @@ end
 
 -- Two players change places: each is sent where the other stood, looking the way the other
 -- looked. The swap's own sound is heard by the two of them, and around each of them by those
--- nearby. false when a place is unknown. (Also the random event "Grand échange".)
+-- nearby. false when a place is unknown.
 local function swap_places(A, B)
     local a, b = G.location(A.mec), G.location(B.mec)
     if not a or not b then return false end
@@ -1052,7 +1050,9 @@ local function mimic_done(P, T, now)
     if not skin or not original then return tell(P, "MSG", "MIMIC_FAILED") end
     P.skin_original = original
     P.charges = P.charges - 1
-    P.mimic = { ends = now + C.get("mimic_duration") + 0.5 }
+    -- who it looks like (the random events name a player by the face seen: lpr_ev.lua, ctx.face),
+    -- kept as an index too: the copied player may leave meanwhile
+    P.mimic = { ends = now + C.get("mimic_duration") + 0.5, as = T.key, as_idx = idx(T) }
     tell(P, "MIMIC", 1)
     -- every machine notes the colour of this player's row in the list before the look changes
     if C.get("mimic_keep_list_color") then broadcast("LOOK", idx(P), 1) end
@@ -1123,6 +1123,7 @@ local function thief_done(P, T)
     end
     P.charges = P.charges - 1
     G.put_in_hand(P.mec, data, value, time)
+    U.try("évènements", EV.on_pick, P)          -- the theft does not go through the game's pick-up
     tell(P, "MSG", "STEAL_DONE", idx(T))
     tell(T, "MSG", "STEAL_YOU")
     RC.add("steal", idx(P), idx(T))
@@ -1383,6 +1384,7 @@ local function game_ends_with(V)
 end
 
 local function angel_save(V)
+    if V.no_save then return false end         -- a random event's death that cannot be undone (lpr_ev.lua, ctx.kill)
     local saver = nil
     each_player(function(A)
         if not saver and A.role == "angel" and A.protege == V.key and not A.saved then saver = A end
@@ -1465,11 +1467,9 @@ local function tick_guard(now)
     end
 end
 
-local function martyr_reveal(P, now)
+local function martyr_reveal(P)
     if P.role ~= "martyr" then return end
-    local hit = P.last_hit
-    if not hit or now - hit.at > MARTYR_WINDOW then return end
-    local K = by_key(hit.by)
+    local K = by_key(P.killed_by)               -- the killer on_death found (none for a random event's death)
     if not K or K == P then return end
     if C.get("martyr_reveal") == "name" then
         broadcast("MSG", "MARTYR_NAME", idx(K))
@@ -1515,8 +1515,7 @@ local jester_win                -- defined below
 
 local function jester_death(P)
     if P.role ~= "jester" or game.jester then return end
-    local hit = P.last_hit
-    local K = hit and (U.now() - hit.at <= MARTYR_WINDOW) and by_key(hit.by) or nil
+    local K = by_key(P.killed_by)               -- the killer on_death found (none for a random event's death)
     if not K or K == P then return end
     if K.camp ~= "employee" then
         tell(P, "MSG", "JESTER_LOST")
@@ -1550,6 +1549,8 @@ local function on_death(P)
     -- whose blow it was (as for the Martyr: the last one, if recent), for the Vampire
     local blow = P.last_hit
     P.killed_by = (blow and P.died_at - blow.at <= MARTYR_WINDOW) and blow.by or nil
+    -- a death a random event brought about (gas, bomb, shuttle) has no killer, whatever blow came before
+    if EV.CAUSES[P.death_cause] then P.killed_by = nil end
     -- for the summary of the game: how this death came (a later one replaces it)
     local K = by_key(P.killed_by)
     local cause = P.death_cause
@@ -1599,10 +1600,11 @@ local function on_death(P)
     else
         RC.add("death", idx(P))
     end
+    U.try("évènements", EV.on_death, P)
     U.try("bouffon", jester_death, P)
     if angel_save(P) then return end          -- comes back: a pending recruitment still applies
     P.infected_at = nil
-    U.try("martyr", martyr_reveal, P, U.now())
+    U.try("martyr", martyr_reveal, P)
     U.try("liés", link_death, P)
     if P.role == "revenant" then
         -- its apparitions are given again at every death: raised then dead again, it may show itself again
@@ -2049,7 +2051,7 @@ end
 local function on_game_end(win, force)
     if not game.active then return end
     game.active = false
-    EV.stop()
+    EV.stop("end")                              -- first: what the event did is undone before anything else
     U.log("Fin de partie : remise à zéro des rôles")
     each_player(function(P)
         if P.dreaming then end_dream(P, "end") end
@@ -2152,11 +2154,11 @@ local function handle_opcode(P, op)
         -- from a sleeping Rêveur's machine: "my dream ended on my side"; otherwise the power key
         if P.dreaming then
             end_dream(P, "damage", true)
-        else
+        elseif not EV.on_key(P, "act") then       -- a random event may take the key (a vote, a seat)
             U.try("touche de pouvoir", on_power, P)
         end
     elseif op == N.OP_USE then
-        U.try("consommer", on_use, P)
+        if not EV.on_key(P, "use") then U.try("consommer", on_use, P) end
     end
     force_eye(P.mec, (P.dreaming and G.EYE_CLOSED) or P.eye or G.EYE_OPEN)
 end
@@ -2440,22 +2442,14 @@ local function send_stats()
     end)
 end
 
--- Test aid (group TEST): one event at once, chosen by the host; the row goes back to "aucun".
+-- Test aid (group TEST): one event at once, chosen by the host, or "stop" for the running one;
+-- the row goes back to "aucun". The game is then not counted in the statistics. lpr_ev.lua
+-- tells the host what came of it.
 local function test_event(now)
     local kind = C.get("test_event")
     C.set("test_event", "none", true)
-    local mine = G.local_mec()
-    local me = mine and player(mine, false)
-    if not (game.active and game.announced) then
-        if me then tell(me, "MSG", "TEST_EVENT_NO") end
-        U.log("Test : évènement %s refusé (pas de partie en cours)", tostring(kind))
-        return
-    end
-    game.tested = true
-    if not EV.run(kind, now) then
-        if me then tell(me, "MSG", "TEST_EVENT_NONE") end
-        U.log("Test : évènement %s impossible maintenant", tostring(kind))
-    end
+    if game.active and game.announced then game.tested = true end
+    EV.test(kind, now)
 end
 
 -- ---------------------------------------------------------------- periodic work (10 times per second)
@@ -2611,7 +2605,10 @@ function Sv.install()
         local P = player(v, false)
         if not P then return end
         local A = player(ctx:get(), false)
-        if A and A ~= P then P.last_hit = { by = A.key, at = U.now() } end
+        if A and A ~= P then
+            P.last_hit = { by = A.key, at = U.now() }
+            U.try("évènements", EV.on_hit, A, P)
+        end
         if P.dreaming then end_dream(P, "attacked") end
     end)
     hook(G.PATH_MEC, "Net Death", function(ctx)
@@ -2622,12 +2619,13 @@ function Sv.install()
         local P = player(ctx:get(), false)
         if not P then return end
         P.end_state = nil                          -- alive again, for the summary of the game
-        -- a ghost raised while it was shown (a Revenant, or the event "Les morts se montrent"): over
-        if P.spirit_until or (P.ghost_event_until and U.now() < P.ghost_event_until) then
-            P.spirit_until, P.ghost_event_until = nil, nil
+        -- a Revenant raised while it was shown: over
+        if P.spirit_until then
+            P.spirit_until = nil
             broadcast("SPIRIT", idx(P), 0)
         end
         if P.cleaned and game.active then undo_revival(P) end
+        if game.active then U.try("évènements", EV.on_rez, P) end
     end)
     -- The game gives a player the effect of what it has just drunk: the item's state comes
     -- along. Only looked at for a poisoned player.
@@ -2667,8 +2665,14 @@ function Sv.install()
         if ok and cleared == true then return end
         U.try("sphères", correct_spheres)
     end)
-    EV.setup({ each_player = each_player, tell = tell, broadcast = broadcast, idx = idx,
-               swap_places = swap_places, game = game })
+    EV.setup({ each_player = each_player, tell = tell, broadcast = broadcast, idx = idx, game = game,
+               by_key = by_key, player = player,
+               aimed = function(P, cm) return aimed_player(P, { range_cm = cm }) end,
+               wake = function(P, why)
+                   if P.dreaming then end_dream(P, why) end
+                   if P.fairy then end_fairy(P) end
+                   end_hide(P, why)
+               end })
     BK.setup({ each_player = each_player, tell = tell, game = game, pages = function() return book.pages end })
     U.every_tick("hôte", tick)
     U.log("Partie hôte prête")

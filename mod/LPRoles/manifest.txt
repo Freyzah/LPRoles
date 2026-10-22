@@ -1,30 +1,48 @@
-version 0.15.1
-12897 Scripts/lpr_audio.lua
+version 0.16.0
+20097 Scripts/lpr_audio.lua
 19141 Scripts/lpr_book.lua
-65569 Scripts/lpr_client.lua
-36340 Scripts/lpr_config.lua
-7946 Scripts/lpr_events.lua
-24376 Scripts/lpr_game.lua
+66365 Scripts/lpr_client.lua
+43613 Scripts/lpr_config.lua
+59336 Scripts/lpr_ev.lua
+20399 Scripts/lpr_ev_body.lua
+30379 Scripts/lpr_ev_world.lua
+25928 Scripts/lpr_game.lua
 3836 Scripts/lpr_lobby.lua
-3339 Scripts/lpr_main.lua
-10664 Scripts/lpr_marks.lua
+3387 Scripts/lpr_main.lua
+18057 Scripts/lpr_marks.lua
 7394 Scripts/lpr_medic.lua
-32235 Scripts/lpr_menu.lua
+32696 Scripts/lpr_menu.lua
 4173 Scripts/lpr_net.lua
-6247 Scripts/lpr_recap.lua
+9814 Scripts/lpr_recap.lua
 12219 Scripts/lpr_roletext.lua
-3935 Scripts/lpr_screens.lua
-119836 Scripts/lpr_server.lua
-12396 Scripts/lpr_sound.lua
+4344 Scripts/lpr_screens.lua
+120558 Scripts/lpr_server.lua
+12767 Scripts/lpr_sound.lua
 8531 Scripts/lpr_stats.lua
-27238 Scripts/lpr_strings.lua
-29169 Scripts/lpr_tablet.lua
+28795 Scripts/lpr_strings.lua
+31451 Scripts/lpr_tablet.lua
 3467 Scripts/lpr_update.lua
 22315 Scripts/lpr_util.lua
 862 Scripts/main.lua
 son 827096fd68d84c492ba78a8cfd67e9b22a5c3cc458ba1312f2b874738faa795f sounds/angel.wav
 son 477f190d83bf2074337dce1d8a229dca537bf25649e863d94f4bdacbf89b01ca sounds/clean.wav
 son 90add238f8508f73566e9a710a8ae0fa3a2f78b405312050b7ba1310a1c7c32a sounds/consume.wav
+son c0ccb6f43b9a69a7479300de6633adac434e59e35e4e84bef1093f1c2c504b44 sounds/ev_blackout_off.wav
+son 4ccb7d13ef3cd75bd170c027ca93b9dbb31186953c66966a2f4d2a47dd324cdb sounds/ev_blackout_on.wav
+son f3ea8b051955bf34b43de288ad8f070d3a0ac3a7eca38b618280a370539b5bda sounds/ev_deadknow_beep.wav
+son c396cd87ee46e37b656ecf82c99833f93697042949a0047c3b648d5220fb6488 sounds/ev_gas_cough.wav
+son 5c03d4fac905a5cbb191a7fbfd3446c032b282ecd4b1da6048a5c8e5ed127c4c sounds/ev_gas_hiss.wav
+son ef1c17a284a1bb06d88f4691cb04265c46557fdd8555975c4b3ef868bff51d1e sounds/ev_magnets_static.wav
+son f826e7f8e75999c893d1e27b33e51068d6bbfc40604a7bb2fd686cd5369dd6f1 sounds/ev_magnets_zap.wav
+son 4ad27c06661eb4c08fae52127a9540cb6a9a0cedefc72a6b9e3e707a43ed15db sounds/ev_meeting_chime.wav
+son aad77b8b01f4a37e2403d467dae99f31923abdfe09cb2ef823be54c9ad5c7580 sounds/ev_mic_chime.wav
+son 6164e287603c2d7f08edf34c5d893096ce604c9bd881e03ff830b0fac9e4985d sounds/ev_parcel_beep.wav
+son 0b9cbd211f2de66686ee2e9b8471ac6fd5c24af2e8c50d992c8ed28b04a6acfa sounds/ev_parcel_done.wav
+son 85a7600bcb9aad329975b5be1a158ad7e61b122945cd8a52832f7a8b73b93fdb sounds/ev_potato_beep.wav
+son 5f827effce276390f2b4cd3527985341d4238e4c562818c26081e972ef97098c sounds/ev_potato_beep_fast.wav
+son 1bd5f19b29ad387f8847c20275b4b6945ef12c1a72df6abfb622ba286d1e69ad sounds/ev_sun_voice.wav
+son 6e3bd07ed90ed01273cd6a10b54a61813747381c40e712c15f05d299648db75b sounds/ev_tape_static.wav
+son e3e9f406f7b1c5da1fd20997820ced0ca4b458fa896c803670371aedecc8656f sounds/ev_weapons_scan.wav
 son 9c63d83ce9186c937911bc71f434bedb9231b805fcfaa33975c2ca3a777ce124 sounds/fail.wav
 son 8b0fc5b8dfa7ba318b6aea0baa3fce9eee5705612d616a5f4499b69a71272362 sounds/fairy.wav
 son 377ddfc86674f459b464832b1666b30b9981c2d912dda5b491a3e52ad71295db sounds/hypnosis.wav

@@ -41,6 +41,8 @@ C.DEFS = {
     { key = "swap_sound",              group = "MES RÉGLAGES", default = true, kind = "bool", label = "Son des échanges de place" },
     -- Clandestin, Métamorphe, Hypnotiseur, Nettoyeur, Recruteur, Revenant, Ange gardien, Martyr
     { key = "role_sounds",             group = "MES RÉGLAGES", default = true, kind = "bool", label = "Sons des autres rôles" },
+    -- every sound file of the random events (lpr_audio.lua, slots); the game's own sounds stay
+    { key = "event_sounds",            group = "MES RÉGLAGES", default = true, kind = "bool", label = "Sons des évènements" },
 
     { key = "enabled",                 group = "GÉNÉRAL", default = true,  kind = "bool",  label = "Mod actif" },
     { key = "max_roles",               group = "GÉNÉRAL", default = 4,     kind = "int",   min = 1, max = 16, step = 1, label = "Rôles spéciaux par partie (max)" },
@@ -48,17 +50,75 @@ C.DEFS = {
     { key = "recharge_limit",          group = "GÉNÉRAL", default = 0,     kind = "int",   min = 0, max = 10, step = 1, label = "Recharges par partie (0 = illimité)" },
     { key = "reveal_roles_at_end",     group = "GÉNÉRAL", default = true,  kind = "bool",  label = "Récapitulatif de fin de partie" },
     { key = "menu_tab",                group = "GÉNÉRAL", default = true,  kind = "bool",  label = "Onglet dans le menu Échap" },
-    -- random events during a game (lpr_events.lua); no key ends in "_enabled": those are the roles' switches
+    -- Random events during a game (lpr_ev.lua, one module lpr_evm_<id>.lua each): the master
+    -- switch, the timing, and each event's own switch. No key ends in "_enabled": those are the
+    -- roles' switches. Each event's settings are in a group "ÉV. <NOM>" of its own, placed by the
+    -- menu right after this one; an event's later tuning is one line of its own block.
     { key = "events_on",               group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Évènements aléatoires" },
     { key = "event_first_delay",       group = "ÉVÈNEMENTS", default = 120,   kind = "int",   min = 30, max = 600, step = 10, label = "Premier évènement après (s)" },
-    { key = "event_interval",          group = "ÉVÈNEMENTS", default = 150,   kind = "int",   min = 45, max = 900, step = 15, label = "Temps moyen entre deux (s)" },
-    { key = "event_radio",             group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Panne de radio" },
-    { key = "event_radio_seconds",     group = "ÉVÈNEMENTS", default = 15,    kind = "num",   min = 5, max = 60, step = 5, label = "Durée de la panne (s)" },
-    { key = "event_swap",              group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Grand échange" },
-    { key = "event_heal",              group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Soins pour tous" },
-    { key = "event_ghosts",            group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Les morts se montrent" },
-    { key = "event_ghosts_seconds",    group = "ÉVÈNEMENTS", default = 10,    kind = "num",   min = 3, max = 30, step = 1, label = "Durée de l'apparition (s)" },
-    { key = "event_leak",              group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Fuite d'informations" },
+    -- counted from the end of the event before
+    { key = "event_interval",          group = "ÉVÈNEMENTS", default = 150,   kind = "int",   min = 45, max = 900, step = 15, label = "Pause moyenne entre deux (s)" },
+    { key = "event_meeting",           group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Réunion d'urgence" },
+    { key = "event_tape",              group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "La cassette du corbeau" },
+    { key = "event_weapons",           group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Contrôle des armes" },
+    { key = "event_blackout",          group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Panne générale" },
+    { key = "event_mic",               group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Micro ouvert" },
+    { key = "event_parcel",            group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Colis prioritaire" },
+    { key = "event_deadknow",          group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Les morts savent" },
+    { key = "event_potato",            group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Patate chaude" },
+    { key = "event_sun",               group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "1, 2, 3, soleil !" },
+    { key = "event_gas",               group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Fuite de gaz" },
+    -- off by default: it can decide the game
+    { key = "event_shuttle",           group = "ÉVÈNEMENTS", default = false, kind = "bool",  label = "Dernière navette (peut finir la partie)" },
+    { key = "event_magnets",           group = "ÉVÈNEMENTS", default = true,  kind = "bool",  label = "Aimantés" },
+
+    { key = "event_meeting_walk",      group = "ÉV. RÉUNION", default = 45,   kind = "int",   min = 20, max = 90, step = 5, label = "Temps pour venir (s)" },
+    { key = "event_meeting_debate",    group = "ÉV. RÉUNION", default = 30,   kind = "int",   min = 15, max = 90, step = 5, label = "Durée du débat (s)" },
+    { key = "event_meeting_vote",      group = "ÉV. RÉUNION", default = 20,   kind = "int",   min = 10, max = 60, step = 5, label = "Vote : dernières secondes du débat" },
+    { key = "event_meeting_radius",    group = "ÉV. RÉUNION", default = 1200, kind = "int",   min = 600, max = 2500, step = 100, label = "Rayon de l'appel (cm)" },
+    { key = "event_meeting_hold",      group = "ÉV. RÉUNION", default = 30,   kind = "int",   min = 0, max = 60, step = 5, label = "Consigne du fouillé (s, 0 = non)" },
+
+    { key = "event_tape_seconds",      group = "ÉV. CASSETTE", default = 150, kind = "int",   min = 60, max = 300, step = 15, label = "Effacée au bout de (s)" },
+
+    { key = "event_weapons_notice",    group = "ÉV. ARMES", default = 30,     kind = "int",   min = 10, max = 60, step = 5, label = "Préavis (s)" },
+    { key = "event_weapons_seize",     group = "ÉV. ARMES", default = false,  kind = "bool",  label = "Confisquer les armes trouvées" },
+
+    { key = "event_blackout_max",      group = "ÉV. PANNE", default = 75,     kind = "int",   min = 30, max = 180, step = 15, label = "Durée maximale (s)" },
+    { key = "event_blackout_gap",      group = "ÉV. PANNE", default = 3,      kind = "num",   min = 1, max = 6, step = 0.5, label = "Écart permis entre les appuis (s)" },
+    { key = "event_blackout_bonus",    group = "ÉV. PANNE", default = false,  kind = "bool",  label = "Relance rapide : surrégime des machines" },
+
+    { key = "event_mic_seconds",       group = "ÉV. MICRO", default = 60,     kind = "int",   min = 20, max = 120, step = 10, label = "Durée (s)" },
+    { key = "event_mic_range",         group = "ÉV. MICRO", default = 200,    kind = "int",   min = 100, max = 400, step = 25, label = "Distance du pupitre (cm)" },
+
+    { key = "event_parcel_seconds",    group = "ÉV. COLIS", default = 150,    kind = "int",   min = 60, max = 300, step = 15, label = "Temps pour livrer (s)" },
+    { key = "event_parcel_bonus",      group = "ÉV. COLIS", default = 120,    kind = "int",   min = 0, max = 300, step = 15, label = "Gain au chrono (s)" },
+    { key = "event_parcel_malus",      group = "ÉV. COLIS", default = 60,     kind = "int",   min = 0, max = 180, step = 15, label = "Perte si échec (s)" },
+
+    { key = "event_deadknow_seconds",  group = "ÉV. MORTS", default = 120,    kind = "int",   min = 60, max = 240, step = 15, label = "Durée (s)" },
+    { key = "event_deadknow_bonus",    group = "ÉV. MORTS", default = 120,    kind = "int",   min = 30, max = 300, step = 15, label = "Gain au chrono (s)" },
+    { key = "event_deadknow_cooldown", group = "ÉV. MORTS", default = 4,      kind = "num",   min = 1, max = 10, step = 0.5, label = "Attente entre deux bips (s)" },
+
+    { key = "event_potato_min",        group = "ÉV. PATATE", default = 45,    kind = "int",   min = 20, max = 120, step = 5, label = "Explose après : minimum (s)" },
+    { key = "event_potato_max",        group = "ÉV. PATATE", default = 75,    kind = "int",   min = 30, max = 150, step = 5, label = "Explose après : maximum (s)" },
+    { key = "event_potato_damage",     group = "ÉV. PATATE", default = 50,    kind = "int",   min = 0, max = 100, step = 5, label = "Dégâts au centre (PV)" },
+    { key = "event_potato_lethal",     group = "ÉV. PATATE", default = false, kind = "bool",  label = "Peut tuer" },
+
+    { key = "event_sun_rounds",        group = "ÉV. SOLEIL", default = 4,     kind = "int",   min = 2, max = 8, step = 1, label = "Manches" },
+    { key = "event_sun_freeze",        group = "ÉV. SOLEIL", default = 3,     kind = "num",   min = 2, max = 6, step = 0.5, label = "Durée de l'arrêt (s)" },
+    { key = "event_sun_tolerance",     group = "ÉV. SOLEIL", default = 40,    kind = "int",   min = 20, max = 100, step = 5, label = "Mouvement toléré (cm)" },
+
+    { key = "event_gas_notice",        group = "ÉV. GAZ", default = 30,       kind = "int",   min = 10, max = 60, step = 5, label = "Préavis avant l'explosion (s)" },
+    { key = "event_gas_cloud",         group = "ÉV. GAZ", default = 60,       kind = "int",   min = 0, max = 120, step = 10, label = "Gaz après l'explosion (s)" },
+    { key = "event_gas_damage",        group = "ÉV. GAZ", default = 60,       kind = "int",   min = 0, max = 100, step = 10, label = "Dégâts au centre (PV)" },
+    { key = "event_gas_real",          group = "ÉV. GAZ", default = false,    kind = "bool",  label = "Vraie explosion du jeu (100 PV)" },
+
+    { key = "event_shuttle_seconds",   group = "ÉV. NAVETTE", default = 60,   kind = "int",   min = 30, max = 120, step = 10, label = "Attente au quai (s)" },
+    { key = "event_shuttle_window",    group = "ÉV. NAVETTE", default = 180,  kind = "int",   min = 60, max = 300, step = 30, label = "Seulement dans les dernières (s)" },
+
+    { key = "event_magnets_seconds",   group = "ÉV. AIMANTÉS", default = 40,  kind = "int",   min = 20, max = 90, step = 5, label = "Durée (s)" },
+    { key = "event_magnets_range",     group = "ÉV. AIMANTÉS", default = 250, kind = "int",   min = 150, max = 400, step = 25, label = "Distance de répulsion (cm)" },
+    -- a step of 0.1: the menu shows one decimal
+    { key = "event_magnets_push",      group = "ÉV. AIMANTÉS", default = 0.3, kind = "num",   min = 0.1, max = 1, step = 0.1, label = "Force de la poussée (faible)" },
 
     { key = "sheriff_enabled",         group = "SHÉRIF", default = true,  kind = "bool",  label = "Shérif" },
     { key = "sheriff_min_players",     group = "SHÉRIF", default = 4,     kind = "int",   min = 2, max = 16, step = 1, label = "Joueurs minimum" },
@@ -242,8 +302,12 @@ C.DEFS = {
     { key = "debug",                   group = "TEST", default = false, kind = "bool",  label = "Journal détaillé" },
     -- acts once, then goes back to NON (lpr_server.lua): the host must be the Bouffon, in a game
     { key = "test_jester_win",         group = "TEST", default = false, kind = "bool",  label = "Simuler la victoire du Bouffon" },
-    -- acts once, then goes back to AUCUN (lpr_server.lua): in a game whose roles are announced
-    { key = "test_event",              group = "TEST", default = "none", kind = "choice", choices = { "none", "radio", "swap", "heal", "ghosts", "leak" }, label = "Déclencher un évènement" },
+    -- acts once, then goes back to AUCUN (lpr_server.lua, lpr_ev.lua): in a game whose roles are
+    -- announced. "stop" ends the running event; the others in the alphabetical order of their names.
+    { key = "test_event",              group = "TEST", default = "none", kind = "choice",
+      choices = { "none", "stop", "sun", "magnets", "tape", "parcel", "weapons", "shuttle", "gas", "deadknow", "mic",
+                  "blackout", "potato", "meeting" },
+      label = "Déclencher un évènement" },
 }
 
 C.GROUPS = {}
@@ -269,8 +333,10 @@ C.CHOICE_LABEL = {
     vampire = "VAMPIRE", werewolf = "LOUP-GAROU",
     medic = "MÉDECIN",
     -- the random events (test_event)
-    radio = "PANNE DE RADIO", swap = "GRAND ÉCHANGE", heal = "SOINS POUR TOUS", ghosts = "LES MORTS SE MONTRENT",
-    leak = "FUITE D'INFOS",
+    stop = "ARRÊTER L'ÉVÈNEMENT", meeting = "RÉUNION D'URGENCE", tape = "CASSETTE DU CORBEAU",
+    weapons = "CONTRÔLE DES ARMES", blackout = "PANNE GÉNÉRALE", mic = "MICRO OUVERT", parcel = "COLIS PRIORITAIRE",
+    deadknow = "LES MORTS SAVENT", potato = "PATATE CHAUDE", sun = "1, 2, 3, SOLEIL !", gas = "FUITE DE GAZ",
+    shuttle = "DERNIÈRE NAVETTE", magnets = "AIMANTÉS",
     -- plants by the code written on their jar, fish by the word the fish machine shows
     g3m = "PLANTE G3M", y8z = "PLANTE Y8Z", bo4 = "PLANTE BO4", wx2 = "PLANTE WX2", ru2 = "PLANTE RU2",
     salmon = "POISSON SALMON", tuna = "POISSON TUNA", cod = "POISSON COD", shrimp = "POISSON SHRIMP",

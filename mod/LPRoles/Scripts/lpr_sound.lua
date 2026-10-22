@@ -197,17 +197,26 @@ function SND.playable(path, seconds, fade_in)
     if not f then return path end
     local size = f:seek("end")
     if not size or size > MAX_BYTES then f:close() return path end
+    local is_wav = path:lower():match("%.wav$") ~= nil
+    local tenths = (seconds and is_wav) and math.floor(seconds * 10 + 0.5) or nil
+    local fade = (tenths and fade_in) and math.floor(fade_in * 100 + 0.5) or nil     -- hundredths of a second
+    local slot = tenths and (path .. "|" .. tenths .. "|" .. (fade or "")) or path
+    -- a sound played again and again (a random event's beep, every second on every machine):
+    -- the copy already made serves as long as the file keeps its size, without reading it again
+    local c = cache[slot]
+    if c and c.size == size and (c.path == path or exists(c.path)) then
+        f:close()
+        return c.path
+    end
     f:seek("set", 0)
     local d = f:read("a")
     f:close()
     if not d then return path end
     local key = fingerprint(d)
-    local is_wav = path:lower():match("%.wav$") ~= nil
-    local tenths = (seconds and is_wav) and math.floor(seconds * 10 + 0.5) or nil
-    local fade = (tenths and fade_in) and math.floor(fade_in * 100 + 0.5) or nil     -- hundredths of a second
-    local slot = tenths and (path .. "|" .. tenths .. "|" .. (fade or "")) or path
-    local c = cache[slot]
-    if c and c.key == key and (c.path == path or exists(c.path)) then return c.path end
+    if c and c.key == key and (c.path == path or exists(c.path)) then
+        c.size = size
+        return c.path
+    end
     local ok, out = pcall(function()
         if not is_wav then return pad_mp3(d) end
         local w = read_wav(d)
@@ -216,7 +225,7 @@ function SND.playable(path, seconds, fade_in)
     end)
     if not ok or not out then
         U.log("Son %s lu tel quel (%s)", path, ok and "format non reconnu" or tostring(out))
-        cache[slot] = { key = key, path = path }
+        cache[slot] = { key = key, path = path, size = size }
         return path
     end
     -- one copy per length asked for ("b": with the fade-in; copies of older versions, which
@@ -240,7 +249,7 @@ function SND.playable(path, seconds, fade_in)
             return path
         end
     end
-    cache[slot] = { key = key, path = copy }
+    cache[slot] = { key = key, path = copy, size = size }
     U.log("Son %s : copie %savec %.1f s de silence à la fin (%s)", path,
         tenths and string.format("de %.1f s ", tenths / 10) or "", PAD_SECONDS, copy)
     return copy

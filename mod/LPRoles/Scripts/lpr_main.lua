@@ -64,7 +64,7 @@ local ok, err = pcall(function()
     local Stats = require("lpr_stats")
     Stats.install_client()
     Menu.show_stats(Stats.lines, Stats.on_change)
-    require("lpr_events").install_client()
+    require("lpr_ev").install_client()          -- the random events: every machine's part
     Tablet.install(Client.role, Client.on_role_change, Client.status)
     Lobby.install(Server, { Menu, Tablet })
     if problem then
